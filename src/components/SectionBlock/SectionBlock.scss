@@ -1,0 +1,44 @@
+@import '../../styles/global.scss';
+
+.sectionBlockContainer {
+    background: darken($bg, 10%);
+    padding: 20px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    width: 350px;
+
+    .status {
+        border-radius: 50%;
+        width: 10px;
+        height: 10px;
+        display: inline-block;
+        background: green;
+    }
+
+    h5 {
+        margin: 0 0 15px;
+        font-weight: 400;
+        font-size: 1.563rem;
+        display: inline-block;
+    }
+
+    ul {
+        padding: 0;
+        display: flex;
+        flex-flow: row wrap;
+    }
+
+    li {
+        width: 50%;
+        margin-top: 15px;
+    }
+
+    p {
+        font-size: .75rem;
+        text-transform: uppercase;
+    }
+
+    b {
+        font-size: 1.25rem;
+    }
+}

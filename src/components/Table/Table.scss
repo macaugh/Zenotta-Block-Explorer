@@ -1,0 +1,15 @@
+@import '../../styles/global.scss';
+
+.blockTable {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    th {
+        background: darken($bg, 10%);
+    }
+}

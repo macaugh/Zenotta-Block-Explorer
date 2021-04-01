@@ -5,6 +5,12 @@
     margin: 40px auto;
     position: relative;
     padding-top: 1px;
+
+    h4 {
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
 }
 
 .logo {
@@ -26,4 +32,23 @@
 .searchContainer {
     width: 50vw;
     margin: 80px auto 40px;
+}
+
+.mainContent {
+    section {
+        margin-top: 80px;
+    }
+}
+
+.computeNodesContainer {
+    ul {
+        padding: 0;
+        display: flex;
+        flex-flow: row;
+        justify-content: space-between;
+    }
+
+    li {
+        list-style: none;
+    }
 }

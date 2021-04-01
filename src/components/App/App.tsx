@@ -2,9 +2,10 @@ import React from 'react';
 import * as styles from "./App.scss";
 import logo from "../../static/img/zenotta-logo.svg";
 
+import Table from "../Table/Table";
+import Search from "../Search/Search";
 import LangSelector from "../LangSelector/LangSelector";
 import SectionBlock from "../SectionBlock/SectionBlock";
-import Search from "../Search/Search";
 
 
 export default function App() {
@@ -36,21 +37,7 @@ export default function App() {
         <section className={styles.blockTable}>
           <h4>latest blocks</h4>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Block Number</th>
-                <th>Participating Compute Nodes</th>
-                <th>Participating Mining Nodes</th>
-                <th>Timeout At</th>
-                <th>Transactions</th>
-                <th>Combined Reward</th>
-              </tr>
-            </thead>
-            <tbody>
-
-            </tbody>
-          </table>
+          <Table />
         </section>
       </div>
     </div>
