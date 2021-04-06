@@ -3,13 +3,29 @@
 .blockTable {
     width: 100%;
     border-collapse: collapse;
+    background: white;
+    text-align: left;
+    border-radius: 5px;
+    -webkit-box-shadow: 0px 3px 9px -4px rgba(0,0,0,0.21);
+    -moz-box-shadow: 0px 3px 9px -4px rgba(0,0,0,0.21);
+    box-shadow: 0px 3px 9px -4px rgba(0,0,0,0.21);
 
     th, td {
-        padding: 10px;
+        padding: 15px;
         box-sizing: border-box;
+        border-bottom: 1px solid $bg;
     }
 
-    th {
-        background: darken($bg, 10%);
+    th:not(:first-child), 
+    td:not(:first-child) {
+        text-align: right;
+    }
+
+    tbody tr:nth-child(odd) td {
+        background: lighten($bg, 5%);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: 0;
     }
 }
