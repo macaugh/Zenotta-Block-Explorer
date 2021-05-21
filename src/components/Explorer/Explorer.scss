@@ -1,0 +1,21 @@
+.computeNodesContainer {
+    ul {
+        padding: 0;
+        display: flex;
+        flex-flow: row;
+        justify-content: space-between;
+    }
+
+    li {
+        list-style: none;
+    }
+}
+
+.table {
+    background: white;
+    margin-top: 30px;
+}
+
+.blockTable {
+    margin-top: 30px;
+}

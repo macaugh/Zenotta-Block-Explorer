@@ -14,13 +14,13 @@ const cwd = process.cwd();
 
 const settings = {
   /** Folder name for build (production) files */
-  buildFolderName: 'build',
+  buildFolderName: 'public',
 
   /** Main entry file of project source */
   mainEntryFile: 'src/index.tsx',
 
   /** HTML index template file */
-  htmlTemplateFile: 'src/index.html',
+  htmlTemplateFile: 'public/index.html',
 
   /** Extensions to resolve */
   extensions: ['.tsx', '.ts', '.js', '.jsx'],
@@ -34,7 +34,7 @@ const settings = {
   aliases: {
     '@components': 'src/components',
     '@styles': 'src/styles',
-    '@static': 'src/static',
+    '@static': 'src/static'
   },
 };
 
@@ -180,6 +180,11 @@ const config = options => {
 
     /** Dev Server */
     devServer: options.devServer,
+
+    // externals: {
+    //   'react': { commonjs: 'react' },
+    //   'react-dom': { commonjs: 'react-dom' }
+    // }
   };
 };
 
