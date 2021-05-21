@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { i18n, langs } from '../../i18n';
-import { hot } from 'react-hot-loader/root';
 
 import * as styles from './LangSelector.scss';
 import arrowIcon from '../../static/img/triangle.svg';
@@ -16,7 +15,7 @@ import deFlag from '../../static/img/de-flag.svg';
 import esFlag from '../../static/img/es-flag.svg';
 import jpFlag from '../../static/img/jp-flag.svg';
 
-function LangSelector() {
+export const LangSelector = () => {
     const localLangSet = localStorage.getItem('I18N_LANGUAGE') || "en";
     const [dropdownClass, setLanguageDropdown] = useState("");
     const [currentLanguage, setCurrentLanguage] = useState(langs[localLangSet]);
@@ -75,5 +74,3 @@ function LangSelector() {
         </div>
     );
 }
-
-export default hot(LangSelector);

@@ -4,8 +4,8 @@ import { TextInput } from 'chi-ui';
 
 import * as styles from "./App.scss";
 import { Explorer } from '../Explorer/Explorer';
+import { BCItemView } from '../BCItemView/BCItemView';
 import logo from "../../static/img/zenotta-logo.svg";
-import LangSelector from "../LangSelector/LangSelector";
 
 import {
   BrowserRouter as Router,
@@ -15,8 +15,10 @@ import {
   useParams
 } from "react-router-dom";
 
-export default function App() {
+import { LangSelector } from "../LangSelector/LangSelector";
 
+
+export default function App() {
   return useObserver(() => (
     <Router>
       <div className={styles.container}>
@@ -35,8 +37,8 @@ export default function App() {
         </div>
 
         <Switch>
-          <Route exact path="/block/:num">
-            <div>hello</div>
+          <Route exact path="/:hash">
+            <BCItemView />
           </Route>
           <Route exact path="/">
             <Explorer />

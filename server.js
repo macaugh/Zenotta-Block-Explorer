@@ -8,8 +8,6 @@ const config = require('./tools/webpack/webpack.dev.js');
 const app = express();
 const port = 8080;
 
-const devServerEnabled = true;
-
 if (devServerEnabled) {
     //reload=true:Enable auto reloading when changing JS files or content
     //timeout=1000:Time from disconnecting from server to reconnecting

@@ -31,6 +31,18 @@ class Store {
         }
     }
 
+    @action fetchBlockchainItem(hash: string) {
+        return axios.post(`http://localhost:3001/blockchain_entry_by_key`,
+            `"${hash}"`, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            return response.data;
+        });
+    }
+
     @action async fetchTableData() {
         const nums = this.getNEntries();
 
@@ -64,7 +76,7 @@ class Store {
         }
 
         return null;
-    } 
+    }
 
 }
 

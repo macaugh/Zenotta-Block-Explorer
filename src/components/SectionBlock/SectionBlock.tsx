@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { hot } from 'react-hot-loader/root';
-
 import * as styles from './SectionBlock.scss';
 
-function SectionBlock() {
+export const SectionBlock = () => {
     const [status, setStatus] = useState("");
 
     return (
@@ -34,5 +32,3 @@ function SectionBlock() {
         </div>
     );
 }
-
-export default hot(SectionBlock);

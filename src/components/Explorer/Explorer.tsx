@@ -3,12 +3,13 @@ import { useObserver } from 'mobx-react';
 import { StoreContext } from '../../index';
 
 import { Table } from 'chi-ui';
-import SectionBlock from "../SectionBlock/SectionBlock";
+import { SectionBlock } from "../SectionBlock/SectionBlock";
 import styles from './Explorer.scss';
 
 export const Explorer = () => {
     const tableHeadings = [
         { value: "Block Number", isNumeric: true },
+        { value: "Block Hash", isNumeric: false },
         { value: "Previous Hash", isNumeric: false },
         { value: "Merkle Root Hash", isNumeric: false },
         { value: "Compute Nodes", isNumeric: true },
@@ -20,11 +21,13 @@ export const Explorer = () => {
     const mungeTableData = (data: any[]) => {
         let body = [];
 
-        for (let blockData of data) {
-            let bNum = blockData.block.header.b_num;
+        for (let d of data) {
+            let blockHash = d[0];
+            let blockData = d[1];
 
             let row = [
-                { value: <a href={`/block/${bNum}`}>{bNum}</a>, isNumeric: true },
+                { value: blockData.block.header.b_num, isNumeric: true },
+                { value: <a href={`/${blockHash}`}>{blockHash}</a>, isNumeric: false },
                 { value: blockData.block.header.previous_hash, isNumeric: false },
                 { value: blockData.block.header.merkle_root_hash, isNumeric: false },
                 { value: Object.keys(blockData.mining_tx_hash_and_nonces).length, isNumeric: true },
@@ -61,5 +64,5 @@ export const Explorer = () => {
                 </section>
             </div>
         </div>
-    ));
+    )) as any;
 }
