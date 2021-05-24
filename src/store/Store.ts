@@ -19,6 +19,11 @@ class Store {
     @observable latestBlock: any = null;
     @observable latestTransactions: any[] = [];
 
+
+    @action addToLatestTransactions(tx: any) {
+        this.latestTransactions.push(tx);
+    }
+
     @action async fetchLatestBlock() {
         try {
             const response: HTTPResponse = await axios.get(`http://localhost:3001/latest_block`);

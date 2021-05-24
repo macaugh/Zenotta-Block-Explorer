@@ -1,0 +1,21 @@
+.container {
+    width: 100%;
+    border-radius: 4px;
+    background: white;
+    border-collapse: collapse;
+    box-shadow: 0px 3px 2px -1px rgba(0, 0, 0, .1);
+
+    td {
+        padding: 25px;
+        border-bottom: 1px solid #ececec;
+        max-width: 500px;
+        box-sizing: border-box;
+        overflow: hidden;
+        white-space: pre-wrap;
+        text-overflow: ellipsis;
+    }
+
+    tr td:first-child {
+        color: transparentize($color: #000000, $amount: 0.4);
+    }
+}

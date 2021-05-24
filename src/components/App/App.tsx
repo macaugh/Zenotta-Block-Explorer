@@ -6,13 +6,12 @@ import * as styles from "./App.scss";
 import { Explorer } from '../Explorer/Explorer';
 import { BCItemView } from '../BCItemView/BCItemView';
 import logo from "../../static/img/zenotta-logo.svg";
+import bg from "../../static/img/bg.jpg";
 
 import {
   BrowserRouter as Router,
   Switch,
-  Route,
-  Link,
-  useParams
+  Route
 } from "react-router-dom";
 
 import { LangSelector } from "../LangSelector/LangSelector";
@@ -26,7 +25,7 @@ export default function App() {
           <LangSelector />
         </div>
 
-        <img src={logo} className={styles.logo} alt="Zenotta logo" />
+        <a href="/"><img src={logo} className={styles.logo} alt="Zenotta logo" /></a>
 
         <div className={styles.searchContainer}>
           <TextInput
@@ -38,13 +37,19 @@ export default function App() {
 
         <Switch>
           <Route exact path="/:hash">
-            <BCItemView />
+            <div className={styles.childContainer}>
+              <BCItemView />
+            </div>
           </Route>
           <Route exact path="/">
-            <Explorer />
+            <div className={styles.childContainer}>
+              <Explorer />
+            </div>
           </Route>
           <Route path="*">ERROR 404</Route>
         </Switch>
+
+        <img src={bg} className={styles.bg} />
       </div>
     </Router>
   ));

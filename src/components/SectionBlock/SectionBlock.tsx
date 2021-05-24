@@ -22,7 +22,7 @@ export const SectionBlock = () => {
                 </li>
                 <li>
                     <p>last reward</p>
-                    <b>23.5 ZNT</b>
+                    <b>23.5 ZENO</b>
                 </li>
                 <li>
                     <p>current block no.</p>
