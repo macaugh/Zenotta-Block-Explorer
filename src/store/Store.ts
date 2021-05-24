@@ -17,6 +17,7 @@ class Store {
 
     @observable tableData: any = [];
     @observable latestBlock: any = null;
+    @observable latestTransactions: any[] = [];
 
     @action async fetchLatestBlock() {
         try {
