@@ -8,9 +8,6 @@ import App from './components/App/App';
 
 export const StoreContext = React.createContext(storeInstance);
 
-
-storeInstance.fetchLatestBlock();
-
 ReactDOM.render(
   <StoreContext.Provider value={storeInstance}>
     <App />

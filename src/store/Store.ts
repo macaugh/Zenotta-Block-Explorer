@@ -1,5 +1,5 @@
 import axios from "axios";
-import { observable, action, makeAutoObservable } from "mobx";
+import {action, makeAutoObservable, observable} from "mobx";
 
 interface HTTPResponse {
     config: any,
@@ -19,68 +19,77 @@ class Store {
     @observable latestBlock: any = null;
     @observable latestTransactions: any[] = [];
 
-
     @action addToLatestTransactions(tx: any) {
         this.latestTransactions.push(tx);
     }
 
-    @action async fetchLatestBlock() {
-        try {
-            const response: HTTPResponse = await axios.get(`http://localhost:3001/latest_block`);
-            this.latestBlock = response.data;
-
-            this.fetchTableData();
-        }
-        catch (err) {
-            console.error(`Fetch of latest block failed with status code ${err.status}`);
-            console.error(err.data);
-        }
+    @action setLatestBlock(block: any) {
+        this.latestBlock = block;
     }
 
-    @action fetchBlockchainItem(hash: string) {
-        return axios.post(`http://localhost:3001/blockchain_entry_by_key`,
-            `"${hash}"`, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            return response.data;
+    @action setTableData(tableData: any) {
+        this.tableData = tableData;
+    }
+
+    @action setLatestTransactions(transactions: any[]) {
+        this.latestTransactions = transactions;
+    }
+
+    @action
+    async fetchLatestBlock(pageNumber: number, maxBlocks: number) {
+        await axios.get(`http://localhost:3001/latest_block`).then(async (response) => {
+            this.setLatestBlock(response.data);
+            await this.fetchTableData(pageNumber, maxBlocks);
+        }).catch((error) => {
+            console.error(`Fetch of latest block failed with status code ${error.status}`);
+            console.error(error.data);
         });
     }
 
-    @action async fetchTableData() {
-        const nums = this.getNEntries();
-
-        try {
-            const response = await axios({
-                url: `http://localhost:3001/block_by_num`,
-                method: 'POST',
-                data: nums,
+    @action async fetchBlockchainItem(hash: string) {
+        return axios.post(`http://localhost:3001/blockchain_entry_by_key`,
+            `"${hash}"`, {
                 headers: {
-                    "Content-Type": "application/json",
+                    'Content-Type': 'application/json'
                 }
+            })
+            .then(response => {
+                return response.data;
+            }).catch((error) => {
+                console.error(`Fetch of blockchain item failed with status code ${error.status}`)
+                console.error(error.data)
             });
-
-            this.tableData = response.data;
-        } catch (err) {
-            console.error(`Fetch of blocks by number failed with status code ${err.status}`);
-            console.error(err.data);
-        }
     }
 
-    getNEntries(): number[] | null {
+    @action
+    async fetchTableData(pageNumber: number, maxBlocks: number) {
+        const nums = this.getNEntries(pageNumber, maxBlocks);
+
+        await axios({
+            url: `http://localhost:3001/block_by_num`,
+            method: 'POST',
+            data: nums,
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).then((response) => {
+            this.setTableData(response.data);
+        }).catch((error) => {
+            console.error(`Fetch of blocks by number failed with status code ${error.status}`);
+            console.error(error.data);
+        });
+    }
+
+    getNEntries(pageNumber: number, maxBlocks: number): number[] | null {
         if (this.latestBlock) {
-            let latestBNum = this.latestBlock.block.header.b_num;
+            let latestBNum = this.latestBlock.block.header.b_num - (pageNumber - 1) * maxBlocks;
             let nums = [];
 
-            for (let i = latestBNum; i > Math.max(latestBNum - 10, 0); i--) {
+            for (let i = latestBNum; i > Math.max(latestBNum - maxBlocks, 0); i--) {
                 nums.push(i);
             }
-
             return nums;
         }
-
         return null;
     }
 
