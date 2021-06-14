@@ -2,10 +2,12 @@ const express = require('express');
 const path = require('path');
 const calls = require('./utils/calls');
 const cache = require('./utils/cache');
+const config = require('./utils/config');
 
 // Server setup
 const app = express();
-const port = process.env.PORT || 8090;
+const fullConfig = config.getConfig("./serverConfig.json");
+const port = fullConfig.PORT;
 
 // Middleware
 app.use(express.json());
@@ -14,10 +16,10 @@ app.use(express.urlencoded({
 }));
 
 // Network connection
-const storageNode = 'http://localhost:3001';
+const storageNode = fullConfig.STORAGE_NODE;
 
 // Caches
-const cacheCapacity = process.env.CACHE_CAPACITY || 100;
+const cacheCapacity = fullConfig.CACHE_CAPACITY;
 const bItemCache = new cache.NetworkCache(cacheCapacity);
 const bNumCache = new cache.NetworkCache(cacheCapacity);
 
@@ -48,6 +50,7 @@ app.post('/api/blockchainItem', (req, res) => {
         });
 
     } else {
+        console.log("Serving from cache");
         res.json(posEntry);
     }
     
@@ -57,10 +60,38 @@ app.post('/api/blockchainItem', (req, res) => {
 app.post('/api/blockRange', (req, res) => {
     console.log("Received request for a range of block numbers:", req.body.nums);
     const storagePath = `${storageNode}/block_by_num`;
+    let unknowns = [];
+    let knowns = [];
 
-    calls.fetchBlockRange(storagePath, req.body.nums).then(blocks => {
-        res.json(blocks);
-    });
+    for (let n of req.body.nums) {
+        let posEntry = bNumCache.get(n);
+
+        if (posEntry) {
+            knowns.push(posEntry);
+        } else {
+            unknowns.push(n);
+        }
+    }
+
+    if (unknowns.length) {
+        calls.fetchBlockRange(storagePath, unknowns).then(blocks => {
+            for (let b of blocks) {
+                bNumCache.add(b[1].block.header.b_num, b);
+
+                // Add to bItemCache too coz why not
+                if (!bItemCache.get(b[0])) {
+                    bItemCache.add(b[0], { "Block": b[1] });
+                }
+
+                knowns.push(b);
+            }
+
+            res.json(knowns);
+        });
+    } else {
+        console.log("Serving from cache");
+        res.json(knowns);
+    }
 });
 
 app.use(express.static('./public'));
