@@ -1,33 +1,74 @@
 const express = require('express');
+const path = require('path');
+const calls = require('./utils/calls');
+const cache = require('./utils/cache');
 
-const webpack = require('webpack');
-const webpackDevMiddleware = require('webpack-dev-middleware');
-const webpackHotMiddleware = require('webpack-hot-middleware');
-const config = require('./tools/webpack/webpack.dev.js');
-
+// Server setup
 const app = express();
-const port = 8080;
+const port = process.env.PORT || 8090;
 
-if (devServerEnabled) {
-    //reload=true:Enable auto reloading when changing JS files or content
-    //timeout=1000:Time from disconnecting from server to reconnecting
-    config.entry.unshift('webpack-hot-middleware/client?reload=true&timeout=1000');
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({
+  extended: true
+}));
 
-    //Add HMR plugin
-    config.plugins.push(new webpack.HotModuleReplacementPlugin());
+// Network connection
+const storageNode = 'http://localhost:3001';
 
-    const compiler = webpack(config);
+// Caches
+const cacheCapacity = process.env.CACHE_CAPACITY || 100;
+const bItemCache = new cache.NetworkCache(cacheCapacity);
+const bNumCache = new cache.NetworkCache(cacheCapacity);
 
-    //Enable "webpack-dev-middleware"
-    app.use(webpackDevMiddleware(compiler, {
-        publicPath: config.output.publicPath
-    }));
 
-    //Enable "webpack-hot-middleware"
-    app.use(webpackHotMiddleware(compiler));
-}
+/** Fetch latest block */
+app.get('/api/latestBlock', (_, res) => {
+    console.log("Received request for latest block");
+    const storagePath = `${storageNode}/latest_block`;
+
+    calls.fetchLatestBlock(storagePath).then(latestBlock => {
+        res.json(latestBlock);
+    });
+
+});
+
+/** Fetch blockchain item */
+app.post('/api/blockchainItem', (req, res) => {
+    const hash = req.body.hash;
+    console.log("Received request for blockchain item:", hash);
+
+    const storagePath = `${storageNode}/blockchain_entry_by_key`;
+    const posEntry = bItemCache.get(hash);
+
+    if (!posEntry) {
+        calls.fetchBlockchainItem(storagePath, hash).then(bItem => {
+            bItemCache.add(hash, bItem);
+            res.json(bItem);
+        });
+
+    } else {
+        res.json(posEntry);
+    }
+    
+});
+
+/** Fetch block range */
+app.post('/api/blockRange', (req, res) => {
+    console.log("Received request for a range of block numbers:", req.body.nums);
+    const storagePath = `${storageNode}/block_by_num`;
+
+    calls.fetchBlockRange(storagePath, req.body.nums).then(blocks => {
+        res.json(blocks);
+    });
+});
 
 app.use(express.static('./public'));
+
+// Let react-router handle routing
+app.get('*', function (_, res) {
+    res.sendFile('public/index.html', { root: path.join(__dirname, '/') });
+});
 
 app.listen(port, () => {
     console.log('Server started on port:' + port);

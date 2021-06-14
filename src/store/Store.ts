@@ -1,5 +1,5 @@
 import axios from "axios";
-import {action, makeAutoObservable, observable} from "mobx";
+import { action, makeAutoObservable, observable } from "mobx";
 
 interface HTTPResponse {
     config: any,
@@ -18,6 +18,7 @@ class Store {
     @observable tableData: any = [];
     @observable latestBlock: any = null;
     @observable latestTransactions: any[] = [];
+    @observable blockchainItemCache: any = {};
 
     @action addToLatestTransactions(tx: any) {
         this.latestTransactions.push(tx);
@@ -37,7 +38,7 @@ class Store {
 
     @action
     async fetchLatestBlock(pageNumber: number, maxBlocks: number) {
-        await axios.get(`http://localhost:3001/latest_block`).then(async (response) => {
+        await axios.get('/api/latestBlock').then(async (response) => {
             this.setLatestBlock(response.data);
             await this.fetchTableData(pageNumber, maxBlocks);
         }).catch((error) => {
@@ -47,37 +48,22 @@ class Store {
     }
 
     @action async fetchBlockchainItem(hash: string) {
-        return axios.post(`http://localhost:3001/blockchain_entry_by_key`,
-            `"${hash}"`, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                return response.data;
-            }).catch((error) => {
-                console.error(`Fetch of blockchain item failed with status code ${error.status}`)
-                console.error(error.data)
-            });
+        if (Object.keys(this.blockchainItemCache).indexOf(hash) == -1) {
+            let bItemData = await axios.post(`/api/blockchainItem`, { hash }).then(res => res.data);
+            this.blockchainItemCache[hash] = bItemData;
+
+            return bItemData;
+        }
+
+        return this.blockchainItemCache[hash];
     }
 
     @action
     async fetchTableData(pageNumber: number, maxBlocks: number) {
         const nums = this.getNEntries(pageNumber, maxBlocks);
 
-        await axios({
-            url: `http://localhost:3001/block_by_num`,
-            method: 'POST',
-            data: nums,
-            headers: {
-                "Content-Type": "application/json",
-            }
-        }).then((response) => {
-            this.setTableData(response.data);
-        }).catch((error) => {
-            console.error(`Fetch of blocks by number failed with status code ${error.status}`);
-            console.error(error.data);
-        });
+        let data = await axios.post('/api/blockRange', { nums }).then(res => res.data);
+        this.setTableData(data);
     }
 
     getNEntries(pageNumber: number, maxBlocks: number): number[] | null {

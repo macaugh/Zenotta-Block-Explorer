@@ -178,6 +178,7 @@ export const BCItemView = () => {
         if (!localData) {
             store.fetchBlockchainItem(hash)
                 .then(nowData => {
+                    console.log("now data", nowData);
                     setHeading(nowData ? nowData.hasOwnProperty('Block') ? 'Block' : 'Transaction' : '');
                     setLocalData(formatIncomingData(nowData));
                 });

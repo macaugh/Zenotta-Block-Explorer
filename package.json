@@ -5,9 +5,9 @@
   "description": "This is zenotta's block explorer",
   "license": "MIT",
   "scripts": {
-    "build": "cross-env NODE_ENV=production webpack --config tools/webpack/webpack.prod.js",
+    "build": "rm -rf public/*.chunk.js && cross-env NODE_ENV=production webpack --config tools/webpack/webpack.prod.js",
     "start": "cross-env NODE_ENV=development webpack-dev-server --config tools/webpack/webpack.dev.js",
-    "start-server": ""
+    "start-server": "node server.js"
   },
   "homepage": ".",
   "dependencies": {

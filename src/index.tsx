@@ -3,7 +3,7 @@ import React from 'react';
 
 import storeInstance from "./store/Store";
 
-import './i18n';
+// import './i18n';
 import App from './components/App/App';
 
 export const StoreContext = React.createContext(storeInstance);

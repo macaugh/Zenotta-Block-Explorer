@@ -14,16 +14,16 @@ import {
   Route
 } from "react-router-dom";
 
-import { LangSelector } from "../LangSelector/LangSelector";
+// import { LangSelector } from "../LangSelector/LangSelector";
 
 
 export default function App() {
   return useObserver(() => (
     <Router>
       <div className={styles.container}>
-        <div className={styles.langSelect}>
+        {/* <div className={styles.langSelect}>
           <LangSelector />
-        </div>
+        </div> */}
 
         <a href="/"><img src={logo} className={styles.logo} alt="Zenotta logo" /></a>
 
