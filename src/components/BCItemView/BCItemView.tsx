@@ -130,7 +130,6 @@ export const BCItemView = () => {
         setTransactions(tInfo);
     }
 
-
     const formatDataForTable = (localData: any) => {
         if (!localData) { return null }
 
@@ -148,11 +147,14 @@ export const BCItemView = () => {
 
             fetchTransactions(blockInfo.block.transactions);
 
+            let merkleHash = blockInfo.block.header.merkle_root_hash;
+
+
             let newData: BlockInfo = {
                 hash,
                 computeNodes: Object.keys(blockInfo.mining_tx_hash_and_nonces).length,
                 blockNum: blockInfo.block.header.b_num,
-                merkleRootHash: blockInfo.block.header.merkle_root_hash,
+                merkleRootHash: merkleHash.length > 0 ? merkleHash: "N/A",
                 previousHash: blockInfo.block.header.previous_hash,
                 version: blockInfo.block.header.version,
                 byteSize: `${new TextEncoder().encode(JSON.stringify(blockInfo)).length} bytes`,
@@ -162,9 +164,6 @@ export const BCItemView = () => {
             return newData;
         } else {
             let txInfo = data.Transaction;
-
-            console.log('txInfo', txInfo);
-
             setMainTxData(formatTransactions([txInfo], [hash]));
 
             return {
@@ -178,7 +177,6 @@ export const BCItemView = () => {
         if (!localData) {
             store.fetchBlockchainItem(hash)
                 .then(nowData => {
-                    console.log("now data", nowData);
                     setHeading(nowData ? nowData.hasOwnProperty('Block') ? 'Block' : 'Transaction' : '');
                     setLocalData(formatIncomingData(nowData));
                 });
@@ -197,7 +195,7 @@ export const BCItemView = () => {
             {hash.charAt(0) == 'b' &&
                 <RowTable rows={formatDataForTable(localData)} />}
 
-            {heading && heading == 'Block' &&
+            {heading && heading == 'Block' && transactions && transactions.length > 0 &&
                 <div className={styles.transactionContainer}>
                     <h2 className={styles.innerHeading}>Block Transactions</h2>
 

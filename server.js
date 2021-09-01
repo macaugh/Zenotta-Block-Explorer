@@ -23,7 +23,6 @@ const cacheCapacity = fullConfig.CACHE_CAPACITY;
 const bItemCache = new cache.NetworkCache(cacheCapacity);
 const bNumCache = new cache.NetworkCache(cacheCapacity);
 
-
 /** Fetch latest block */
 app.get('/api/latestBlock', (_, res) => {
     console.log("Received request for latest block");

@@ -39,6 +39,7 @@ class Store {
     @action
     async fetchLatestBlock(pageNumber: number, maxBlocks: number) {
         await axios.get('/api/latestBlock').then(async (response) => {
+            console.log(response.data);
             this.setLatestBlock(response.data);
             await this.fetchTableData(pageNumber, maxBlocks);
         }).catch((error) => {
@@ -63,6 +64,16 @@ class Store {
         const nums = this.getNEntries(pageNumber, maxBlocks);
 
         let data = await axios.post('/api/blockRange', { nums }).then(res => res.data);
+        data = data.map((e: any[]) => {
+            let blockData = e[1];
+            if (blockData.block.header.merkle_root_hash === "") {
+                blockData.block.header.merkle_root_hash = "N/A";
+            }
+
+            e[1] = blockData;
+            return e;
+        });
+        console.log(data);
         this.setTableData(data);
     }
 
