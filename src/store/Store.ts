@@ -38,8 +38,10 @@ class Store {
 
     @action
     async fetchLatestBlock(pageNumber: number, maxBlocks: number) {
+        console.log('Fetching latest block');
+
         await axios.get('/api/latestBlock').then(async (response) => {
-            console.log(response.data);
+            console.log('latest block response', response.data);
             this.setLatestBlock(response.data);
             await this.fetchTableData(pageNumber, maxBlocks);
         }).catch((error) => {
