@@ -17,6 +17,7 @@ app.use(express.urlencoded({
 
 // Network connection
 const storageNode = fullConfig.STORAGE_NODE;
+const computeNode = fullConfig.COMPUTE_NODE;
 
 // Caches
 const cacheCapacity = fullConfig.CACHE_CAPACITY;
