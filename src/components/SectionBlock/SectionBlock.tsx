@@ -7,26 +7,26 @@ export const SectionBlock = () => {
     return (
         <div className={styles.sectionBlockContainer}>
             <header>
-                <h5>Sizzling Sally</h5>
+                <h5></h5>
                 <div className={`${styles.status} ${status}`}></div>
             </header>
             
             <ul>
                 <li>
                     <p>last miners</p>
-                    <b>53</b>
+                    <b></b>
                 </li>
                 <li>
                     <p>last winning pow</p>
-                    <b>23098</b>
+                    <b></b>
                 </li>
                 <li>
                     <p>last reward</p>
-                    <b>23.5 ZENO</b>
+                    <b>ZENO</b>
                 </li>
                 <li>
                     <p>current block no.</p>
-                    <b>639</b>
+                    <b></b>
                 </li>
             </ul>
         </div>

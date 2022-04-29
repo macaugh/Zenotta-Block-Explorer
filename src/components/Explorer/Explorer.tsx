@@ -61,7 +61,7 @@ export const Explorer = () => {
     return useObserver(() => (
         <div className={styles.container}>
             <div className={styles.mainContent}>
-                <section className={styles.computeNodesContainer}>
+                {/*<section className={styles.computeNodesContainer}>
                     <h2>compute nodes</h2>
 
                     <ul>
@@ -69,7 +69,7 @@ export const Explorer = () => {
                         <li><SectionBlock/></li>
                         <li><SectionBlock/></li>
                     </ul>
-                </section>
+                </section>*/}
 
                 <section className={styles.blockTable}>
                     <h2>latest blocks</h2>
