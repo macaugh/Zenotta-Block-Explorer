@@ -60,10 +60,11 @@ app.post('/api/blockchainItem', (req, res) => {
 app.post('/api/blockRange', (req, res) => {
     console.log("Received request for a range of block numbers:", req.body.nums);
     const storagePath = `${storageNode}/block_by_num`;
+    let nums = Array.isArray(req.body.nums) ? req.body.nums.filter(num => Number.isFinite(num)) : [];
     let unknowns = [];
     let knowns = [];
 
-    for (let n of req.body.nums) {
+    for (let n of nums) {
         let posEntry = bNumCache.get(n);
 
         if (posEntry) {
@@ -75,18 +76,20 @@ app.post('/api/blockRange', (req, res) => {
 
     if (unknowns.length) {
         calls.fetchBlockRange(storagePath, unknowns).then(blocks => {
-            for (let b of blocks) {
-                bNumCache.add(b[1].block.header.b_num, b);
-
-                // Add to bItemCache too coz why not
-                if (!bItemCache.get(b[0])) {
-                    bItemCache.add(b[0], { "Block": b[1] });
+            if (blocks && blocks.length) {
+                for (let b of blocks) {
+                    bNumCache.add(b[1].block.header.b_num, b);
+    
+                    // Add to bItemCache too coz why not
+                    if (!bItemCache.get(b[0])) {
+                        bItemCache.add(b[0], { "Block": b[1] });
+                    }
+    
+                    knowns.push(b);
                 }
-
-                knowns.push(b);
+    
+                res.json(knowns);
             }
-
-            res.json(knowns);
         });
     } else {
         console.log("Serving from cache");
