@@ -27,7 +27,7 @@ const bNumCache = new cache.NetworkCache(cacheCapacity);
 /** Fetch latest block */
 app.get('/api/latestBlock', (_, res) => {
     console.log("Received request for latest block");
-    const storagePath = `${storageNode}/latest_block`;
+    const storagePath = `http://${storageNode}/latest_block`;
 
     calls.fetchLatestBlock(storagePath).then(latestBlock => {
         res.json(latestBlock);
@@ -40,7 +40,7 @@ app.post('/api/blockchainItem', (req, res) => {
     const hash = req.body.hash;
     console.log("Received request for blockchain item:", hash);
 
-    const storagePath = `${storageNode}/blockchain_entry_by_key`;
+    const storagePath = `http://${storageNode}/blockchain_entry_by_key`;
     const posEntry = bItemCache.get(hash);
 
     if (!posEntry) {
@@ -59,11 +59,14 @@ app.post('/api/blockchainItem', (req, res) => {
 /** Fetch block range */
 app.post('/api/blockRange', (req, res) => {
     console.log("Received request for a range of block numbers:", req.body.nums);
-    const storagePath = `${storageNode}/block_by_num`;
+    const storagePath = `http://${storageNode}/block_by_num`;
+    let nums = Array.isArray(req.body.nums) ? req.body.nums.filter(num => Number.isFinite(num)) : [];
     let unknowns = [];
     let knowns = [];
 
-    for (let n of req.body.nums) {
+    console.log("Nums:", nums);
+
+    for (let n of nums) {
         let posEntry = bNumCache.get(n);
 
         if (posEntry) {
@@ -75,18 +78,20 @@ app.post('/api/blockRange', (req, res) => {
 
     if (unknowns.length) {
         calls.fetchBlockRange(storagePath, unknowns).then(blocks => {
-            for (let b of blocks) {
-                bNumCache.add(b[1].block.header.b_num, b);
-
-                // Add to bItemCache too coz why not
-                if (!bItemCache.get(b[0])) {
-                    bItemCache.add(b[0], { "Block": b[1] });
+            if (blocks && blocks.length) {
+                for (let b of blocks) {
+                    bNumCache.add(b[1].block.header.b_num, b);
+    
+                    // Add to bItemCache too coz why not
+                    if (!bItemCache.get(b[0])) {
+                        bItemCache.add(b[0], { "Block": b[1] });
+                    }
+    
+                    knowns.push(b);
                 }
-
-                knowns.push(b);
+    
+                res.json(knowns);
             }
-
-            res.json(knowns);
         });
     } else {
         console.log("Serving from cache");
