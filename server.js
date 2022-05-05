@@ -21,7 +21,7 @@ const computeNode = fullConfig.COMPUTE_NODE;
 
 // Caches
 const cacheCapacity = fullConfig.CACHE_CAPACITY;
-const bItemCache = new cache.NetworkCache(cacheCapacity);
+const bItemCache = new cache.NetworkCache(cacheCapacity * 3);
 const bNumCache = new cache.NetworkCache(cacheCapacity);
 
 /** Fetch latest block */
