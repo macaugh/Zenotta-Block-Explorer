@@ -25,10 +25,13 @@ export const TransactionView = (props: TransactionViewProps) => {
         <div className={styles.txContainer}>
             {props.summaryData !== null && props.summaryData !== undefined && <TransactionInfo {...props.summaryData} />}
 
-            <h2>Inputs</h2>
-            {props.detailData && props.detailData.inputs.map((input: any, i: number) => {
-                return <div className={styles.row}><RowTable key={i} rows={formatDataForTable(input)} /></div>;
-            })}
+            {props.detailData && props.detailData.inputs && props.detailData.inputs.length > 0 && 
+            <>            
+                <h2>Inputs</h2>
+                {props.detailData.inputs.map((input: any, i: number) => {
+                    return <div className={styles.row}><RowTable key={i} rows={formatDataForTable(input)} /></div>;
+                })}
+            </>}
 
             <h2>Outputs</h2>
             {props.detailData && props.detailData.outputs.map((output: any, i: number) => {

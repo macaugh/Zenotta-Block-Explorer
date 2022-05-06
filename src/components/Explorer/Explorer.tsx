@@ -78,7 +78,7 @@ export const Explorer = () => {
                         sortable={true}
                         header={tableHeadings}
                         body={mungeTableData(store.tableData)}
-                        overridingClass={styles.table}/>
+                        className={styles.table}/>
 
                     <Pagination
                         itemsPerPage={maxBlocksPerPage}

@@ -31,11 +31,15 @@ export const TransactionInfo = (props: TransactionInfoProps) => {
 
                 <div className={styles.row}>
                     <p>Input Transaction(s)</p>
+
+                    {props.txInHashes && props.txInHashes.length > 0 &&
                     <ul className={styles.ins}>
                         {props.txInHashes.map(h => {
                             return <li key={h}><a href={`/${h}`}>{h}</a></li>;
                         })}
-                    </ul>
+                    </ul>}
+
+                    {!props.txInHashes || props.txInHashes.length === 0 && <p>N/A</p>}
                 </div>
             </div>
 

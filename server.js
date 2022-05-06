@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
 const calls = require('./utils/calls');
 const cache = require('./utils/cache');
 const config = require('./utils/config');
@@ -10,6 +11,7 @@ const fullConfig = config.getConfig("./serverConfig.json");
 const port = fullConfig.PORT;
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({
   extended: true
