@@ -22,3 +22,9 @@
         padding: 15px 0;
     }
 }
+
+:global nav {
+    ul li {
+        width: 50px !important;
+    }
+}

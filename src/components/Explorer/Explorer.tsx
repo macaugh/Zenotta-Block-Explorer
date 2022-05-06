@@ -88,7 +88,7 @@ export const Explorer = () => {
                         backgroundColor="#FFFFFF"
                         mainColor="#A6D4FF"
                         enableArrowBackground
-                    />
+                        className={styles.pagination}/>
                 </section>
             </div>
         </div>
