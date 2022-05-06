@@ -1,15 +1,6 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 
-interface HTTPResponse {
-    config: any,
-    data: any,
-    headers: any,
-    request: any,
-    status: number,
-    statusText: string
-}
-
 class Store {
     constructor() {
         makeAutoObservable(this)
@@ -41,9 +32,9 @@ class Store {
         console.log('Fetching latest block');
 
         await axios.get('http://localhost:8090/api/latestBlock').then(async (response) => {
-            console.log('latest block response', response.data);
             this.setLatestBlock(response.data);
             await this.fetchTableData(pageNumber, maxBlocks);
+
         }).catch((error) => {
             console.error(`Fetch of latest block failed with status code ${error.status}`);
             console.error(error.data);

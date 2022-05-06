@@ -15,35 +15,28 @@
 
 .left,
 .right {
+    box-sizing: border-box;
+
     ul {
         padding: 0;
 
         li {
             list-style: none;
+            margin-bottom: 20px;
+
+            .row {
+                p, a { margin: 0 0 5px; }
+            }
         }
     }
 }
 
 .right {
-    box-sizing: border-box;
     padding-left: 40px;
-
-    li{
-        margin-bottom: 20px;
-
-        .row {
-            p, a { margin: 0 0 5px; }
-        }
-    }
-        
 }
 
 .row {
     margin-bottom: 40px;
-
-    &:last-child {
-        margin-bottom: 0;
-    }
 
     p {
         margin: 0 0 2px 0;

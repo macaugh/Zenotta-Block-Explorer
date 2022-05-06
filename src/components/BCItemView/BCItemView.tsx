@@ -90,7 +90,8 @@ export const BCItemView = () => {
         return outputs.map(output => {
             return {
                 address: output.script_public_key,
-                tokens: `${output.value.Token} ZENO`,
+                tokens: `${(output.value.Token / 25200).toFixed(2)} ZENO`,
+                fractionatedTokens: `${output.value.Token}`,
                 lockTime: output.locktime
             };
         })
@@ -231,13 +232,13 @@ export const BCItemView = () => {
     return useObserver(() => (
         <div className={styles.container}>
             <h2 className={styles.heading}>
-                {heading} {localData && localData.blockNum} {localData && hash.charAt(0) !== 'b' && 'Summary'}
+                {heading} {localData && localData.blockNum} Summary
             </h2>
 
-            {hash.charAt(0) != 'b' &&
+            {heading == 'Transaction' &&
                 <TransactionView summaryData={mainTxData} detailData={localData} />}
 
-            {hash.charAt(0) == 'b' &&
+            {heading == 'Block' &&
                 <RowTable rows={formatDataForTable(localData)} />}
 
             {heading && heading == 'Block' && transactions && transactions.length > 0 &&
