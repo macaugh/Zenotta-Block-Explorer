@@ -19,24 +19,34 @@ export const TransactionInfo = (props: TransactionInfoProps) => {
     return (
         <div className={styles.container}>
             <div className={styles.left}>
-                <div className={styles.row}>
-                    <p>Hash</p>
-                    <a href={`/${props.hash}`}>{props.hash}</a>
-                </div>
+                <ul>
+                    <li>
+                        <div className={styles.row}>
+                            <p>Hash</p>
+                            <p>{props.hash}</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div className={styles.row}>
+                            <p>Total Fractionated Tokens</p>
+                            <p className={styles.tokenTotal}><b>{props.totalTokens}</b></p>
+                        </div>
+                    </li>
+                    <li>
+                        <div className={styles.row}>
+                            <p>Input Transaction(s)</p>
 
-                <div className={styles.row}>
-                    <p>Total Tokens</p>
-                    <p className={styles.tokenTotal}><b>{props.totalTokens}</b> ZENO</p>
-                </div>
+                            {props.txInHashes && props.txInHashes.length > 0 &&
+                                <ul className={styles.ins}>
+                                    {props.txInHashes.map(h => {
+                                        return <li key={h}><a href={`/${h}`}>{h}</a></li>;
+                                    })}
+                                </ul>}
 
-                <div className={styles.row}>
-                    <p>Input Transaction(s)</p>
-                    <ul className={styles.ins}>
-                        {props.txInHashes.map(h => {
-                            return <li key={h}><a href={`/${h}`}>{h}</a></li>;
-                        })}
-                    </ul>
-                </div>
+                            {!props.txInHashes || props.txInHashes.length === 0 && <p>N/A</p>}
+                        </div>
+                    </li>
+                </ul>
             </div>
 
             <img src={arrowIcon} className={styles.arrowIcon} />
@@ -52,7 +62,11 @@ export const TransactionInfo = (props: TransactionInfoProps) => {
                                 </div>
                                 <div className={styles.row}>
                                     <p>Tokens</p>
-                                    <p><b>{o.tokens}</b> ZENO</p>
+                                    <p><b>{(o.tokens / 25200).toFixed(2)}</b> ZENO</p>
+                                </div>
+                                <div className={styles.row}>
+                                    <p>Fractionated Tokens</p>
+                                    <p><b>{o.tokens}</b></p>
                                 </div>
                             </li>
                         );

@@ -2,45 +2,51 @@
     width: 100%;
     background: white;
     border-radius: 4px;
-    padding: 20px;
+    padding: 25px;
     margin-bottom: 30px;
     box-shadow: 0px 3px 2px -1px rgba(0, 0, 0, .1);
     display: flex;
     box-sizing: border-box;
 }
 
+.left {
+    width: 40%;
+}
+
 .left,
 .right {
-    width: calc(50% - 10px);
+    box-sizing: border-box;
 
     ul {
         padding: 0;
 
         li {
             list-style: none;
+            margin-bottom: 20px;
+
+            .row {
+                p, a { margin: 0 0 5px; }
+            }
         }
     }
 }
 
 .right {
-    box-sizing: border-box;
     padding-left: 40px;
-
-    li{
-        margin-bottom: 20px;
-
-        .row {
-            p, a { margin: 0 0 5px; }
-        }
-    }
-        
 }
 
 .row {
-    display: flex;
+    margin-bottom: 40px;
+
+    p {
+        margin: 0 0 2px 0;
+    }
 
     p:first-child {
         width: 40%;
+        font-size: .7rem;
+        text-transform: uppercase;
+        margin-bottom: 5px;
         color: transparentize($color: #000000, $amount: 0.4);
     }
 

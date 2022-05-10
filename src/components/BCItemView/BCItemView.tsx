@@ -39,11 +39,15 @@ export const BCItemView = () => {
     }
 
     const checkSeenTxIns = (t: any, seenIns: string[]) => {
-        let t_hash = t.previous_out.t_hash;
-
-        if (seenIns.indexOf(t_hash) == -1) {
-            seenIns.push(t_hash);
-            return true;
+        if (t.previous_out && t.previous_out.t_hash) {
+            let t_hash = t.previous_out.t_hash;
+    
+            if (seenIns.indexOf(t_hash) == -1) {
+                seenIns.push(t_hash);
+                return true;
+            }
+    
+            return false;
         }
 
         return false;
@@ -71,9 +75,13 @@ export const BCItemView = () => {
 
     const formatTransactionInputs = (inputs: any[]) => {
         return inputs.map(input => {
+            const previousOutputHash = input.previous_out && input.previous_out.t_hash ? 
+                input.previous_out.t_hash : 
+                'N/A';
+
             return {
-                previousOutputHash: input.previous_out.t_hash,
-                scriptSig: formatScript(input.script_signature.stack)
+                    previousOutputHash,
+                    scriptSig: formatScript(input.script_signature.stack)
             };
         });
     }
@@ -82,7 +90,8 @@ export const BCItemView = () => {
         return outputs.map(output => {
             return {
                 address: output.script_public_key,
-                tokens: `${output.value.Token} ZENO`,
+                tokens: `${(output.value.Token / 25200).toFixed(2)} ZENO`,
+                fractionatedTokens: `${output.value.Token}`,
                 lockTime: output.locktime
             };
         })
@@ -209,25 +218,27 @@ export const BCItemView = () => {
     }
 
     React.useEffect(() => {
+        console.log("useEffect");
         if (!localData) {
+            console.log("fetching data");
             store.fetchBlockchainItem(hash)
                 .then(nowData => {
                     setHeading(nowData ? nowData.hasOwnProperty('Block') ? 'Block' : 'Transaction' : '');
                     setLocalData(formatIncomingData(nowData));
                 });
         }
-    });
+    }, []);
 
     return useObserver(() => (
         <div className={styles.container}>
             <h2 className={styles.heading}>
-                {heading} {localData && localData.blockNum} {localData && hash.charAt(0) !== 'b' && 'Summary'}
+                {heading} {localData && localData.blockNum} Summary
             </h2>
 
-            {hash.charAt(0) != 'b' &&
+            {heading == 'Transaction' &&
                 <TransactionView summaryData={mainTxData} detailData={localData} />}
 
-            {hash.charAt(0) == 'b' &&
+            {heading == 'Block' &&
                 <RowTable rows={formatDataForTable(localData)} />}
 
             {heading && heading == 'Block' && transactions && transactions.length > 0 &&

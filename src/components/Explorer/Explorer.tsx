@@ -78,7 +78,7 @@ export const Explorer = () => {
                         sortable={true}
                         header={tableHeadings}
                         body={mungeTableData(store.tableData)}
-                        overridingClass={styles.table}/>
+                        className={styles.table}/>
 
                     <Pagination
                         itemsPerPage={maxBlocksPerPage}
@@ -88,7 +88,7 @@ export const Explorer = () => {
                         backgroundColor="#FFFFFF"
                         mainColor="#A6D4FF"
                         enableArrowBackground
-                    />
+                        className={styles.pagination}/>
                 </section>
             </div>
         </div>
