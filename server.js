@@ -10,6 +10,8 @@ const app = express();
 const fullConfig = config.getConfig("./serverConfig.json");
 const port = fullConfig.PORT;
 
+console.log(`Starting server in ${process.env.NODE_ENV} mode`);
+
 // Middleware
 if (process.env.NODE_ENV == 'development') {
     app.use(cors());
