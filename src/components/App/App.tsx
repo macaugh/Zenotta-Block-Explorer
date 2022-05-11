@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useObserver } from 'mobx-react';
-import { TextInput } from 'chi-ui';
+import { TextInput, Notification} from 'chi-ui';
 import {StoreContext} from '../../index';
 
 import * as styles from "./App.scss";
@@ -25,19 +25,48 @@ export default function App() {
     "Block",
     "Block Number",
   ]);
-  const [currentSearchOption, setCurrentSearchOption] = React.useState<any>("Transaction");
+  const [currentSearchOption, setCurrentSearchOption] = React.useState<string>("Transaction");
   const [searchValue, setSearchValue] = React.useState<string>("");
+  const [searchError, setSearchError] = React.useState<string>("");
   const store = React.useContext(StoreContext);
 
-  const submitSearchValue = () => {
+  const submitSearchValue = async () => {
     if (currentSearchOption != "Block Number") {
-      window.location.href = `/${searchValue}`;
+      const validity = await store.searchHashIsValid(searchValue, currentSearchOption);
+
+      if (validity.isValid) {
+        window.location.href = `/${searchValue}`;
+      } else {
+        setSearchError(validity.error);
+      }
+      
     } else {
+      handleBlockNumSearch(searchValue);
+    }
+  }
+
+  const handleSearchOptionSelect = (item: string) => {
+    setSearchValue('');
+    setSearchError('');
+    setCurrentSearchOption(item);
+  }
+
+  const handleSearchInput = (value: string) => {
+    setSearchError('');
+    setSearchValue(value);
+  }
+
+  const handleBlockNumSearch = (blockNum: string) => {
+    const validity = store.blockNumIsValid(parseInt(blockNum));
+
+    if (validity.isValid) {
       store.fetchBlockHashByNum(parseInt(searchValue)).then((hash: string) => {
         if (hash) {
           window.location.href = `/${hash}`;
         }
       });
+    } else {
+      setSearchError(validity.error);
     }
   }
 
@@ -52,7 +81,7 @@ export default function App() {
 
         <div className={styles.searchContainer}>
           <Dropdown 
-            onItemClick={(item: any) => setCurrentSearchOption(item)}
+            onItemClick={(item: any) => handleSearchOptionSelect(item)}
             listItems={searchOptions} />
 
           <TextInput
@@ -61,8 +90,17 @@ export default function App() {
             iconType="text"
             className={styles.search}
             shouldSubmitOnEnter={true}
-            onChange={(e: any) => setSearchValue(e.target.value)}
+            onChange={(e: any) => handleSearchInput(e.target.value)}
             onSubmit={() => submitSearchValue()} />
+
+          {searchError.length > 0 && 
+          <Notification 
+            type="error" 
+            variant="outlined"
+            closable
+            className={styles.notification}>
+            {searchError}
+          </Notification>}
         </div>
 
         <Switch>
@@ -78,8 +116,6 @@ export default function App() {
           </Route>
           <Route path="*">ERROR 404</Route>
         </Switch>
-
-        <img src={bg} className={styles.bg} />
       </div>
     </Router>
   ));

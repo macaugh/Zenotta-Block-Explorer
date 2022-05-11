@@ -31,7 +31,7 @@ class Store {
     async fetchLatestBlock(pageNumber: number, maxBlocks: number) {
         console.log('Fetching latest block');
 
-        await axios.get('http://localhost:8090/api/latestBlock').then(async (response) => {
+        await axios.get('api/latestBlock').then(async (response) => {
             this.setLatestBlock(response.data);
             await this.fetchTableData(pageNumber, maxBlocks);
 
@@ -43,7 +43,7 @@ class Store {
 
     @action async fetchBlockchainItem(hash: string) {
         if (Object.keys(this.blockchainItemCache).indexOf(hash) == -1) {
-            let bItemData = await axios.post(`http://localhost:8090/api/blockchainItem`, { hash }).then(res => res.data);
+            let bItemData = await axios.post(`api/blockchainItem`, { hash }).then(res => res.data);
             this.blockchainItemCache[hash] = bItemData;
 
             return bItemData;
@@ -56,7 +56,7 @@ class Store {
     async fetchTableData(pageNumber: number, maxBlocks: number) {
         const nums = this.getNEntries(pageNumber, maxBlocks);
 
-        let data = await axios.post('http://localhost:8090/api/blockRange', { nums }).then(res => res.data);
+        let data = await axios.post('api/blockRange', { nums }).then(res => res.data);
         data = data.map((e: any[]) => {
             let blockData = e[1];
             if (blockData.block.header.merkle_root_hash === "") {
@@ -74,7 +74,7 @@ class Store {
     async fetchBlockHashByNum(num: number) {
         console.log('Fetching block by number');
 
-        let data = await axios.post('http://localhost:8090/api/blockRange', { nums: [num] }).then(res => res.data)
+        let data = await axios.post('api/blockRange', { nums: [num] }).then(res => res.data)
             .catch((error) => {
                 console.error(`Fetch of block by number failed with status code ${error.status}`);
                 console.error(error.data);
@@ -82,6 +82,63 @@ class Store {
 
         if (data.length) {
             return data[0][0];
+        }
+
+        return null;
+    }
+
+    @action
+    blockNumIsValid(num: number): { isValid: boolean, error: string } {
+        // Check for NaN
+        if (isNaN(num)) {
+            return { isValid: false, error: 'Please provide a number to search by block number' };
+        }
+
+        // Check for negative
+        if (num < 0) {
+            return { isValid: false, error: 'Block number must be greater than zero' };
+        }
+
+        // Check against latest block
+        if (this.getLatestBlockHeight() < num) {
+            return {
+                isValid: false,
+                error: `Block number ${num} is too high. Latest block is ${this.getLatestBlockHeight()}`
+            }
+        }
+
+        return {
+            isValid: true,
+            error: ''
+        }
+    }
+
+    @action 
+    async searchHashIsValid(hash: string, type: string): Promise<{ isValid: boolean, error: string }> {
+        console.log('hash', hash);
+
+        const re = /^[0-9A-Ga-gx]+$/g;
+        const reTest = re.test(hash);
+
+        // This has to be a strict boolean check for some reason? Thanks JS
+        if (reTest !== true) {
+            return { isValid: false, error: 'Please provide a valid hash' };
+        }
+
+        if (type === 'Block' && (new TextEncoder().encode('foo')).length != 65) {
+            return { isValid: false, error: 'Block hash is invalid' };
+        }
+
+        if (!await this.fetchBlockchainItem(hash)) {
+            return { isValid: false, error: 'Blockchain item not found' };
+        }
+        
+        return { isValid: true, error: '' };
+    }
+
+    getLatestBlockHeight() {
+        if (this.latestBlock) {
+            return this.latestBlock.block.header.b_num;
         }
 
         return null;
