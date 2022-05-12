@@ -29,7 +29,7 @@ class Store {
 
     @action
     async fetchLatestBlock(pageNumber: number, maxBlocks: number) {
-        await axios.get('http://localhost:8090/api/latestBlock').then(async (response) => {
+        await axios.get('/api/latestBlock').then(async (response) => {
             this.setLatestBlock(response.data);
             await this.fetchTableData(pageNumber, maxBlocks);
 
@@ -41,7 +41,7 @@ class Store {
 
     @action async fetchBlockchainItem(hash: string) {
         if (Object.keys(this.blockchainItemCache).indexOf(hash) == -1) {
-            let bItemData = await axios.post(`http://localhost:8090/api/blockchainItem`, { hash }).then(res => res.data);
+            let bItemData = await axios.post(`/api/blockchainItem`, { hash }).then(res => res.data);
             this.blockchainItemCache[hash] = bItemData;
 
             return bItemData;
@@ -54,7 +54,7 @@ class Store {
     async fetchBlockRange(startBlock: number, endBlock: number): Promise<any> {
         const nums = [...Array(endBlock - startBlock + 1).keys()].map(x => x + startBlock); // Generate number array from range
 
-        let data = await axios.post('http://localhost:8090/api/blockRange', { nums }).then(res => res.data);
+        let data = await axios.post('/api/blockRange', { nums }).then(res => res.data);
         data = data.map((e: any[]) => {
             let blockData = e[1];
             if (blockData.block.header.merkle_root_hash === "") {
@@ -71,7 +71,7 @@ class Store {
     async fetchTableData(pageNumber: number, maxBlocks: number) {
         const nums = this.getNEntries(pageNumber, maxBlocks);
 
-        let data = await axios.post('http://localhost:8090/api/blockRange', { nums }).then(res => res.data);
+        let data = await axios.post('/api/blockRange', { nums }).then(res => res.data);
         data = data.map((e: any[]) => {
             let blockData = e[1];
             if (blockData.block.header.merkle_root_hash === "") {
@@ -86,7 +86,7 @@ class Store {
 
     @action
     async fetchBlockHashByNum(num: number) {
-        let data = await axios.post('http://localhost:8090/api/blockRange', { nums: [num] }).then(res => res.data)
+        let data = await axios.post('/api/blockRange', { nums: [num] }).then(res => res.data)
             .catch((error) => {
                 console.error(`Fetch of block by number failed with status code ${error.status}`);
                 console.error(error.data);
