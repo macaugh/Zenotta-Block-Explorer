@@ -5,6 +5,7 @@ import {StoreContext} from '../../index';
 
 import {Pagination, Table} from 'chi-ui';
 import {SectionBlock} from "../SectionBlock/SectionBlock";
+import dlicon from "../../static/img/dlicon.svg";
 import styles from './Explorer.scss';
 
 export const Explorer = () => {
@@ -74,6 +75,7 @@ export const Explorer = () => {
                 <section className={styles.blockTable}>
                     <h2>latest blocks</h2>
 
+                    <div className={styles.dlContainer}><p className={styles.dlBtn} onClick={() => {window.location.href = '/csv-export'}}>[Download <span className={styles.csvExport}>CSV Export<img className={styles.dlicon} src={dlicon} /></span>]</p></div>
                     <Table
                         sortable={true}
                         header={tableHeadings}

@@ -7,6 +7,7 @@ import * as styles from "./App.scss";
 import { Explorer } from '../Explorer/Explorer';
 import { BCItemView } from '../BCItemView/BCItemView';
 import { Dropdown } from '../Dropdown/Dropdown';
+import { CsvExport } from '../CsvExport/CsvExport';
 import logo from "../../static/img/zenotta-logo.svg";
 import bg from "../../static/img/bg.jpg";
 
@@ -56,8 +57,8 @@ export default function App() {
     setSearchValue(value);
   }
 
-  const handleBlockNumSearch = (blockNum: string) => {
-    const validity = store.blockNumIsValid(parseInt(blockNum));
+  const handleBlockNumSearch = async (blockNum: string) => {
+    const validity = await store.blockNumIsValid(parseInt(blockNum));
 
     if (validity.isValid) {
       store.fetchBlockHashByNum(parseInt(searchValue)).then((hash: string) => {
@@ -104,6 +105,11 @@ export default function App() {
         </div>
 
         <Switch>
+        <Route exact path="/csv-export">
+            <div className={styles.childContainer}>
+              <CsvExport />
+            </div>
+          </Route>
           <Route exact path="/:hash">
             <div className={styles.childContainer}>
               <BCItemView />
