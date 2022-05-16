@@ -11,8 +11,6 @@ interface RowTableProps {
 }
 
 export const RowTable = (props: RowTableProps) => {
-    console.log('props', props.rows);
-
     const format = (val: string) => {
         // Get first letter as capital
         let valFirst = val.charAt(0).toUpperCase();

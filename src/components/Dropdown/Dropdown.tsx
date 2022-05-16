@@ -21,7 +21,6 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
     }
 
     const toggleDropdown = () => {
-        console.log('toggleDropdown', dropdownClass);
         setDropdownClass(dropdownClass == '' ? styles.visible : '');
     }
 

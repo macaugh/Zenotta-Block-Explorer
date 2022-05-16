@@ -9,7 +9,6 @@ import { downloadFile } from '../CsvExport/CsvExport';
 import dlicon from '../../static/img/dlicon.svg';
 
 import styles from './BCItemView.scss';
-import { values } from 'mobx';
 import { BlockInfo } from '../../interfaces';
 
 export const BCItemView = () => {
@@ -174,10 +173,11 @@ export const BCItemView = () => {
   const formatIncomingData = (data: any) => {
     if (data.hasOwnProperty('Block')) {
       let blockInfo = data.Block;
-
-      fetchTransactions(blockInfo.block.transactions);
-
+      let prevHash = blockInfo.block.header.previous_hash;
       let merkleHash = blockInfo.block.header.merkle_root_hash;
+
+      // Handle incoming transactions
+      fetchTransactions(blockInfo.block.transactions);
 
       // Handle the coinbase
       fetchMiningTx(blockInfo.mining_tx_hash_and_nonces);
@@ -187,7 +187,7 @@ export const BCItemView = () => {
         computeNodes: Object.keys(blockInfo.mining_tx_hash_and_nonces).length,
         blockNum: blockInfo.block.header.b_num,
         merkleRootHash: merkleHash.length > 0 ? merkleHash : 'N/A',
-        previousHash: blockInfo.block.header.previous_hash,
+        previousHash: prevHash && prevHash.length > 0 ? prevHash : 'N/A',
         version: blockInfo.block.header.version,
         byteSize: `${new TextEncoder().encode(JSON.stringify(blockInfo)).length} bytes`,
         transactions: blockInfo.block.transactions.length,
