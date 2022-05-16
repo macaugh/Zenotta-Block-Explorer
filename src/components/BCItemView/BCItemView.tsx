@@ -234,10 +234,6 @@ export const BCItemView = () => {
 
   return useObserver(() => (
     <div className={styles.container}>
-      <h2 className={styles.heading}>
-        {heading} {localData && localData.blockNum} Summary
-      </h2>
-
       <div className={styles.dlContainer}>
         <p
           className={styles.dlBtn}

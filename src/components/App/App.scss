@@ -1,8 +1,12 @@
 @import '../../styles/global.scss';
 
 .container {
+    position: relative;
+}
+
+.innerContainer {
     width: 80vw;
-    margin: 40px auto;
+    margin: 0 auto;
     position: relative;
     padding-top: 1px;
     font-family: 'Roboto', sans-serif;
@@ -15,23 +19,22 @@
     }
 }
 
-.logo {
-    width: 300px;
-    margin: 50px auto;
-    display: block;
-    z-index: 1;
-    position: relative;
-}
-
 .searchContainer {
-    width: 60vw;
-    z-index: 1;
-    position: relative;
-    margin: 80px auto 40px;
-    display: flex;
+    margin: 0 auto;
+    padding: 80px 0 110px;
+    background: #0D4064;
+
+    button:hover {
+        background: white !important;
+    }
+
+    .innerContainer {
+        display: flex;
+        width: 60vw;
+    }
 
     .search {
-        width: calc(80% - 15px);
+        width: calc(75% - 15px);
     }
 
     .search input {
@@ -55,13 +58,19 @@
         text-align: center;
         right: 0;
         width: 70%;
+        z-index: 99;
     }
 }
 
-.childContainer {
+.content {
+    margin: 0 auto;    
     position: relative;
     z-index: 1;
-    margin-top: 100px;
+
+    .innerContainer {
+        margin-top: -80px;
+        padding-bottom: 80px;
+    }
 }
 
 .langSelect {
@@ -75,11 +84,13 @@
     border-radius: 4px;
 }
 
-.bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 0;
-    width: 100%;
-    opacity: .1;
+.nav {
+    background: white;
+    padding: 15px 0;
+
+    .logo {
+        width: 120px;
+        margin: 0 auto;
+        display: block;
+    }
 }

@@ -73,9 +73,11 @@ export const Explorer = () => {
                 </section>*/}
 
                 <section className={styles.blockTable}>
-                    <h2>latest blocks</h2>
-
-                    <div className={styles.dlContainer}><p className={styles.dlBtn} onClick={() => {window.location.href = '/csv-export'}}>[Download <span className={styles.csvExport}>CSV Export<img className={styles.dlicon} src={dlicon} /></span>]</p></div>
+                    <div className={styles.dlContainer}>
+                        <p className={styles.dlBtn} onClick={() => {window.location.href = '/csv-export'}}>
+                            [ Download <span className={styles.csvExport}>CSV Export<img className={styles.dlicon} src={dlicon} /></span>]
+                        </p>
+                    </div>
                     <Table
                         sortable={true}
                         header={tableHeadings}
