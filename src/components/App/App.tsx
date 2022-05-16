@@ -6,10 +6,10 @@ import {StoreContext} from '../../index';
 import * as styles from "./App.scss";
 import { Explorer } from '../Explorer/Explorer';
 import { BCItemView } from '../BCItemView/BCItemView';
+import { Footer } from '../Footer/Footer';
 import { Dropdown } from '../Dropdown/Dropdown';
 import { CsvExport } from '../CsvExport/CsvExport';
 import logo from "../../static/img/zenotta-logo.svg";
-import bg from "../../static/img/bg.jpg";
 
 import {
   BrowserRouter as Router,
@@ -22,8 +22,8 @@ import {
 
 export default function App() {
   const [searchOptions, _setSearchOptions] = React.useState<any[]>([
-    "Transaction",
-    "Block",
+    "Transaction Hash",
+    "Block Hash",
     "Block Number",
   ]);
   const [currentSearchOption, setCurrentSearchOption] = React.useState<string>("Transaction");
@@ -78,50 +78,62 @@ export default function App() {
           <LangSelector />
         </div> */}
 
-        <a href="/"><img src={logo} className={styles.logo} alt="Zenotta logo" /></a>
+        <nav className={styles.nav}>
+          <div className={styles.innerContainer}>
+            <a href="/"><img src={logo} className={styles.logo} alt="Zenotta logo" /></a>
+          </div>
+        </nav>
 
         <div className={styles.searchContainer}>
-          <Dropdown 
-            onItemClick={(item: any) => handleSearchOptionSelect(item)}
-            listItems={searchOptions} />
+          <div className={styles.innerContainer}>
+            <Dropdown 
+              onItemClick={(item: any) => handleSearchOptionSelect(item)}
+              listItems={searchOptions} />
 
-          <TextInput
-            type="search"
-            label="Search here..."
-            iconType="text"
-            className={styles.search}
-            shouldSubmitOnEnter={true}
-            onChange={(e: any) => handleSearchInput(e.target.value)}
-            onSubmit={() => submitSearchValue()} />
+            <TextInput
+              type="search"
+              label="Search here..."
+              iconType="text"
+              className={styles.search}
+              shouldSubmitOnEnter={true}
+              onChange={(e: any) => handleSearchInput(e.target.value)}
+              onSubmit={() => submitSearchValue()} />
 
-          {searchError.length > 0 && 
-          <Notification 
-            type="error" 
-            variant="outlined"
-            closable
-            className={styles.notification}>
-            {searchError}
-          </Notification>}
+            {searchError.length > 0 && 
+            <Notification 
+              type="error" 
+              variant="outlined"
+              closable
+              className={styles.notification}>
+              {searchError}
+            </Notification>}
+          </div>
         </div>
 
-        <Switch>
-        <Route exact path="/csv-export">
-            <div className={styles.childContainer}>
-              <CsvExport />
-            </div>
-          </Route>
-          <Route exact path="/:hash">
-            <div className={styles.childContainer}>
-              <BCItemView />
-            </div>
-          </Route>
-          <Route exact path="/">
-            <div className={styles.childContainer}>
-              <Explorer />
-            </div>
-          </Route>
-          <Route path="*">ERROR 404</Route>
-        </Switch>
+        <div className={styles.content}>  
+          <div className={styles.innerContainer}>  
+            <Switch>
+            <Route exact path="/csv-export">
+                <div className={styles.childContainer}>
+                  <CsvExport />
+                </div>
+              </Route>
+              <Route exact path="/:hash">
+                <div className={styles.childContainer}>
+                  <BCItemView />
+                </div>
+              </Route>
+              <Route exact path="/">
+                <div className={styles.childContainer}>
+                  <Explorer />
+                </div>
+              </Route>
+              <Route path="*">ERROR 404</Route>
+            </Switch>
+          </div>
+
+          <Footer />
+        </div>
       </div>
     </Router>
   ));
