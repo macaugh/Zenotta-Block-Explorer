@@ -74,8 +74,12 @@ class Store {
         let data = await axios.post('/api/blockRange', { nums }).then(res => res.data);
         data = data.map((e: any[]) => {
             let blockData = e[1];
-            if (blockData.block.header.merkle_root_hash === "") {
+            if (!blockData.block.header.merkle_root_hash) {
                 blockData.block.header.merkle_root_hash = "N/A";
+            }
+
+            if (!blockData.block.header.previous_hash) {
+                blockData.block.header.previous_hash = "N/A";
             }
 
             e[1] = blockData;
@@ -131,8 +135,6 @@ class Store {
 
     @action 
     async searchHashIsValid(hash: string, type: string): Promise<{ isValid: boolean, error: string }> {
-        console.log('hash', hash);
-
         const re = /^[0-9A-Ga-gx]+$/g;
         const reTest = re.test(hash);
 
@@ -165,7 +167,7 @@ class Store {
             let latestBNum = this.latestBlock.block.header.b_num - (pageNumber - 1) * maxBlocks;
             let nums = [];
 
-            for (let i = latestBNum; i > Math.max(latestBNum - maxBlocks, 0); i--) {
+            for (let i = latestBNum; i > Math.max(latestBNum - maxBlocks, -1); i--) {
                 nums.push(i);
             }
             return nums;
