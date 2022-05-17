@@ -2,38 +2,25 @@ import * as React from 'react';
 import { useObserver } from 'mobx-react';
 import { TextInput, Button } from 'chi-ui';
 import { StoreContext } from '../../index';
-import { BlockInfo } from '../../interfaces';
+import { BlockInfo, RequestData } from '../../interfaces';
+import { formatToBlockInfo } from '../../formatData';
 import styles from './CsvExport.scss';
 
 const DEFAULT_WARNING = 'Please enter range of blocks to export';
 
-const arrayToCsv = (data: any) => {
+const arrayToCsv = (data: RequestData[]) => {
   if (data.length > 0) {
+    console.log('in');
     const header = 'hash,computeNodes,blockNum,merkleRootHash,previousHash,version,byteSize,transactions';
     let csv = header + '\n';
 
-    data.forEach((item: any) => {
-      let BlockInfo: BlockInfo = itemToCsv(item);
-      csv += `${BlockInfo.hash},${BlockInfo.computeNodes},${BlockInfo.blockNum},${BlockInfo.merkleRootHash},${BlockInfo.previousHash},${BlockInfo.version},${BlockInfo.byteSize},${BlockInfo.transactions}\n`;
+    data.forEach((item: RequestData) => {
+      let blockInfo: BlockInfo = formatToBlockInfo(item); 
+      csv += `${blockInfo.hash},${blockInfo.computeNodes},${blockInfo.blockNum},${blockInfo.merkleRootHash},${blockInfo.previousHash},${blockInfo.version},${blockInfo.byteSize},${blockInfo.transactions}\n`;
     });
     return csv;
   }
   return '';
-};
-
-const itemToCsv = (item: any) => {
-  const block: any = item[1].block;
-  const merkleHash = block.header.merkle_root_hash;
-  return {
-    hash: item[0],
-    computeNodes: Object.keys(item[1].mining_tx_hash_and_nonces).length,
-    blockNum: block.header.b_num,
-    merkleRootHash: merkleHash.length > 0 ? merkleHash : 'N/A',
-    previousHash: block.header.previous_hash,
-    version: block.header.version,
-    byteSize: `${new TextEncoder().encode(JSON.stringify(block)).length} bytes`,
-    transactions: block.transactions.length,
-  };
 };
 
 export const downloadFile = (fileName: string, data: any) => {
@@ -48,8 +35,8 @@ export const downloadFile = (fileName: string, data: any) => {
 
 export const CsvExport = () => {
   const store = React.useContext(StoreContext);
-  const [startingBlock, setStartingBlock] = React.useState<number | undefined>();
-  const [endingBlock, setEndingBlock] = React.useState<number | undefined>();
+  const [startingBlock, setStartingBlock] = React.useState<number | undefined>(1);
+  const [endingBlock, setEndingBlock] = React.useState<number | undefined>(4);
   const [warningMsg, setWarningMsg] = React.useState<string>(DEFAULT_WARNING);
   const [disabled, setDisabled] = React.useState<boolean>(true);
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -79,7 +66,9 @@ export const CsvExport = () => {
       store
         .fetchBlockRange(startingBlock, endingBlock)
         .then((blockRange: any) => {
+          console.log('block range',blockRange);
           if (blockRange.length > 0) {
+            console.log(true,blockRange[0]);
             let csv = arrayToCsv(blockRange);
             downloadFile('block_range.csv', csv);
             setWarningMsg('');
