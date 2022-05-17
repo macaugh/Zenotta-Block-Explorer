@@ -7,6 +7,8 @@ import { TransactionView } from '../TransactionView/TransactionView';
 import { TransactionInfo, TransactionInfoProps } from '../TransactionInfo/TransactionInfo';
 import { downloadFile } from '../CsvExport/CsvExport';
 import dlicon from '../../static/img/dlicon.svg';
+import { Transaction, Stack, TransactionInputs, TransactionOutputs} from '../../interfaces';
+import { formatToBlockInfo } from '../../formatData';
 
 import styles from './BCItemView.scss';
 import { BlockInfo } from '../../interfaces';
@@ -21,13 +23,13 @@ export const BCItemView = () => {
 
   const [mainTxData, setMainTxData] = React.useState<any>(null);
 
-  const [heading, setHeading] = React.useState<string>(hash.charAt('b') ? 'Block' : 'Transaction');
+  const [heading, setHeading] = React.useState<string>('');
 
   const getTxPromises = (transactions: string[]): Promise<any>[] => {
     return transactions.map((tx) => store.fetchBlockchainItem(tx));
   };
 
-  const checkSeenTxIns = (t: any, seenIns: string[]) => {
+  const checkSeenTxIns = (t: TransactionInputs, seenIns: string[]) => {
     if (t.previous_out && t.previous_out.t_hash) {
       let t_hash = t.previous_out.t_hash;
 
@@ -35,10 +37,8 @@ export const BCItemView = () => {
         seenIns.push(t_hash);
         return true;
       }
-
       return false;
     }
-
     return false;
   };
 
@@ -48,24 +48,20 @@ export const BCItemView = () => {
     }).join('');
   };
 
-  const formatScript = (stack: any[]) => {
+  const formatScript = (stack: Stack[]) => {
     let combo = [];
-
     for (let entry of stack) {
-      let key = Object.keys(entry)[0];
-      let val = entry[key];
+      let key:any = Object.keys(entry)[0];
+      let val = (entry as any)[key];
 
       combo.push(val instanceof Array ? toHexString(val) : val);
     }
-
-    console.log(combo);
     return combo.join('\n');
   };
 
-  const formatTransactionInputs = (inputs: any[]) => {
+  const formatTransactionInputs = (inputs: TransactionInputs[]) => {
     return inputs.map((input) => {
       const previousOutputHash = input.previous_out && input.previous_out.t_hash ? input.previous_out.t_hash : 'N/A';
-
       return {
         previousOutputHash,
         scriptSig: formatScript(input.script_signature.stack),
@@ -73,7 +69,7 @@ export const BCItemView = () => {
     });
   };
 
-  const formatTransactionOutputs = (outputs: any[]) => {
+  const formatTransactionOutputs = (outputs: TransactionOutputs[]) => {
     return outputs.map((output) => {
       return {
         address: output.script_public_key,
@@ -86,7 +82,6 @@ export const BCItemView = () => {
 
   const getTransactionInfo = (tx: any, hashes: string[], index: number) => {
     let seenIns: string[] = [];
-
     return {
       hash: hashes[index],
       totalTokens: tx.outputs.reduce((acc: number, o: any) => acc + o.value.Token, 0),
@@ -101,7 +96,7 @@ export const BCItemView = () => {
     };
   };
 
-  const formatTransactions = (transactions: any[], hashes: string[]) => {
+  const formatTransactions = (transactions: Transaction[], hashes: string[]) => {
     if (!transactions || !transactions.length) {
       return [];
     }
@@ -112,27 +107,23 @@ export const BCItemView = () => {
     }
 
     return transactions.map((tx, i) => {
-      tx = tx.Transaction;
       return getTransactionInfo(tx, hashes, i);
     });
   };
 
   const fetchTransactions = async (txs: string[]) => {
     let tInfo = await Promise.all(getTxPromises(txs)).then((results) => formatTransactions(results, txs));
-
     setTransactions(tInfo);
   };
 
-  const formatDataForTable = (localData: any) => {
-    console.log('localData', localData);
+  const formatDataForTable = (localData: BlockInfo) => {
     if (!localData) {
       return null;
     }
-
     return Object.keys(localData).map((key) => {
       return {
         heading: key,
-        value: localData[key],
+        value: (localData as any)[key],
       };
     });
   };
@@ -141,7 +132,6 @@ export const BCItemView = () => {
     if (!miningTx) {
       return null;
     }
-
     return [
       { heading: 'Coinbase Hash', value: coinbaseHash },
       { heading: 'Token Reward', value: miningTx.tokensDivided },
@@ -152,81 +142,69 @@ export const BCItemView = () => {
   };
 
   const fetchMiningTx = async (miningTxAndNonce: any) => {
-    const coinbaseHash = miningTxAndNonce['1'][0];
+    const coinbaseHash = miningTxAndNonce.hash;
     setCoinbaseHash(coinbaseHash);
 
     if (miningTxAndNonce && coinbaseHash) {
-      const tx = await store.fetchBlockchainItem(coinbaseHash);
-      const reward = tx['Transaction']['outputs'][0]['value']['Token'];
+      const tx = await store.fetchBlockchainItem(coinbaseHash) as Transaction;
 
-      const miningTx = {
-        tokens: reward,
-        tokensDivided: (parseFloat(reward) / 25200).toFixed(2),
-        scriptPublicKey: tx['Transaction']['outputs'][0]['script_public_key'],
-        version: tx['Transaction']['version'],
-      };
+      if (!tx.hasOwnProperty('block')) {
+        const reward = tx.outputs[0].value.Token.toString();
+        const miningTx = {
+          tokens: reward,
+          tokensDivided: (parseFloat(reward) / 25200).toFixed(2),
+          scriptPublicKey: tx.outputs[0].script_public_key,
+          version: tx.version,
+        };
 
-      setMiningTx(miningTx);
+        setMiningTx(miningTx);
+      }
     }
   };
 
   const formatIncomingData = (data: any) => {
-    if (data.hasOwnProperty('Block')) {
-      let blockInfo = data.Block;
-      let prevHash = blockInfo.block.header.previous_hash;
-      let merkleHash = blockInfo.block.header.merkle_root_hash;
+    if (data.hasOwnProperty('block')) {
+      let blockInfo = data.block;
+      let miningTx = data.miningTxHashAndNonces;
 
-      // Handle incoming transactions
-      fetchTransactions(blockInfo.block.transactions);
+      fetchTransactions(blockInfo.transactions);
+
+      let merkleHash = blockInfo.header.merkle_root_hash;
 
       // Handle the coinbase
-      fetchMiningTx(blockInfo.mining_tx_hash_and_nonces);
+      fetchMiningTx(miningTx);
 
-      let newData: BlockInfo = {
-        hash,
-        computeNodes: Object.keys(blockInfo.mining_tx_hash_and_nonces).length,
-        blockNum: blockInfo.block.header.b_num,
-        merkleRootHash: merkleHash.length > 0 ? merkleHash : 'N/A',
-        previousHash: prevHash && prevHash.length > 0 ? prevHash : 'N/A',
-        version: blockInfo.block.header.version,
-        byteSize: `${new TextEncoder().encode(JSON.stringify(blockInfo)).length} bytes`,
-        transactions: blockInfo.block.transactions.length,
-      };
-
-      console.log('newData', newData);
+      let newData: BlockInfo = formatToBlockInfo({hash, block: blockInfo, miningTxHashAndNonces: miningTx}); 
 
       return newData;
     } else {
-      let txInfo = data.Transaction;
-      setMainTxData(formatTransactions([txInfo], [hash]));
+      setMainTxData(formatTransactions([data], [hash]));
 
       return {
-        inputs: formatTransactionInputs(txInfo.inputs),
-        outputs: formatTransactionOutputs(txInfo.outputs),
+        inputs: formatTransactionInputs((data.inputs as TransactionInputs[])),
+        outputs: formatTransactionOutputs((data.outputs as TransactionOutputs[])),
       };
     }
   };
 
-  const formatBlockCsv = (blockInfo: BlockInfo) => {
-    const header = 'hash,computeNodes,blockNum,merkleRootHash,previousHash,version,byteSize,transactions';
-    let csv = header + '\n';
-    csv += `${blockInfo.hash},${blockInfo.computeNodes},${blockInfo.blockNum},${blockInfo.merkleRootHash},${blockInfo.previousHash},${blockInfo.version},${blockInfo.byteSize},${blockInfo.transactions}\n`;
-    return csv;
-  };
+  // const formatBlockCsv = (blockInfo: BlockInfo) => {
+  //   const header = 'hash,computeNodes,blockNum,merkleRootHash,previousHash,version,byteSize,transactions';
+  //   let csv = header + '\n';
+  //   csv += `${blockInfo.hash},${blockInfo.computeNodes},${blockInfo.blockNum},${blockInfo.merkleRootHash},${blockInfo.previousHash},${blockInfo.version},${blockInfo.byteSize},${blockInfo.transactions}\n`;
+  //   return csv;
+  // };
 
-  const formatTransactionCsv = (transactionInfo: any) => {
-    const header = 'coinbaseHash,tokenReward,fractionatedTokenReward,version,scriptPublicKey';
-    let csv = header + '\n';
-    csv += `${coinbaseHash},${transactionInfo.tokens},${transactionInfo.tokensDivided},${transactionInfo.version},${transactionInfo.scriptPublicKey}\n`;
-    return csv;
-  };
+  // const formatTransactionCsv = (transactionInfo: any) => {
+  //   const header = 'coinbaseHash,tokenReward,fractionatedTokenReward,version,scriptPublicKey';
+  //   let csv = header + '\n';
+  //   csv += `${coinbaseHash},${transactionInfo.tokens},${transactionInfo.tokensDivided},${transactionInfo.version},${transactionInfo.scriptPublicKey}\n`;
+  //   return csv;
+  // };
 
   React.useEffect(() => {
-    console.log('useEffect');
     if (!localData) {
-      console.log('fetching data');
       store.fetchBlockchainItem(hash).then((nowData) => {
-        setHeading(nowData ? (nowData.hasOwnProperty('Block') ? 'Block' : 'Transaction') : '');
+        setHeading(nowData ? (nowData.hasOwnProperty('block') ? 'Block' : 'Transaction') : '');
         setLocalData(formatIncomingData(nowData));
       });
     }
@@ -234,7 +212,11 @@ export const BCItemView = () => {
 
   return useObserver(() => (
     <div className={styles.container}>
-      <div className={styles.dlContainer}>
+      <h2 className={styles.heading}>
+        {heading} {localData && localData.blockNum} Summary
+      </h2>
+
+      {/* <div className={styles.dlContainer}>
         <p
           className={styles.dlBtn}
           onClick={() => {
@@ -248,7 +230,7 @@ export const BCItemView = () => {
           </span>
           ]
         </p>
-      </div>
+      </div> */}
 
       {heading == 'Transaction' && <TransactionView summaryData={mainTxData} detailData={localData} />}
 
@@ -261,6 +243,7 @@ export const BCItemView = () => {
           {transactions && transactions.length > 0 && (
             <div className={styles.transactionContainer}>
               {transactions.map((t: TransactionInfoProps, i: number) => {
+                console.log('T', t);
                 return (
                   <div key={i}>
                     <TransactionInfo {...t} />
@@ -275,7 +258,7 @@ export const BCItemView = () => {
       {heading && heading == 'Block' && miningTx && (
         <>
           <h2 className={styles.innerHeading}>Coinbase Transaction</h2>
-          <div className={styles.dlContainer}>
+          {/* <div className={styles.dlContainer}>
             <p
               className={styles.dlBtn}
               onClick={() => {
@@ -289,7 +272,7 @@ export const BCItemView = () => {
               </span>
               ]
             </p>
-          </div>
+          </div> */}
           <div className={styles.transactionContainer}>
             <RowTable rows={formatMiningTxDataForTable(miningTx)} />
           </div>
@@ -298,3 +281,4 @@ export const BCItemView = () => {
     </div>
   ));
 };
+// formatMiningTxDataForTable(miningTx)

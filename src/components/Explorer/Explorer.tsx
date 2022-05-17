@@ -1,9 +1,11 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
 import {useObserver} from 'mobx-react';
+import { toJS } from 'mobx';
 import {StoreContext} from '../../index';
 
 import {Pagination, Table} from 'chi-ui';
+import { RequestData } from '../../interfaces';
 import {SectionBlock} from "../SectionBlock/SectionBlock";
 import dlicon from "../../static/img/dlicon.svg";
 import styles from './Explorer.scss';
@@ -23,20 +25,17 @@ export const Explorer = () => {
 
     const store = React.useContext(StoreContext);
 
-    const mungeTableData = (data: any[]) => {
+    const mungeTableData = (data: RequestData[]) => {
         let body = [];
 
-        for (let d of data) {
-            let blockHash = d[0];
-            let blockData = d[1];
-
+        for (let obj of data) {
             let row = [
-                {value: blockData.block.header.b_num, isNumeric: true},
-                {value: <a href={`/${blockHash}`}>{blockHash}</a>, isNumeric: false},
-                {value: blockData.block.header.previous_hash, isNumeric: false},
-                {value: blockData.block.header.merkle_root_hash, isNumeric: false},
-                {value: Object.keys(blockData.mining_tx_hash_and_nonces).length, isNumeric: true},
-                {value: blockData.block.transactions.length, isNumeric: true},
+                {value: obj.block.header.b_num, isNumeric: true},
+                {value: <a href={`/${obj.hash}`}>{obj.hash}</a>, isNumeric: false},
+                {value: obj.block.header.previous_hash, isNumeric: false},
+                {value: obj.block.header.merkle_root_hash, isNumeric: false},
+                {value: 0, isNumeric: true},
+                {value: obj.block.transactions.length, isNumeric: true},
             ];
 
             body.push(row);
@@ -58,6 +57,7 @@ export const Explorer = () => {
             store.latestBlock ? setTotalBlocks(store.latestBlock.block.header.b_num) : setTotalBlocks(0);
         });
     }, []);
+
 
     return useObserver(() => (
         <div className={styles.container}>
