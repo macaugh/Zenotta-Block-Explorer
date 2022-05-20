@@ -1,11 +1,22 @@
 .container {
+  width: 80vw;
+  margin: 0 auto;
+  padding-bottom: 20px;
+
   h2 {
     margin-bottom: 20px;
-    margin-top: 50px;
   }
 
   h2 span {
     text-transform: none;
+  }
+
+  .blockNum {
+    font-size: medium;
+    font-style: italic;
+    font-weight: 200;
+    color: rgb(115, 115, 115);
+
   }
 
   .dlContainer {

@@ -31,7 +31,6 @@ class Store {
     @action
     async fetchLatestBlock(pageNumber: number, maxBlocks: number) {
         await axios.get('http://localhost:8090/api/latestBlock').then(async (response) => {
-            // console.log('raw', response.data);
             this.setLatestBlock(this.formatBlock(response.data));
             await this.fetchTableData(pageNumber, maxBlocks);
         }).catch((error) => {

@@ -35,7 +35,7 @@ export interface Transaction {
 export interface MiningTx {
     tokens: number,
     tokensDivided: number,
-    scriptPublicKey: String,
+    scriptPublicKey: string,
     version: number
 }
 
@@ -54,20 +54,28 @@ export interface TransactionOutputs {
     drs_tx_hash: any,
     locktime: number,
     script_public_key: string,
-    value: TokenOutput
+    value: TokenOutput | ReceiptOutput
 }
 
-interface TokenOutput {
+export interface TokenOutput {
     Token: number
 }
 
-interface ScriptSignature {
-    stack: Stack[]
+export interface ReceiptOutput {
+    Receipt: number
 }
 
-export interface Stack {
-    Num: number
+interface ScriptSignature {
+    stack: any[]
 }
+
+// export interface Stack {
+//     Op?: string,
+//     Num?: number,
+//     Bytes?: string,
+//     Signature?: number[],
+//     PubKey?: number[]
+// }
 
 interface BlockData {
     header: BlockHeader,

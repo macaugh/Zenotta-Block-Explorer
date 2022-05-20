@@ -1,0 +1,20 @@
+.nav {
+    background: white;
+    padding: 15px 10px;
+    box-shadow: 0px 0px 5px #898c91;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navCompact {
+    justify-content: space-between;
+}
+
+.logo {
+    width: auto;
+    img {
+        width: 120px;
+    }
+}

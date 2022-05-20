@@ -2,75 +2,13 @@
 
 .container {
     position: relative;
-}
-
-.innerContainer {
-    width: 80vw;
-    margin: 0 auto;
-    position: relative;
-    padding-top: 1px;
-    font-family: 'Roboto', sans-serif;
-
-    h2 {
-        text-transform: capitalize;
-        color: #505050;
-        font-size: 1.953rem;
-        margin-top: 70px;
-    }
-}
-
-.searchContainer {
-    margin: 0 auto;
-    padding: 80px 0 110px;
-    background: #0D4064;
-
-    button:hover {
-        background: white !important;
-    }
-
-    .innerContainer {
-        display: flex;
-        width: 60vw;
-    }
-
-    .search {
-        width: calc(75% - 15px);
-    }
-
-    .search input {
-        width: 100%;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0px 10px 24px -11px rgba(0, 0, 0, 0.06);
-        -webkit-box-shadow: 0px 10px 24px -11px rgba(0, 0, 0, 0.06);
-        -moz-box-shadow: 0px 10px 24px -11px rgba(0, 0, 0, 0.06);
-    }
-
-    .search span {
-        right: 20px;
-    }
-
-    .notification {
-        position: absolute;
-        bottom: -70px;
-        left: 0;
-        margin: 0 auto;
-        text-align: center;
-        right: 0;
-        width: 70%;
-        z-index: 99;
-    }
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
 }
 
 .content {
-    margin: 0 auto;    
-    position: relative;
     z-index: 1;
-
-    .innerContainer {
-        margin-top: -80px;
-        padding-bottom: 80px;
-    }
 }
 
 .langSelect {
@@ -82,15 +20,4 @@
     cursor: pointer;
     z-index: 1;
     border-radius: 4px;
-}
-
-.nav {
-    background: white;
-    padding: 15px 0;
-
-    .logo {
-        width: 120px;
-        margin: 0 auto;
-        display: block;
-    }
 }
