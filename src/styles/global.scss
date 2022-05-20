@@ -1,12 +1,12 @@
 $bg: #E5E8EF;
 $cta: blue;
+$shadow-border: #898c91; 
 
 :global html,
 :global body {
-    width: 100vw;
     margin: 0;
-    padding: 0 0 50px;
     background: $bg;
     font-family: Arial, Helvetica, sans-serif;
+    min-width: 680px;
 }
 

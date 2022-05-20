@@ -5,6 +5,7 @@ import styles from './Dropdown.scss';
 export interface DropdownProps {
     listItems: string[],
     onItemClick?: Function,
+    nav?: boolean,
 }
 
 export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
@@ -25,8 +26,8 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
     }
 
     return (
-        <div className={styles.container} data-testid="dropdown">
-            <Button textColour="#000" mainColour="#cecece" onClick={() => toggleDropdown()} className={styles.button}>
+        <div className={`${styles.container} `} data-testid="dropdown">
+            <Button textColour="#000" mainColour="#cecece" onClick={() => toggleDropdown()} className={`${styles.button} ${props.nav ? styles.buttonCompact : ''}`}>
                 <span>{selected}</span>
                 <svg className={`${styles.dropdownArrow} ${dropdownClass}`} viewBox="0 0 512 512">
                     <path fill="#000" d="M507.521,427.394L282.655,52.617c-12.074-20.122-41.237-20.122-53.311,0L4.479,427.394

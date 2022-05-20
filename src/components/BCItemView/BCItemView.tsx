@@ -2,16 +2,18 @@ import * as React from 'react';
 import { useObserver } from 'mobx-react';
 import { useParams } from 'react-router-dom';
 import { StoreContext } from '../../index';
-import { RowTable } from '../RowTable/RowTable';
+import { RowTable, RowTableRow } from '../RowTable/RowTable';
 import { TransactionView } from '../TransactionView/TransactionView';
 import { TransactionInfo, TransactionInfoProps } from '../TransactionInfo/TransactionInfo';
 import { downloadFile } from '../CsvExport/CsvExport';
 import dlicon from '../../static/img/dlicon.svg';
-import { Transaction, Stack, TransactionInputs, TransactionOutputs} from '../../interfaces';
+import { Block, MiningTx, MiningTxHashAndNoce, ReceiptOutput, TokenOutput, Transaction, TransactionInputs, TransactionOutputs } from '../../interfaces';
 import { formatToBlockInfo } from '../../formatData';
+import { toJS } from 'mobx';
 
 import styles from './BCItemView.scss';
 import { BlockInfo } from '../../interfaces';
+import { Button } from 'chi-ui';
 
 export const BCItemView = () => {
   let { hash } = useParams<any>();
@@ -20,9 +22,7 @@ export const BCItemView = () => {
   const [miningTx, setMiningTx] = React.useState<any>(null);
   const [localData, setLocalData] = React.useState<any>(null);
   const [coinbaseHash, setCoinbaseHash] = React.useState<string>('');
-
   const [mainTxData, setMainTxData] = React.useState<any>(null);
-
   const [heading, setHeading] = React.useState<string>('');
 
   const getTxPromises = (transactions: string[]): Promise<any>[] => {
@@ -48,11 +48,13 @@ export const BCItemView = () => {
     }).join('');
   };
 
-  const formatScript = (stack: Stack[]) => {
+  const formatScript = (stack: any[]) => {
     let combo = [];
     for (let entry of stack) {
-      let key:any = Object.keys(entry)[0];
+      let key: any = Object.keys(entry)[0];
       let val = (entry as any)[key];
+
+      // console.log(toJS(val))
 
       combo.push(val instanceof Array ? toHexString(val) : val);
     }
@@ -70,18 +72,31 @@ export const BCItemView = () => {
   };
 
   const formatTransactionOutputs = (outputs: TransactionOutputs[]) => {
+    console.log('1')
     return outputs.map((output) => {
-      return {
-        address: output.script_public_key,
-        tokens: `${(output.value.Token / 25200).toFixed(2)} ZENO`,
-        fractionatedTokens: `${output.value.Token}`,
-        lockTime: output.locktime,
-      };
+      if (isToken(output.value)) {
+        const token = output.value as TokenOutput;
+        return {
+          address: output.script_public_key,
+          tokens: `${(token.Token / 25200).toFixed(2)} ZENO`,
+          fractionatedTokens: `${token}`,
+          lockTime: output.locktime,
+        };
+      } else {
+        const obj = output.value as any;
+        console.log(obj.Receipt)
+        return {
+          address: output.script_public_key,
+          receipts: obj.Receipt,
+          lockTime: output.locktime,
+        };
+      }
     });
   };
 
   const getTransactionInfo = (tx: any, hashes: string[], index: number) => {
     let seenIns: string[] = [];
+    console.log('DEBUG: ', tx, hashes, index);
     return {
       hash: hashes[index],
       totalTokens: tx.outputs.reduce((acc: number, o: any) => acc + o.value.Token, 0),
@@ -102,11 +117,13 @@ export const BCItemView = () => {
     }
 
     if (transactions.length == 1) {
+      console.log(transactions);
       let tx = transactions[0];
       return getTransactionInfo(tx, hashes, 0);
     }
 
     return transactions.map((tx, i) => {
+      console.log(tx, i);
       return getTransactionInfo(tx, hashes, i);
     });
   };
@@ -116,7 +133,7 @@ export const BCItemView = () => {
     setTransactions(tInfo);
   };
 
-  const formatDataForTable = (localData: BlockInfo) => {
+  const formatDataForTable = (localData: BlockInfo): RowTableRow[] | null => {
     if (!localData) {
       return null;
     }
@@ -128,62 +145,81 @@ export const BCItemView = () => {
     });
   };
 
-  const formatMiningTxDataForTable = (miningTx: any) => {
+  const formatMiningTxDataForTable = (miningTx: MiningTx): RowTableRow[] | null => {
     if (!miningTx) {
       return null;
     }
     return [
-      { heading: 'Coinbase Hash', value: coinbaseHash },
-      { heading: 'Token Reward', value: miningTx.tokensDivided },
-      { heading: 'Fractionated Token Reward', value: miningTx.tokens },
-      { heading: 'Version', value: miningTx.version },
+      { heading: 'Coinbase Hash', value: coinbaseHash.toString() },
+      { heading: 'Token Reward', value: miningTx.tokensDivided.toString() },
+      { heading: 'Fractionated Token Reward', value: miningTx.tokens.toString() },
+      { heading: 'Version', value: miningTx.version.toString() },
       { heading: 'Script Public Key', value: miningTx.scriptPublicKey },
     ];
   };
 
-  const fetchMiningTx = async (miningTxAndNonce: any) => {
+  const fetchMiningTx = async (miningTxAndNonce: MiningTxHashAndNoce) => {
     const coinbaseHash = miningTxAndNonce.hash;
     setCoinbaseHash(coinbaseHash);
 
     if (miningTxAndNonce && coinbaseHash) {
-      const tx = await store.fetchBlockchainItem(coinbaseHash) as Transaction;
+      const tx = (await store.fetchBlockchainItem(coinbaseHash)) as Transaction;
 
-      if (!tx.hasOwnProperty('block')) {
-        const reward = tx.outputs[0].value.Token.toString();
-        const miningTx = {
-          tokens: reward,
-          tokensDivided: (parseFloat(reward) / 25200).toFixed(2),
-          scriptPublicKey: tx.outputs[0].script_public_key,
-          version: tx.version,
-        };
-
-        setMiningTx(miningTx);
+      if (!isBlock(tx)) {
+        if (isToken(tx.outputs[0].value)) {
+          const output = tx.outputs[0] as TransactionOutputs;
+          const reward = (output.value as TokenOutput).Token.toString();
+          const miningTx = {
+            tokens: reward,
+            tokensDivided: (parseFloat(reward) / 25200).toFixed(2),
+            scriptPublicKey: output.script_public_key,
+            version: tx.version,
+          };
+          setMiningTx(miningTx);
+        }
       }
     }
   };
 
-  const formatIncomingData = (data: any) => {
-    if (data.hasOwnProperty('block')) {
-      let blockInfo = data.block;
-      let miningTx = data.miningTxHashAndNonces;
+  const formatIncomingData = (data: Block | Transaction) => {
+    if (isBlock(data)) {
+      const block = data as Block;
+      let blockInfo = block.block;
+      let miningTx = block.miningTxHashAndNonces;
 
       fetchTransactions(blockInfo.transactions);
-
-      let merkleHash = blockInfo.header.merkle_root_hash;
 
       // Handle the coinbase
       fetchMiningTx(miningTx);
 
-      let newData: BlockInfo = formatToBlockInfo({hash, block: blockInfo, miningTxHashAndNonces: miningTx}); 
+      let newData: BlockInfo = formatToBlockInfo({ hash, block: blockInfo, miningTxHashAndNonces: miningTx });
 
       return newData;
     } else {
-      setMainTxData(formatTransactions([data], [hash]));
+      console.log('transaction');
+      const tx = data as Transaction;
+      setMainTxData(formatTransactions([tx], [hash]));
 
       return {
-        inputs: formatTransactionInputs((data.inputs as TransactionInputs[])),
-        outputs: formatTransactionOutputs((data.outputs as TransactionOutputs[])),
+        inputs: formatTransactionInputs(tx.inputs as TransactionInputs[]),
+        outputs: formatTransactionOutputs(tx.outputs as TransactionOutputs[]),
       };
+    }
+  };
+
+  const isBlock = (data: Block | Transaction) => {
+    if (data.hasOwnProperty('block')) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const isToken = (data: TokenOutput | ReceiptOutput) => {
+    if (data.hasOwnProperty('Token')) {
+      return true;
+    } else if (data.hasOwnProperty('Receipt')) {
+      return false;
     }
   };
 
@@ -204,7 +240,8 @@ export const BCItemView = () => {
   React.useEffect(() => {
     if (!localData) {
       store.fetchBlockchainItem(hash).then((nowData) => {
-        setHeading(nowData ? (nowData.hasOwnProperty('block') ? 'Block' : 'Transaction') : '');
+        setHeading(nowData ? (isBlock(nowData) ? 'Block' : 'Transaction') : '');
+
         setLocalData(formatIncomingData(nowData));
       });
     }
@@ -213,7 +250,7 @@ export const BCItemView = () => {
   return useObserver(() => (
     <div className={styles.container}>
       <h2 className={styles.heading}>
-        {heading} {localData && localData.blockNum} Summary
+        {heading} <span className={styles.blockNum}>{localData && '#' + localData.blockNum}</span>
       </h2>
 
       {/* <div className={styles.dlContainer}>

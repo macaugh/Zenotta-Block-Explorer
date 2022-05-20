@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styles from './RowTable.scss';
 
-interface RowTableRow {
+export interface RowTableRow {
     heading: string,
     value: string
 }
