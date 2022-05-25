@@ -154,7 +154,7 @@ class Store {
             let latestb_num = this.latestBlock.block.header.b_num - (pageNumber - 1) * maxBlocks;
             let nums = [];
 
-            for (let i = latestb_num; i > Math.max(latestb_num - maxBlocks, 0); i--) {
+            for (let i = latestb_num; i > Math.max(latestb_num - maxBlocks, -1); i--) {
                 nums.push(i);
             }
             return nums;
