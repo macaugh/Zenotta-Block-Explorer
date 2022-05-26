@@ -16,7 +16,7 @@ export default function App() {
     const isHomePage = (): boolean => {
         if (path == '/')
             return true
-        else
+        else 
             return false
     }
 

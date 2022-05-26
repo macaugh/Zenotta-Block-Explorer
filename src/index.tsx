@@ -12,7 +12,7 @@ ReactDOM.render(
   <StoreContext.Provider value={storeInstance}>
     <App />
   </StoreContext.Provider>,
-  document.querySelector('#container'));
+  document.querySelector('#app'));
 
 if (module && module.hot) {
   module.hot.accept();

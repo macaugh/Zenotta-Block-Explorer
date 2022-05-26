@@ -63,43 +63,23 @@ export default function Search(props: NavProps) {
 
     return useObserver(() => (
         <>
-            {!props.nav &&
-                <div className={styles.searchContainer}>
-                    <div className={styles.innerContainer}>
-                        <Dropdown
-                            onItemClick={(item: any) => handleSearchOptionSelect(item)}
-                            listItems={searchOptions} />
+            <div className={`${props.nav ? styles.navSearchContainer : styles.searchContainer}`}>
+                <div className={styles.innerContainer}>
+                    <Dropdown
+                        onItemClick={(item: any) => handleSearchOptionSelect(item)}
+                        listItems={searchOptions} 
+                        nav={props.nav ? true : false} />
 
-                        <TextInput
-                            type="search"
-                            label="Search here..."
-                            iconType="text"
-                            className={styles.search}
-                            shouldSubmitOnEnter={true}
-                            onChange={(e: any) => handleSearchInput(e.target.value)}
-                            onSubmit={() => submitSearchValue()} />
-                    </div>
+                    <TextInput
+                        type="search"
+                        label="Search here..."
+                        iconType="text"
+                        className={styles.search}
+                        shouldSubmitOnEnter={true}
+                        onChange={(e: any) => handleSearchInput(e.target.value)}
+                        onSubmit={() => submitSearchValue()} />
                 </div>
-            }
-            {props.nav &&
-                <div className={styles.navSearchContainer}>
-                    <div className={styles.innerContainer}>
-                        <Dropdown
-                            onItemClick={(item: any) => handleSearchOptionSelect(item)}
-                            listItems={searchOptions} 
-                            nav={true} />
-
-                        <TextInput
-                            type="search"
-                            label="Search here..."
-                            iconType="text"
-                            className={styles.search}
-                            shouldSubmitOnEnter={true}
-                            onChange={(e: any) => handleSearchInput(e.target.value)}
-                            onSubmit={() => submitSearchValue()} />
-                    </div>
-                </div>
-            }
+            </div>
             {searchError.length > 0 &&
                 <Notification
                     type="error"
