@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useObserver } from 'mobx-react';
-import { TextInput, Notification } from 'chi-ui';
 import { StoreContext } from '../../index';
 
 import * as styles from "./App.scss";
@@ -28,29 +27,30 @@ export default function App() {
   return useObserver(() => (
     <Router>
       <div className={styles.container}>
-       
-       <Nav />
-
+        <Nav />
         <div className={styles.content}>
-          <div className={styles.innerContainer}>
-            <Switch>
-              <Route exact path="/csv-export">
-                  <CsvExport />
-              </Route>
-              <Route exact path="/:hash">
-                  <BCItemView />
-              </Route>
-              <Route exact path="/">
-                  {/* <Overview /> */}
-                  <Search />
-                  <Explorer />
-              </Route>
-              <Route path="*">ERROR 404</Route>
-            </Switch>
-          </div>
-
-          {/* <Footer /> */}
+          {/* <div className={styles.testObj}></div>  */}
+          <Switch>
+            <Route exact path="/transactions">
+              <Explorer />
+            </Route>
+            <Route exact path="/blocks">
+              <Explorer />
+            </Route>
+            <Route exact path="/csv-export">
+              <CsvExport />
+            </Route>
+            <Route exact path="/:hash">  {/* TODO: Seperate to lower branches (/block/:hash) and (/tx/:hash)  */}
+              <BCItemView />
+            </Route>
+            <Route exact path="/">
+              <Search />
+              <Overview />
+            </Route>
+            <Route path="*">ERROR 404</Route>
+          </Switch>
         </div>
+        <Footer />
       </div>
     </Router>
   ));

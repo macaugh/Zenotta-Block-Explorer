@@ -1,4 +1,9 @@
-.container {
+@import '../../styles/global.scss';
 
-    
+.container {
+    margin-top: $default-spacing;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+
 }

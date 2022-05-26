@@ -247,10 +247,14 @@ export const BCItemView = () => {
     }
   }, []);
 
+  React.useEffect(() => {
+    console.log(miningTx);
+  })
+
   return useObserver(() => (
     <div className={styles.container}>
       <h2 className={styles.heading}>
-        {heading} <span className={styles.blockNum}>{localData && '#' + localData.blockNum}</span>
+        {heading} {localData && localData.blockNum && <span className={styles.blockNum}>{'#' + localData.blockNum}</span>}
       </h2>
 
       {/* <div className={styles.dlContainer}>

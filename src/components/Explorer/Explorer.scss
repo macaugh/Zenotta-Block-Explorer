@@ -14,7 +14,7 @@
 .table {
   background: white;
   margin-top: 0;
-    box-shadow: 0px 0px 5px #898c91;
+  box-shadow: 0px 0px 5px #898c91;
 
 }
 
@@ -26,10 +26,10 @@
 }
 
 .dlContainer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
 
   .dlBtn {
     width: auto;
@@ -41,16 +41,16 @@
     padding: 5px;
 
     &:hover {
-        cursor: pointer;
-        box-shadow: 0px 0px 5px #999;
-        border-radius: 3px;
-        transition: .5s;
-        font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0px 0px 5px #999;
+      border-radius: 3px;
+      transition: .5s;
+      font-size: 13px;
     }
 
     &:hover .dlicon {
-        transform: scale(1.2);
-        transition: .5s;
+      transform: scale(1.2);
+      transition: .5s;
     }
 
     &:active {
@@ -58,20 +58,30 @@
     }
 
     .csvExport {
-        color: #00a8ff;
+      color: #00a8ff;
 
-        .dlicon {
-          width: 12px;
-          padding-left: 8px;
-          padding-right: 8px;
-          transition: .5s;
-        }
+      .dlicon {
+        width: 12px;
+        padding-left: 8px;
+        padding-right: 8px;
+        transition: .5s;
+      }
     }
   }
 }
 
-:global nav {
-  ul li {
-    width: 50px !important;
+.pagination {
+  ul {
+    li {
+      margin: 2px;
+      width: auto !important;
+      min-width: 40px !important;
+    }
   }
 }
+
+// :global nav {
+//   ul li {
+//     width: 50px !important;
+//   }
+// }

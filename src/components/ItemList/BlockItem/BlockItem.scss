@@ -1,0 +1,107 @@
+.item {
+
+    .content {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        width: 100%;
+        height: 50px;
+
+        .itemHeader {
+            // border: dotted lightslategrey 1px;
+            display: flex;
+            flex-flow: column nowrap;
+            align-items: center;
+            justify-content: center;
+            width: 20%;
+            height: 100%;
+
+            .blockNum {
+                text-align: center;
+                font-size: medium;
+                font-weight: 200;
+            }
+
+            .timestamp {
+                text-align: center;
+                font-size: x-small;
+                font-weight: 200;
+                color: rgb(182, 182, 182);
+            }
+        }
+
+        .hashs {
+            // border: dotted lightslategrey 1px;
+            width: 65%;
+            height: 100%;
+            margin-right: 2px;
+
+            display: flex;
+            flex-flow: column nowrap;
+            align-items: flex-start;
+            justify-content: center;
+
+            .left {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+
+                .hash {
+                    text-align: left;
+                    font-size: small;
+                    font-weight: 200;
+                }
+            }
+        }
+
+        .rewardContainer {
+            width: 15%;
+            height: 100%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+
+            .rewardBadge {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                min-width: 25px;
+                padding: 5px;
+                width: auto;
+                height: 10px;
+                border: solid lightgray .5px;
+                border-radius: 5px;
+                margin-right: 10px;
+                // background-color: green;
+                color: darkgray;
+                background-color: rgb(240, 240, 240);
+
+                font-size: x-small;
+
+
+                .tokenName {
+                    margin-left: 5px;
+                }
+            }
+        }
+
+    }
+}
+
+a {
+    color: #1890ff;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.separator {
+    border-top: 1px solid lightgray;
+    margin: 0 auto;
+    width: auto;
+    margin-left: 10px;
+    margin-right: 10px
+}
