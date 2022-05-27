@@ -77,11 +77,23 @@
       width: auto !important;
       min-width: 40px !important;
     }
+
+    &.leftArrowDisabled {
+      div:first-child {
+        display: none;
+      }
+    }
+
+    &.rightArrowDisabled {
+      div:last-child {
+        display: none;
+      }
+    }
   }
 }
 
-// :global nav {
-//   ul li {
-//     width: 50px !important;
-//   }
-// }
+  // :global nav {
+  //   ul li {
+  //     width: 50px !important;
+  //   }
+  // }

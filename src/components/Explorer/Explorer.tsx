@@ -5,13 +5,14 @@ import { StoreContext } from '../../index';
 
 import { Pagination, Table } from 'chi-ui';
 import { RequestData } from '../../interfaces';
-import { SectionBlock } from "../SectionBlock/SectionBlock";
 import dlicon from "../../static/img/dlicon.svg";
 import styles from './Explorer.scss';
 
 export const Explorer = () => {
     const [totalBlocks, setTotalBlocks] = useState(0);
     const [maxBlocksPerPage] = useState(10);
+    const [leftArrowClass, setLeftArrowClass] = useState(styles.leftArrowDisabled);
+    const [rightArrowClass, setRightArrowClass] = useState('');
 
     const tableHeadings = [
         { value: "Block Number", isNumeric: true },
@@ -45,6 +46,9 @@ export const Explorer = () => {
 
     const onPageChange = (currentPage: number) => {
         if (totalBlocks > 0) {
+            setLeftArrowClass(currentPage === 1 ? styles.leftArrowDisabled : '');
+            setRightArrowClass(currentPage === Math.ceil(totalBlocks / maxBlocksPerPage) ? styles.rightArrowDisabled : '');
+
             store.fetchLatestBlock(currentPage, maxBlocksPerPage).then(() => {
                 store.latestBlock ? setTotalBlocks(store.latestBlock.block.header.b_num) : setTotalBlocks(0);
             });
@@ -80,7 +84,7 @@ export const Explorer = () => {
                 backgroundColor="#FFFFFF"
                 mainColor="#A6D4FF"
                 enableArrowBackground
-                className={styles.pagination} />
+                className={`${styles.pagination} ${leftArrowClass} ${rightArrowClass}`} />
         </section>
 
     )) as any;

@@ -9,11 +9,12 @@ const config = require('./utils/config');
 const app = express();
 const fullConfig = config.getConfig("./serverConfig.json");
 const port = fullConfig.PORT;
+const env = process.env.NODE_ENV || 'production';
 
-console.log(`Starting server in ${process.env.NODE_ENV} mode`);
+console.log(`Starting server in ${env} mode`);
 
 // Middleware
-if (process.env.NODE_ENV == 'development') {
+if (env == 'development') {
     app.use(cors());
 }
 
