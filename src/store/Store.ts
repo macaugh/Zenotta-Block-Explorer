@@ -1,6 +1,6 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
-import { RequestData, Block, MiningTxHashAndNoce, Transaction } from "../interfaces";
+import { RequestData, Block, MiningTxHashAndNoce, BlockDataFromResponse, Transaction } from "../interfaces";
 
 class Store {
     constructor() {
@@ -163,17 +163,11 @@ class Store {
     }
 
     formatBlockSet(data: any[]): RequestData[] {
-        var dataTable: RequestData[] = [];
+        let dataTable: RequestData[] = [];
         data.map((array: any[]) => {
             let hash = array[0];
-            let block = array[1].block;
-            if (block.header.merkle_root_hash === "") {
-                block.header.merkle_root_hash = "N/A";
-            }
-            var miningTxHashAndNonces: MiningTxHashAndNoce = {
-                hash: array[1].mining_tx_hash_and_nonces['1'][0],
-                nonce: array[1].mining_tx_hash_and_nonces['1'][1]
-            }
+            let { block, miningTxHashAndNonces } = this.formatBlock(array[1]);
+
             dataTable.push({
                 hash: hash,
                 block: block,
@@ -183,20 +177,25 @@ class Store {
         return dataTable;
     }
 
-    formatBlock(data: any): Block { 
+    formatBlock(data: BlockDataFromResponse): Block { 
         let block = data.block;
         if (block.header.merkle_root_hash === "") {
             block.header.merkle_root_hash = "N/A";
         }
-        var miningTxHashAndNonces: MiningTxHashAndNoce = {
+
+        if (block.header.previous_hash === "") {
+            block.header.previous_hash = "N/A";
+        }
+
+        let miningTxHashAndNonces: MiningTxHashAndNoce = {
             hash: data.mining_tx_hash_and_nonces['1'][0],
             nonce: data.mining_tx_hash_and_nonces['1'][1]
-        }
-        var lb: Block = {
-            block: block,
-            miningTxHashAndNonces: miningTxHashAndNonces
-        }
-        return lb
+        };
+        
+        return {
+            block,
+            miningTxHashAndNonces
+        };
     }
 
     formatTransaction(data: any): Transaction {

@@ -25,6 +25,11 @@ export interface MiningTxHashAndNoce {
     nonce: number[]
 }
 
+export interface BlockDataFromResponse {
+    block: BlockData,
+    mining_tx_hash_and_nonces: any
+}
+
 export interface Transaction {
     druid_info: any,
     inputs: TransactionInputs[],
