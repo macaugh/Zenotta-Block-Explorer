@@ -54,8 +54,6 @@ export const BCItemView = () => {
       let key: any = Object.keys(entry)[0];
       let val = (entry as any)[key];
 
-      // console.log(toJS(val))
-
       combo.push(val instanceof Array ? toHexString(val) : val);
     }
     return combo.join('\n');
@@ -72,7 +70,6 @@ export const BCItemView = () => {
   };
 
   const formatTransactionOutputs = (outputs: TransactionOutputs[]) => {
-    console.log('1')
     return outputs.map((output) => {
       if (isToken(output.value)) {
         const token = output.value as TokenOutput;
@@ -84,7 +81,6 @@ export const BCItemView = () => {
         };
       } else {
         const obj = output.value as any;
-        console.log(obj.Receipt)
         return {
           address: output.script_public_key,
           receipts: obj.Receipt,
@@ -96,7 +92,6 @@ export const BCItemView = () => {
 
   const getTransactionInfo = (tx: any, hashes: string[], index: number) => {
     let seenIns: string[] = [];
-    console.log('DEBUG: ', tx, hashes, index);
     return {
       hash: hashes[index],
       totalTokens: tx.outputs.reduce((acc: number, o: any) => acc + o.value.Token, 0),
@@ -117,13 +112,11 @@ export const BCItemView = () => {
     }
 
     if (transactions.length == 1) {
-      console.log(transactions);
       let tx = transactions[0];
       return getTransactionInfo(tx, hashes, 0);
     }
 
     return transactions.map((tx, i) => {
-      console.log(tx, i);
       return getTransactionInfo(tx, hashes, i);
     });
   };
@@ -196,7 +189,6 @@ export const BCItemView = () => {
 
       return newData;
     } else {
-      console.log('transaction');
       const tx = data as Transaction;
       setMainTxData(formatTransactions([tx], [hash]));
 
@@ -246,10 +238,6 @@ export const BCItemView = () => {
       });
     }
   }, []);
-
-  React.useEffect(() => {
-    console.log(miningTx);
-  })
 
   return useObserver(() => (
     <div className={styles.container}>

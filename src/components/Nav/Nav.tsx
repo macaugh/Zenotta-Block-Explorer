@@ -20,10 +20,6 @@ export default function App() {
             return false
     }
 
-    React.useEffect(() => {
-        console.log(path)
-    });
-
     return useObserver(() => (
         <nav className={`${styles.nav} ${!isHomePage() ? styles.navCompact : ''}`}>
             <a href="/" className={`${styles.logo}`}><img src={logo} alt="Zenotta logo" /></a>
