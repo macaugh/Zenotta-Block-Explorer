@@ -27,13 +27,16 @@ export const Explorer = () => {
 
     const mungeTableData = (data: RequestData[]) => {
         let body = [];
-
+        
         for (let obj of data) {
+            let prevHash = obj.block.header.previous_hash || "N/A";
+            let merkleRoot = obj.block.header.merkle_root_hash || "N/A";
+
             let row = [
                 { value: obj.block.header.b_num, isNumeric: true },
                 { value: <a href={`/${obj.hash}`}>{obj.hash}</a>, isNumeric: false },
-                { value: obj.block.header.previous_hash, isNumeric: false },
-                { value: obj.block.header.merkle_root_hash, isNumeric: false },
+                { value: prevHash, isNumeric: false },
+                { value: merkleRoot, isNumeric: false },
                 { value: 0, isNumeric: true },
                 { value: obj.block.transactions.length, isNumeric: true },
             ];
@@ -46,6 +49,8 @@ export const Explorer = () => {
 
     const onPageChange = (currentPage: number) => {
         if (totalBlocks > 0) {
+            console.log('total blocks', totalBlocks);
+            console.log('current page', currentPage);
             setLeftArrowClass(currentPage === 1 ? styles.leftArrowDisabled : '');
             setRightArrowClass(currentPage === Math.ceil(totalBlocks / maxBlocksPerPage) ? styles.rightArrowDisabled : '');
 
