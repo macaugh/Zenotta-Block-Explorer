@@ -21,8 +21,8 @@ export const Overview = () => {
 
     return useObserver(() => (
         <div className={styles.container}>
-            <ItemList title={'Latest Blocks'} data={store.tableData} dataType={DataType.Block} className={styles.left} />
-            <ItemList title={'Latest Transactions'} data={[]} dataType={DataType.Transaction} className={styles.right} />
+            <ItemList title={'Latest Blocks'} data={store.tableData} dataType={DataType.Block} />
+            <ItemList title={'Latest Transactions'} data={[]} dataType={DataType.Transaction} />
         </div>
     )) as any;
 }

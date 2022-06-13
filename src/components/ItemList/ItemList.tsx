@@ -16,7 +16,7 @@ interface ItemListProps {
     title: string,
     data: any,
     dataType: DataType,
-    className: string,
+    className?: string,
 }
 
 export const ItemList = (props: ItemListProps) => {
