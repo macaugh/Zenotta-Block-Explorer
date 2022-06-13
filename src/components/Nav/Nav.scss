@@ -7,7 +7,7 @@
     z-index: 10;
     display: flex;
     align-items: center;
-    justify-content: center;
+    // justify-content: center;
     height: $nav-height;
 }
 
@@ -20,4 +20,34 @@
     img {
         width: 120px;
     }
+}
+
+.navLinks {
+    width: 50%;
+    padding: 0 15px;
+
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+
+    a {
+        margin: 0 10px;
+        text-decoration: none;
+        color: rgb(60, 60, 60);
+        font-weight: lighter;
+
+        &:hover {
+            color: #1890ff;
+            cursor: pointer;
+        }
+    }
+}
+
+.leftContainer {
+    width: auto;
+    height: 30px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 }

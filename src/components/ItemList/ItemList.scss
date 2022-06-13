@@ -1,7 +1,4 @@
 .container {
-    margin-left: 10px;
-    margin-right: 10px;
-    // padding: 20px;
     width: 45vw;
     height: auto;
     background: white;
@@ -20,18 +17,13 @@
             font-size: .875rem;
             font-weight: 600;
             margin: 0px;
-            // padding-top: 5px;
             padding-left: 8px;
-            // margin-bottom: 5px;
-
         }
     }
 
     .content {
         width: 100%;
-        // margin-top: 2px;
         height: 400px;
-        // padding: 5px;
         overflow-y: auto;
         overflow-x: hidden;
 

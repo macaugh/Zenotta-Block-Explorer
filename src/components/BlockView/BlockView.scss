@@ -1,0 +1,99 @@
+.container {
+    width: 100%;
+    margin: 0 auto;
+    padding-bottom: 20px;
+
+    .transactionContainer {
+
+      .txHeading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .txTitle {
+          margin-bottom: 20px;
+        }
+
+        .txBtn {
+          height: 30px;
+          width: auto;
+          justify-self: flex-end;
+        }
+
+      }
+
+      .hidden {
+        margin: 0 auto;
+        font-weight: 200;
+        color: #999;
+        font-style: italic;
+        border: solid white 1px;
+        box-shadow: 0px -1px 5px #cecece;
+        background-color: white;
+        border-radius: 3px;
+        width: auto;
+        padding: 5px;
+      }
+    }
+  
+    h2 {
+      margin-bottom: 0px;
+    }
+  
+    h2 span {
+      text-transform: none;
+    }
+  
+    .blockNum {
+      font-size: medium;
+      font-style: italic;
+      font-weight: 200;
+      color: rgb(115, 115, 115);
+    }
+  
+    .dlContainer {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-end;
+  
+      .dlBtn {
+        width: auto;
+        display: inline-block;
+        margin: 0;
+        font-size: 12px;
+        color: #999;
+        transition: 0.5s;
+        padding: 5px;
+  
+        &:hover {
+          cursor: pointer;
+          box-shadow: 0px 0px 5px #999;
+          border-radius: 3px;
+          transition: 0.5s;
+          font-size: 13px;
+        }
+  
+        &:hover .dlicon {
+          transform: scale(1.2);
+          transition: 0.5s;
+        }
+  
+        &:active {
+          background-color: lightgray;
+        }
+  
+        .csvExport {
+          color: #00a8ff;
+  
+          .dlicon {
+            width: 12px;
+            padding-left: 8px;
+            padding-right: 8px;
+            transition: 0.5s;
+          }
+        }
+      }
+    }
+  }
+  

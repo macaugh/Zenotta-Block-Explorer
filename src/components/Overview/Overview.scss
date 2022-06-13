@@ -4,6 +4,13 @@
     margin-top: $default-spacing;
     display: flex;
     flex-flow: row nowrap;
-    justify-content: center;
+    justify-content: space-between;
+}
 
+.left {
+    margin-right: 10px;
+}
+
+.right {
+    margin-left: 10px;
 }

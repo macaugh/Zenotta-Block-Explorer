@@ -1,43 +1,18 @@
 import * as React from 'react';
 import { useObserver } from 'mobx-react';
-import { TextInput, Button } from 'chi-ui';
+import { Button } from 'chi-ui';
 import { StoreContext } from '../../index';
-import { BlockInfo, RequestData } from '../../interfaces';
-import { formatToBlockInfo } from '../../formatData';
+import { blockRangeToCsv, downloadFile } from '../../formatCsv';
 import styles from './CsvExport.scss';
 
 const DEFAULT_WARNING = 'Please enter range of blocks to export';
 
-const arrayToCsv = (data: RequestData[]) => {
-  if (data.length > 0) {
-    console.log('in');
-    const header = 'hash,computeNodes,blockNum,merkleRootHash,previousHash,version,byteSize,transactions';
-    let csv = header + '\n';
-
-    data.forEach((item: RequestData) => {
-      let blockInfo: BlockInfo = formatToBlockInfo(item); 
-      csv += `${blockInfo.hash},${blockInfo.computeNodes},${blockInfo.blockNum},${blockInfo.merkleRootHash},${blockInfo.previousHash},${blockInfo.version},${blockInfo.byteSize},${blockInfo.transactions}\n`;
-    });
-    return csv;
-  }
-  return '';
-};
-
-export const downloadFile = (fileName: string, data: any) => {
-  var link = document.createElement('a');
-  link.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data));
-  link.setAttribute('download', fileName);
-  link.style.display = 'none';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
 export const CsvExport = () => {
   const store = React.useContext(StoreContext);
-  const [startingBlock, setStartingBlock] = React.useState<number | undefined>(1);
-  const [endingBlock, setEndingBlock] = React.useState<number | undefined>(4);
+  const [startingBlock, setStartingBlock] = React.useState<number>(0);
+  const [endingBlock, setEndingBlock] = React.useState<number>(9);
   const [warningMsg, setWarningMsg] = React.useState<string>(DEFAULT_WARNING);
+  const [blockRange, setBlockRange] = React.useState<string>('');
   const [disabled, setDisabled] = React.useState<boolean>(true);
   const [loading, setLoading] = React.useState<boolean>(false);
 
@@ -54,22 +29,22 @@ export const CsvExport = () => {
       } else if (!eBlock.isValid) {
         setWarningMsg(eBlock.error);
       } else {
+        setBlockRange(`Number of selected blocks : ${(end - start) + 1}`)
         setDisabled(false);
         setWarningMsg('');
+
       }
     }
   };
 
   const downloadBlockRange = async () => {
-    if (!disabled && startingBlock && endingBlock) {
+    if (!disabled && startingBlock >= 0 && endingBlock) {
       setLoading(true);
       store
         .fetchBlockRange(startingBlock, endingBlock)
         .then((blockRange: any) => {
-          console.log('block range',blockRange);
           if (blockRange.length > 0) {
-            console.log(true,blockRange[0]);
-            let csv = arrayToCsv(blockRange);
+            let csv = blockRangeToCsv(blockRange);
             downloadFile('block_range.csv', csv);
             setWarningMsg('');
           }
@@ -83,11 +58,20 @@ export const CsvExport = () => {
   };
 
   React.useEffect(() => {
-    if (startingBlock && endingBlock) {
+    if (startingBlock >= 0 && endingBlock) {
       valueCheck(startingBlock, endingBlock);
     } else {
       setDisabled(true);
       setWarningMsg(DEFAULT_WARNING);
+    }
+
+    if (!store.latestBlock) {
+      store.fetchLatestBlock(0, 0).then(() => {
+        if (store.latestBlock) {
+          setStartingBlock(store.latestBlock.block.header.b_num - 9)
+          setEndingBlock(store.latestBlock.block.header.b_num)
+        }
+      });
     }
   }, [startingBlock, endingBlock]);
 
@@ -98,28 +82,29 @@ export const CsvExport = () => {
       <div className={styles.content}>
         <p>Export a blocks from range</p>
         <div className={styles.inputs}>
-          <TextInput
+          <input
             className={styles.txtInput}
-            type="number"
+            type='number'
             value={startingBlock}
             placeholder="Start Block Number"
             onChange={(e: { target: { value: string } }) => {
               const val = e.target.value;
-              setStartingBlock(val ? parseInt(val) : undefined);
+              setStartingBlock(val ? parseInt(val) : 0);
             }}
           />
           {'to'}
-          <TextInput
+          <input
             className={styles.txtInput}
-            type="number"
+            type='number'
             value={endingBlock}
             placeholder="End Block Number"
             onChange={(e: { target: { value: string } }) => {
               const val = e.target.value;
-              setEndingBlock(val ? parseInt(val) : undefined);
+              setEndingBlock(val ? parseInt(val) : 0);
             }}
           />
         </div>
+        {warningMsg == '' && blockRange && <p className={styles.blockRange}>{blockRange}</p>}
         {warningMsg && <p className={styles.warningMsg}>{warningMsg}</p>}
         <Button
           className={styles.btn}
@@ -135,3 +120,26 @@ export const CsvExport = () => {
     </div>
   ));
 };
+
+
+{/* <TextInput
+            className={styles.txtInput}
+            type="number"
+            value={startingBlock}
+            placeholder="Start Block Number"
+            onChange={(e: { target: { value: string } }) => {
+              const val = e.target.value;
+              setStartingBlock(val ? parseInt(val) : 1);
+            }}
+          /> */}
+
+{/* <TextInput
+            className={styles.txtInput}
+            type="number"
+            value={endingBlock}
+            placeholder="End Block Number"
+            onChange={(e: { target: { value: string } }) => {
+              const val = e.target.value;
+              setEndingBlock(val ? parseInt(val) : 2);
+            }}
+          /> */}

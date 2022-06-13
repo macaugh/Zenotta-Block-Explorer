@@ -16,7 +16,8 @@ export default function Search(props: NavProps) {
         "Block Hash",
         "Block Number",
     ]);
-    const [currentSearchOption, setCurrentSearchOption] = React.useState<string>("Transaction");
+    const localStorageValue = localStorage.getItem('DROPDOWN_SELECT');
+    const [currentSearchOption, setCurrentSearchOption] = React.useState<string>(localStorageValue ? localStorageValue : 'Transaction Hash');
     const [searchValue, setSearchValue] = React.useState<string>("");
     const [searchError, setSearchError] = React.useState<string>("");
     const store = React.useContext(StoreContext);
@@ -26,7 +27,10 @@ export default function Search(props: NavProps) {
             const validity = await store.searchHashIsValid(searchValue, currentSearchOption);
 
             if (validity.isValid) {
-                window.location.href = `/${searchValue}`;
+                if (currentSearchOption === 'Transaction Hash')
+                    window.location.href = `/tx/${searchValue}`;
+                else if (currentSearchOption === 'Block Hash')
+                    window.location.href = `/block/${searchValue}`;
             } else {
                 setSearchError(validity.error);
             }
@@ -53,7 +57,7 @@ export default function Search(props: NavProps) {
         if (validity.isValid) {
             store.fetchBlockHashByNum(parseInt(searchValue)).then((hash: string) => {
                 if (hash) {
-                    window.location.href = `/${hash}`;
+                    window.location.href = `/block/${hash}`;
                 }
             });
         } else {
@@ -63,11 +67,19 @@ export default function Search(props: NavProps) {
 
     return useObserver(() => (
         <>
+            {searchError.length > 0 &&
+                <Notification
+                    type="error"
+                    variant="outlined"
+                    closable
+                    className={styles.notification}>
+                    {searchError}
+                </Notification>}
             <div className={`${props.nav ? styles.navSearchContainer : styles.searchContainer}`}>
                 <div className={styles.innerContainer}>
                     <Dropdown
                         onItemClick={(item: any) => handleSearchOptionSelect(item)}
-                        listItems={searchOptions} 
+                        listItems={searchOptions}
                         nav={props.nav ? true : false} />
 
                     <TextInput
@@ -80,14 +92,6 @@ export default function Search(props: NavProps) {
                         onSubmit={() => submitSearchValue()} />
                 </div>
             </div>
-            {searchError.length > 0 &&
-                <Notification
-                    type="error"
-                    variant="outlined"
-                    closable
-                    className={styles.notification}>
-                    {searchError}
-                </Notification>}
         </>
     ));
 }

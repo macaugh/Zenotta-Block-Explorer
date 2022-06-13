@@ -7,11 +7,13 @@ overflow: hidden;
 }
 
 .content {
-    width: 100vw;
+    width: 80vw; // Global container width
     min-height: 100vh;
     height: auto;
     z-index: 1;
     overflow: hidden;
+    padding-left: 10vw;
+    padding-right: 10vw;
 
     .testObj {
         width: 200px;

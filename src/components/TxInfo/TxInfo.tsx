@@ -1,5 +1,5 @@
 import * as React from 'react';
-import styles from './TransactionInfo.scss';
+import styles from './TxInfo.scss';
 import arrowIcon from '../../static/img/left-arrow.svg';
 
 export interface TransactionInfoProps {
@@ -7,6 +7,7 @@ export interface TransactionInfoProps {
   txInHashes: string[];
   totalTokens: number[];
   outputs: TxOutPuts[];
+  txView?: boolean; // Removes link reference when on TxView
 }
 
 interface TxOutPuts {
@@ -15,7 +16,7 @@ interface TxOutPuts {
   tokens: number;
 }
 
-export const TransactionInfo = (props: TransactionInfoProps) => {
+export const TxInfo = (props: any) => {
   return (
     <div className={styles.container}>
       <div className={styles.left}>
@@ -23,7 +24,11 @@ export const TransactionInfo = (props: TransactionInfoProps) => {
           <li>
             <div className={styles.row}>
               <p>Hash</p>
-              <p>{props.hash}</p>
+              {props.txView &&
+                <p>{props.hash}</p>
+              }{!props.txView &&
+                <p><a href={`/tx/${props.hash}`}>{props.hash}</a></p>
+              }
             </div>
           </li>
           {props.totalTokens.length > 0 && (
@@ -42,10 +47,10 @@ export const TransactionInfo = (props: TransactionInfoProps) => {
 
               {props.txInHashes && props.txInHashes.length > 0 && (
                 <ul className={styles.ins}>
-                  {props.txInHashes.map((h) => {
+                  {props.txInHashes.map((h: string) => {
                     return (
                       <li key={h}>
-                        <a href={`/${h}`}>{h}</a>
+                        <a href={`/tx/${h}`}>{h}</a>
                       </li>
                     );
                   })}
@@ -62,12 +67,12 @@ export const TransactionInfo = (props: TransactionInfoProps) => {
 
       <div className={styles.right}>
         <ul>
-          {props.outputs.map((o, i) => {
+          {props.outputs.map((o: any, i: number) => {
             return (
               <li key={i}>
                 <div className={styles.row}>
                   <p>Address</p>
-                  <p>{o.publicKey}</p>
+                  <p className={styles.addr}>{o.publicKey}</p>
                 </div>
                 {o.tokens > 0 && (
                   <>
