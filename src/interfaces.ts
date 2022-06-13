@@ -1,6 +1,6 @@
+/** UI Interfaces */
 export interface BlockInfo {
     hash: string,
-    computeNodes: number,
     blockNum: number,
     merkleRootHash: string,
     previousHash: string,
@@ -9,52 +9,55 @@ export interface BlockInfo {
     transactions: number
 }
 
+export interface TransactionInfo {
+    hash: string,
+    outputs: TokenOutput[] | ReceiptOutput[],
+    totalTokens: number,
+    txInHashes: any[],
+}
+
+/** Store Interfaces */
 export interface RequestData {
     hash: string,
     block: BlockData,
-    miningTxHashAndNonces: MiningTxHashAndNoce,
+    miningTxHashAndNonces: MiningTxHashAndNoceData,
 };
 
-export interface Block {
+export interface RequestBlock {
     block: BlockData,
-    miningTxHashAndNonces: MiningTxHashAndNoce,
+    miningTxHashAndNonces: MiningTxHashAndNoceData,
 }
 
-export interface MiningTxHashAndNoce {
+export interface BlockData {
+    header: BlockHeader,
+    transactions: any[]
+}
+
+export interface TransactionData {
+    druid_info: any,
+    inputs: TransactionInputsData[],
+    outputs: TransactionOutputsData[],
+    version: number,
+}
+
+export interface MiningTxHashAndNoceData {
     hash: string,
     nonce: number[]
 }
 
-export interface BlockDataFromResponse {
-    block: BlockData,
-    mining_tx_hash_and_nonces: any
-}
-
-export interface Transaction {
-    druid_info: any,
-    inputs: TransactionInputs[],
-    outputs: TransactionOutputs[],
-    version: number,
-}
-
-export interface MiningTx {
+export interface MiningTxData {
     tokens: number,
     tokensDivided: number,
     scriptPublicKey: string,
     version: number
 }
 
-export interface BlockchainItem {
-    type: string,
-    item: Promise<Block | Transaction>
-}
-
-export interface TransactionInputs {
+export interface TransactionInputsData {
     previous_out: any,
     script_signature: ScriptSignature,
 }
 
-export interface TransactionOutputs {
+export interface TransactionOutputsData {
     drs_block_hash: any,
     drs_tx_hash: any,
     locktime: number,
@@ -70,6 +73,17 @@ export interface ReceiptOutput {
     Receipt: number
 }
 
+
+interface BlockHeader {
+    version: number,
+    bits: number,
+    nonce: any[],
+    b_num: number,
+    seedValue: any[],
+    previous_hash: string,
+    merkle_root_hash: string,
+}
+
 interface ScriptSignature {
     stack: any[]
 }
@@ -82,18 +96,4 @@ interface ScriptSignature {
 //     PubKey?: number[]
 // }
 
-interface BlockData {
-    header: BlockHeader,
-    transactions: any[]
-}
-
-interface BlockHeader {
-    version: number,
-    bits: number,
-    nonce: any[],
-    b_num: number,
-    seedValue: any[],
-    previous_hash: string,
-    merkle_root_hash: string,
-}
 

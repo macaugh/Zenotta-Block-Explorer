@@ -1,7 +1,7 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Button } from 'chi-ui';
 import styles from './Dropdown.scss';
-import OutsideAlerter from './OutsideAlerter/OutsideAlerter';
+import OutsideAlerter from './OutsideAlerter';
 
 export interface DropdownProps {
     listItems: string[],
@@ -14,6 +14,7 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
     const [dropdownClass, setDropdownClass] = useState('');
 
     const onSelect = (selection: any) => {
+        localStorage.setItem('DROPDOWN_SELECT', selection);
         setSelected(selection);
         setDropdownClass('');
 
@@ -26,9 +27,16 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
         setDropdownClass(dropdownClass == '' ? styles.visible : '');
     }
 
+    useEffect(() => {
+        const localVal = localStorage.getItem('DROPDOWN_SELECT');
+        if (localVal) {
+            setSelected(localVal);
+        }
+    }, []);
+
     return (
         <div className={`${styles.container} `} data-testid="dropdown">
-            <OutsideAlerter setDropdownClass={setDropdownClass}>
+            <OutsideAlerter action={setDropdownClass}>
                 <Button textColour="#000" mainColour="#cecece" onClick={() => toggleDropdown()} className={`${styles.button} ${props.nav ? styles.buttonCompact : ''}`}>
                     <span>{selected}</span>
                     <svg className={`${styles.dropdownArrow} ${dropdownClass}`} viewBox="0 0 512 512">

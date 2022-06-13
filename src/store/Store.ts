@@ -1,6 +1,6 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
-import { RequestData, Block, MiningTxHashAndNoce, BlockDataFromResponse, Transaction } from "../interfaces";
+import { RequestData, RequestBlock, MiningTxHashAndNoceData, BlockData, TransactionData } from "../interfaces";
 
 class Store {
     constructor() {
@@ -8,15 +8,15 @@ class Store {
     }
 
     @observable tableData: RequestData[] = [];
-    @observable latestBlock: Block | null = null;
-    @observable latestTransactions: Transaction[] = [];
+    @observable latestBlock: RequestBlock | null = null;
+    @observable latestTransactions: TransactionData[] = [];
     @observable blockchainItemCache: any = {};
 
     @action addToLatestTransactions(tx: any) {
         this.latestTransactions.push(tx);
     }
 
-    @action setLatestBlock(block: Block) {
+    @action setLatestBlock(block: RequestBlock) {
         this.latestBlock = block;
     }
 
@@ -24,7 +24,7 @@ class Store {
         this.tableData = tableData;
     }
 
-    @action setLatestTransactions(transactions: Transaction[]) {
+    @action setLatestTransactions(transactions: TransactionData[]) {
         this.latestTransactions = transactions;
     }
 
@@ -39,7 +39,7 @@ class Store {
         });
     }
 
-    @action async fetchBlockchainItem(hash: string): Promise<Block | Transaction> {
+    @action async fetchBlockchainItem(hash: string): Promise<RequestBlock | TransactionData> {
         let bItemData = null;
         if (Object.keys(this.blockchainItemCache).indexOf(hash) == -1) {
             bItemData = await axios.post(`http://localhost:8090/api/blockchainItem`, { hash }).then(res => res.data);
@@ -47,7 +47,7 @@ class Store {
         } else {
             bItemData = this.blockchainItemCache[hash];
         }
-        
+
         let itemType = Object.getOwnPropertyNames(bItemData)[0]
 
         if (itemType === 'Block') {
@@ -177,7 +177,7 @@ class Store {
         return dataTable;
     }
 
-    formatBlock(data: BlockDataFromResponse): Block { 
+    formatBlock(data: { block: BlockData, mining_tx_hash_and_nonces: any }): RequestBlock {
         let block = data.block;
         if (block.header.merkle_root_hash === "") {
             block.header.merkle_root_hash = "N/A";
@@ -187,18 +187,18 @@ class Store {
             block.header.previous_hash = "N/A";
         }
 
-        let miningTxHashAndNonces: MiningTxHashAndNoce = {
+        let miningTxHashAndNonces: MiningTxHashAndNoceData = {
             hash: data.mining_tx_hash_and_nonces['1'][0],
             nonce: data.mining_tx_hash_and_nonces['1'][1]
         };
-        
+
         return {
             block,
             miningTxHashAndNonces
         };
     }
 
-    formatTransaction(data: any): Transaction {
+    formatTransaction(data: any): TransactionData {
         let txData = {
             druid_info: data.druid_info,
             inputs: data.inputs,

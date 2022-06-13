@@ -1,12 +1,8 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useObserver } from 'mobx-react';
-import { toJS } from 'mobx';
 import { StoreContext } from '../../index';
 
-import { Pagination, Table } from 'chi-ui';
-import { RequestData } from '../../interfaces';
-import { SectionBlock } from "../SectionBlock/SectionBlock";
 import { ItemList, DataType } from '../ItemList/ItemList';
 import styles from './Overview.scss';
 
@@ -25,8 +21,8 @@ export const Overview = () => {
 
     return useObserver(() => (
         <div className={styles.container}>
-            <ItemList title={'Latest Blocks'} data={store.tableData} dataType={DataType.Block}/>
-            <ItemList title={'Latest Transactions'} data={[]} dataType={DataType.Transaction}/>
+            <ItemList title={'Latest Blocks'} data={store.tableData} dataType={DataType.Block} className={styles.left} />
+            <ItemList title={'Latest Transactions'} data={[]} dataType={DataType.Transaction} className={styles.right} />
         </div>
     )) as any;
 }

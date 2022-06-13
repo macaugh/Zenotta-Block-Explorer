@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Button } from 'chi-ui';
-import { RequestData, TokenOutput, Transaction } from '../../interfaces';
+import { RequestData } from '../../interfaces';
 import { useObserver } from 'mobx-react';
-import { toJS } from 'mobx';
 import styles from './ItemList.scss';
 import { StoreContext } from '../..';
 import { BlockItem } from './BlockItem/BlockItem';
@@ -16,18 +15,15 @@ export enum DataType {
 interface ItemListProps {
     title: string,
     data: any,
-    dataType: DataType
+    dataType: DataType,
+    className: string,
 }
 
 export const ItemList = (props: ItemListProps) => {
     const store = React.useContext(StoreContext);
 
-    useEffect(() => {
-
-    }, []);
-
     return useObserver(() => (
-        <div className={styles.container}>
+        <div className={`${styles.container} ${props.className ? props.className : ''}`}>
             <div className={styles.header}>
                 <h2>{props.title}</h2>
             </div>
@@ -45,7 +41,7 @@ export const ItemList = (props: ItemListProps) => {
                                 </>)
                         })} */}
                     </>}
-                {props.data == [] &&
+                {props.data === [] &&
                     <div className={styles.loading}>{'Loading'}</div>
                 }
 

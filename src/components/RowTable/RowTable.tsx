@@ -3,7 +3,7 @@ import styles from './RowTable.scss';
 
 export interface RowTableRow {
     heading: string,
-    value: string
+    value: any,
 }
 
 interface RowTableProps {
@@ -26,7 +26,6 @@ export const RowTable = (props: RowTableProps) => {
 
             return split.join(' ');
         }
-
         return val;
     }
 
@@ -38,7 +37,7 @@ export const RowTable = (props: RowTableProps) => {
                         <tr key={i}>
                             <td>{format(row.heading)}</td>
                             <td>
-                                {row.value}
+                                {row.value} 
                             </td>
                         </tr>
                     );
