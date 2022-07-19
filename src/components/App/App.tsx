@@ -3,7 +3,8 @@ import { useObserver } from 'mobx-react';
 import { StoreContext } from '../../index';
 
 import * as styles from "./App.scss";
-import { Explorer } from '../Explorer/Explorer';
+import { BlockExplorer } from '../BlockExplorer/BlockExplorer';
+import { TxsExplorer } from '../TxsExplorer/TxsExplorer';
 import { Overview } from '../Overview/Overview';
 import { Footer } from '../Footer/Footer';
 import { CsvExport } from '../CsvExport/CsvExport';
@@ -28,10 +29,10 @@ export default function App() {
         <div className={styles.content}>
           <Switch>
             <Route exact path="/txs">
-              <Explorer />
+              <TxsExplorer />
             </Route>
             <Route exact path="/blocks">
-              <Explorer />
+              <BlockExplorer />
             </Route>
             <Route exact path="/block/:hash">
               <BlockView />

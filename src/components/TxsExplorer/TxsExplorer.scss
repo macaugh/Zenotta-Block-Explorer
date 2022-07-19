@@ -1,0 +1,54 @@
+.computeNodesContainer {
+  ul {
+    padding: 0;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+  }
+
+  li {
+    list-style: none;
+  }
+}
+
+.table {
+  background: white;
+  margin-top: 0;
+  box-shadow: 0px 0px 5px #898c91;
+
+}
+
+.blockTable {
+  padding-top: 10px;
+  margin: 0 auto;
+  width: 100%;
+  min-width: 40vw;
+}
+
+.pagination {
+  ul {
+    li {
+      margin: 2px;
+      width: auto !important;
+      min-width: 40px !important;
+    }
+  }
+
+  &.leftArrowDisabled {
+    div:first-child {
+      display: none;
+    }
+  }
+
+  &.rightArrowDisabled {
+    div:last-child {
+      display: none;
+    }
+  }
+}
+
+// :global nav {
+//   ul li {
+//     width: 50px !important;
+//   }
+// }

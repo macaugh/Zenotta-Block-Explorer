@@ -9,6 +9,7 @@ import { RowTable } from '../RowTable/RowTable';
 import { TxInfo } from '../TxInfo/TxInfo';
 import { CsvBtn } from '../CsvBtn/CsvBtn';
 import { downloadFile, formatCsvTxs, itemToCsv } from '../../formatCsv';
+import { formatNumber } from '../../formatData';
 
 export const TxView = () => {
     let { hash } = useParams<any>();
@@ -56,8 +57,8 @@ export const TxView = () => {
                 const token = (output.value as TokenOutput).Token;
                 return {
                     address: output.script_public_key,
-                    tokens: `${(token / 25200).toFixed(2)} ZENO`,
-                    fractionatedTokens: `${token}`,
+                    tokens: `${formatNumber((token / 25200).toFixed(2))} ZENO`,
+                    fractionatedTokens: `${formatNumber(token)}`,
                     lockTime: output.locktime,
                 };
             } else if (output.value.hasOwnProperty('Receipt')) { // is a Receipt output
@@ -90,7 +91,7 @@ export const TxView = () => {
         if (!localData) { return null }
         return Object.keys(localData).map(key => {
             const value = localData[key];
-            
+
             if (key === 'previousOutputHash' && value != 'N/A') { // Add clickable link if displayed as a block transaction
                 return {
                     heading: key,
@@ -117,13 +118,13 @@ export const TxView = () => {
         let seenIns: string[] = [];
         return {
             hash: hashes[index],
-            totalTokens: tx.outputs.reduce((acc: number, o: any) => acc + o.value.Token, 0),
+            totalTokens: formatNumber(tx.outputs.reduce((acc: number, o: any) => acc + o.value.Token, 0)),
             txInHashes: tx.inputs.filter((t: any) => checkSeenTxIns(t, seenIns)).map((i: any) => i.previous_out.t_hash),
             outputs: tx.outputs.map((o: any) => {
                 return {
                     publicKey: o.script_public_key,
                     lockTime: o.locktime,
-                    tokens: o.value.Token,
+                    tokens: formatNumber(o.value.Token),
                 };
             }),
         };
@@ -157,6 +158,13 @@ export const TxView = () => {
         }
     }, []);
 
+    React.useEffect(() => {
+        if (localData && window.location.hash) {
+            let elmnt = document.getElementById(window.location.hash.substring(1));
+            if (elmnt) elmnt.scrollIntoView(true);
+        }
+    }, [localData]);
+
     return useObserver(() => (
         <div className={styles.container}>
             <h2 className={styles.heading}>
@@ -168,7 +176,7 @@ export const TxView = () => {
 
                 {localData && localData.inputs && localData.inputs.length > 0 &&
                     <>
-                        <h2>Inputs</h2>
+                        <h2 id="inputs">Inputs</h2>
                         {localData.inputs.map((input: any, i: number) => {
                             return <div className={styles.infoContainer} key={i} ><RowTable rows={formatDataForTable(input)} /></div>;
                         })}
@@ -176,7 +184,7 @@ export const TxView = () => {
 
                 {localData && localData.outputs && localData.outputs.length > 0 &&
                     <div>
-                        <h2>Outputs</h2>
+                        <h2 id='outputs'>Outputs</h2>
                         {localData && localData.outputs.map((output: any, i: number) => {
                             return <div className={styles.infoContainer} key={i} ><RowTable rows={formatDataForTable(output)} /></div>;
                         })}

@@ -4,6 +4,9 @@ const axios = require('axios');
 function fetchLatestBlock(path) {
     return axios.get(path).then(async (response) => {
         return response.data;
+    }).catch((error) => {
+        console.error(`Fetch of LATEST BLOCK failed with status code ${error}`)
+        throw(error);
     });
 }
 
@@ -18,8 +21,8 @@ function fetchBlockchainItem(path, hash) {
     .then(response => {
         return response.data;
     }).catch((error) => {
-        console.error(`Fetch of blockchain item failed with status code ${error}`)
-        console.error(error.data)
+        console.error(`Fetch of BLOCKCHAIN ITEM failed with status code ${error}`)
+        throw(error);
     });
 }
 
@@ -35,8 +38,8 @@ function fetchBlockRange(path, nums) {
     }).then((response) => {
         return response.data;
     }).catch((error) => {
-        console.error(`Fetch of blocks by number failed with status code ${error}`);
-        console.error(error.data);
+        console.error(`Fetch of BLOCK RANGE failed with status code ${error}`);
+        throw(error);
     });
 }
 

@@ -5,10 +5,11 @@ import { StoreContext } from '../../index';
 
 import { Pagination, Table } from 'chi-ui';
 import { RequestData } from '../../interfaces';
-import styles from './Explorer.scss';
+import styles from './BlockExplorer.scss';
 import { CsvBtn } from '../CsvBtn/CsvBtn';
+import { toJS } from 'mobx';
 
-export const Explorer = () => {
+export const BlockExplorer = () => {
     const [totalBlocks, setTotalBlocks] = useState(0);
     const [maxBlocksPerPage] = useState(10);
     const [leftArrowClass, setLeftArrowClass] = useState(styles.leftArrowDisabled);
@@ -50,14 +51,17 @@ export const Explorer = () => {
             setLeftArrowClass(currentPage === 1 ? styles.leftArrowDisabled : '');
             setRightArrowClass(currentPage === Math.ceil(totalBlocks / maxBlocksPerPage) ? styles.rightArrowDisabled : '');
 
-            store.fetchLatestBlock(currentPage, maxBlocksPerPage).then(() => {
+            store.setBlockTableData([]);
+            store.fetchLatestBlock().then(() => {
+                store.fetchBlocksTableData(currentPage, maxBlocksPerPage);
                 store.latestBlock ? setTotalBlocks(store.latestBlock.block.header.b_num) : setTotalBlocks(0);
             });
         }
     }
 
     useEffect(() => {
-        store.fetchLatestBlock(1, maxBlocksPerPage).then(() => {
+        store.fetchLatestBlock().then(() => {
+            store.fetchBlocksTableData(1, maxBlocksPerPage);
             store.latestBlock ? setTotalBlocks(store.latestBlock.block.header.b_num) : setTotalBlocks(0);
         });
     }, []);
@@ -70,7 +74,7 @@ export const Explorer = () => {
             <Table
                 sortable={true}
                 header={tableHeadings}
-                body={mungeTableData(store.tableData)}
+                body={mungeTableData(store.blocksTableData)}
                 className={styles.table} />
 
             <Pagination

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useObserver } from 'mobx-react';
 import { StoreContext } from '../../index';
+import { toJS } from 'mobx';
 
 import { ItemList, DataType } from '../ItemList/ItemList';
 import styles from './Overview.scss';
@@ -9,20 +10,17 @@ import styles from './Overview.scss';
 export const Overview = () => {
     const store = React.useContext(StoreContext);
 
-    const [totalBlocks, setTotalBlocks] = useState(0);
-    const [visibleBlocks] = useState(10);
-
     useEffect(() => {
-        store.fetchLatestBlock(1, visibleBlocks).then(() => {
-            store.latestBlock ? setTotalBlocks(store.latestBlock.block.header.b_num) : setTotalBlocks(0);
+        store.fetchLatestBlock().then(() => {
+            store.fetchBlocksTableData(1, 10);
+            store.fetchTxsTableData(1, 10);
         });
     }, []);
 
-
     return useObserver(() => (
         <div className={styles.container}>
-            <ItemList title={'Latest Blocks'} data={store.tableData} dataType={DataType.Block} />
-            <ItemList title={'Latest Transactions'} data={[]} dataType={DataType.Transaction} />
+            <ItemList title={'Latest Blocks'} data={store.blocksTableData} dataType={DataType.Block} />
+            <ItemList title={'Latest Transactions'} data={store.txsTableData} dataType={DataType.Transaction} />
         </div>
     )) as any;
 }

@@ -31,6 +31,7 @@
     "js-file-download": "^0.4.12",
     "mobx": "^6.2.0",
     "mobx-react": "^7.1.0",
+    "node-fetch": "^3.2.6",
     "nodejs": "^0.0.0",
     "path": "^0.12.7",
     "react": "^16.14.0",

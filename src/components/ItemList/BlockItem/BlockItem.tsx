@@ -2,9 +2,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useObserver } from 'mobx-react';
 import styles from './BlockItem.scss';
-import { Button } from 'chi-ui';
-import { DataType } from '../ItemList';
-import { MiningTxHashAndNoceData, TokenOutput, TransactionData, TransactionOutputsData } from '../../../interfaces';
+import { TokenOutput, TransactionData, TransactionOutputsData } from '../../../interfaces';
 import { StoreContext } from '../../..';
 
 export const BlockItem = (props: any) => {
