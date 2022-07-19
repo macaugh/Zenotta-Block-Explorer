@@ -1,3 +1,9 @@
+/** Global */ 
+export enum ItemType {
+    Block,
+    Transaction
+}
+
 /** UI Interfaces */
 export interface BlockInfo {
     hash: string,
@@ -38,6 +44,12 @@ export interface TransactionData {
     inputs: TransactionInputsData[],
     outputs: TransactionOutputsData[],
     version: number,
+}
+
+export interface TransactionTableData {
+    hash: string,
+    transaction: TransactionData,
+    blockNum: number,
 }
 
 export interface MiningTxHashAndNoceData {

@@ -66,7 +66,7 @@ export const CsvExport = () => {
     }
 
     if (!store.latestBlock) {
-      store.fetchLatestBlock(0, 0).then(() => {
+      store.fetchLatestBlock().then(() => {
         if (store.latestBlock) {
           setStartingBlock(store.latestBlock.block.header.b_num - 9)
           setEndingBlock(store.latestBlock.block.header.b_num)

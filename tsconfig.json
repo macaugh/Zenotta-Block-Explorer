@@ -22,6 +22,6 @@
     "isolatedModules": true,
     "experimentalDecorators": true
   },
-  "include": ["src"],
+  "include": ["src", "getTransactions.js", "getTransactions.mjs", "utils/getTransactions.js"],
   "exclude": ["node_modules", "**/*.spec.ts", "public"]
 }

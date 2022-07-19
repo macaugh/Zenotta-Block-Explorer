@@ -1,41 +1,49 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
-import { RequestData, RequestBlock, MiningTxHashAndNoceData, BlockData, TransactionData } from "../interfaces";
+import { RequestData, RequestBlock, MiningTxHashAndNoceData, BlockData, TransactionData, ItemType, TransactionTableData } from "../interfaces";
+
+const FILENAME = 'transactions';
 
 class Store {
     constructor() {
         makeAutoObservable(this)
     }
 
-    @observable tableData: RequestData[] = [];
     @observable latestBlock: RequestBlock | null = null;
-    @observable latestTransactions: TransactionData[] = [];
+    @observable blocksTableData: RequestData[] = [];
+    @observable latestTx: TransactionData | null = null;
+    @observable txsTableData: TransactionTableData[] = [];
+    @observable nbTxs: number = 0;
     @observable blockchainItemCache: any = {};
 
-    @action addToLatestTransactions(tx: any) {
-        this.latestTransactions.push(tx);
+    /** SET */
+
+    @action setTxsTableData(tableData: any) {
+        this.txsTableData = tableData;
     }
 
     @action setLatestBlock(block: RequestBlock) {
         this.latestBlock = block;
     }
 
-    @action setTableData(tableData: RequestData[]) {
-        this.tableData = tableData;
+    @action setBlockTableData(tableData: RequestData[]) {
+        this.blocksTableData = tableData;
     }
 
-    @action setLatestTransactions(transactions: TransactionData[]) {
-        this.latestTransactions = transactions;
+    @action setBcItemCache(key: string, value: any) {
+        this.blockchainItemCache[key] = value;
     }
+
+    @action setNbTxs(nbTxs: number) {
+        this.nbTxs = nbTxs;
+    }
+
+    /** BLOCK */
 
     @action
-    async fetchLatestBlock(pageNumber: number, maxBlocks: number) {
+    async fetchLatestBlock() {
         await axios.get('http://localhost:8090/api/latestBlock').then(async (response) => {
             this.setLatestBlock(this.formatBlock(response.data));
-            await this.fetchTableData(pageNumber, maxBlocks);
-        }).catch((error) => {
-            console.error(`Fetch of latest block failed with status code ${error.status}`);
-            console.error(error.data);
         });
     }
 
@@ -43,7 +51,7 @@ class Store {
         let bItemData = null;
         if (Object.keys(this.blockchainItemCache).indexOf(hash) == -1) {
             bItemData = await axios.post(`http://localhost:8090/api/blockchainItem`, { hash }).then(res => res.data);
-            this.blockchainItemCache[hash] = bItemData;
+            this.setBcItemCache(hash, bItemData);
         } else {
             bItemData = this.blockchainItemCache[hash];
         }
@@ -53,7 +61,7 @@ class Store {
         if (itemType === 'Block') {
             return this.formatBlock(bItemData.Block);
         } else if (itemType === 'Transaction') {
-            return this.formatTransaction(bItemData.Transaction);
+            return this.formatTxs(bItemData.Transaction);
         }
         return bItemData
     }
@@ -61,17 +69,19 @@ class Store {
     @action
     async fetchBlockRange(startBlock: number, endBlock: number): Promise<RequestData[]> {
         const nums = [...Array(endBlock - startBlock + 1).keys()].map(x => x + startBlock); // Generate number array from range
-
         let data = await axios.post('http://localhost:8090/api/blockRange', { nums }).then(res => res.data);
         return this.formatBlockSet(data)
     }
 
     @action
-    async fetchTableData(pageNumber: number, maxBlocks: number) {
-        const nums = this.getNEntries(pageNumber, maxBlocks);
-
-        let data = await axios.post('http://localhost:8090/api/blockRange', { nums }).then(res => res.data);
-        this.setTableData(this.formatBlockSet(data));
+    async fetchBlocksTableData(pageNumber: number, maxBlocks: number) {
+        const latestBh = this.getLatestBlockHeight();
+        if (latestBh) {
+            const start = latestBh - (pageNumber * maxBlocks);
+            const end = start + maxBlocks;
+            const resp = await this.fetchBlockRange(start < 0 ? 0 : start + 1, end);
+            this.setBlockTableData(resp.reverse());
+        }
     }
 
     @action
@@ -87,37 +97,6 @@ class Store {
         }
 
         return null;
-    }
-
-    @action
-    async blockNumIsValid(num: number): Promise<{ isValid: boolean, error: string }> {
-        if (!this.latestBlock) {
-            await this.fetchLatestBlock(0, 0);
-        }
-
-        // Check for NaN
-        if (isNaN(num)) {
-            return { isValid: false, error: 'Please provide a number to search by block number' };
-        }
-
-        // Check for negative
-        if (num < 0) {
-            return { isValid: false, error: 'Block number must be greater than zero' };
-        }
-
-        // Check against latest block
-        let latestBlockHeight = this.getLatestBlockHeight();
-        if (latestBlockHeight && latestBlockHeight < num) {
-            return {
-                isValid: false,
-                error: `Block number ${num} is too high. Latest block is ${this.getLatestBlockHeight()}`
-            }
-        }
-
-        return {
-            isValid: true,
-            error: ''
-        }
     }
 
     @action
@@ -141,11 +120,93 @@ class Store {
         return { isValid: true, error: '' };
     }
 
+    @action
+    async blockNumIsValid(num: number): Promise<{ isValid: boolean, error: string }> {
+        if (!this.latestBlock) {
+            await this.fetchLatestBlock();
+        }
+        // Check for NaN
+        if (isNaN(num)) {
+            return { isValid: false, error: 'Please provide a number to search by block number' };
+        }
+        // Check for negative
+        if (num < 0) {
+            return { isValid: false, error: 'Block number must be greater than zero' };
+        }
+        // Check against latest block
+        let latestBlockHeight = this.getLatestBlockHeight();
+        if (latestBlockHeight && latestBlockHeight < num) {
+            return {
+                isValid: false,
+                error: `Block number ${num} is too high. Latest block is ${this.getLatestBlockHeight()}`
+            }
+        }
+
+        return { isValid: true, error: '' }
+    }
+
+    /** TXS */
+
+    @action
+    async fetchTxsIdRange(startTxs: number, endTxs: number, ascending: boolean) {
+        let txsIdRange = await axios.get(`http://localhost:8090/${FILENAME}.json`).then(response => {
+            const isJson = response.headers['content-type'] && response.headers['content-type'].search('application/json') != -1 ? true : false;
+            let data = isJson ? JSON.parse(JSON.stringify(response.data)) : null;
+
+            const dataLength = data ? Object.keys(data.transactions).length : 0;
+            if (dataLength > 0) {
+                this.setNbTxs(dataLength);
+                if (ascending) {
+                    return this.extractTxsIds(data, startTxs, endTxs);
+                } else {
+                    const start = dataLength - startTxs;
+                    const end = (dataLength - startTxs) + endTxs;
+                    return this.extractTxsIds(data, start < 0 ? 0 : start + 1, end);
+                }
+            }
+        });
+        return txsIdRange;
+    }
+
+    @action
+    async fetchTxsTableData(pageNumber: number, maxTxs: number) {
+        const start = pageNumber * maxTxs;
+        const end = maxTxs;
+        const txsObj = await this.fetchTxsIdRange(start, end, false);
+
+        if (txsObj) {
+            let result = await this.fetchTxsContents(txsObj);
+            this.setTxsTableData(result.reverse());
+        }
+    }
+
+    @action extractTxsIds(data: any, startTxs: number, endTxs: number) {
+        const txsData = data.transactions.slice(startTxs - 1 < 0 ? 0 : startTxs - 1, endTxs);
+        return txsData
+    }
+
+    @action async fetchTxsContents(txsObj: any) {
+        let result: TransactionTableData[] = [];
+        for (let i = 0; i < txsObj.length; i++) {
+            for (let j = 0; j < txsObj[i].txs.length; j++) {
+                const tx = await this.fetchBlockchainItem(txsObj[i].txs[j]) as TransactionData;
+                const TxTableData: TransactionTableData = {
+                    hash: txsObj[i].txs[j],
+                    transaction: tx,
+                    blockNum: txsObj[i].blockNum,
+                }
+                result.push(TxTableData);
+            }
+        }
+        return result;
+    }
+
+    /** GET */
+
     getLatestBlockHeight() {
         if (this.latestBlock) {
             return this.latestBlock.block.header.b_num;
         }
-
         return null;
     }
 
@@ -162,19 +223,25 @@ class Store {
         return null;
     }
 
+    /** FORMAT */
+
+    // formatTxsSet(data: any) {
+    //     let tableData = [];
+    // }
+
     formatBlockSet(data: any[]): RequestData[] {
-        let dataTable: RequestData[] = [];
+        let blockSet: RequestData[] = [];
         data.map((array: any[]) => {
             let hash = array[0];
             let { block, miningTxHashAndNonces } = this.formatBlock(array[1]);
 
-            dataTable.push({
+            blockSet.push({
                 hash: hash,
                 block: block,
                 miningTxHashAndNonces: miningTxHashAndNonces
             });
         });
-        return dataTable;
+        return blockSet;
     }
 
     formatBlock(data: { block: BlockData, mining_tx_hash_and_nonces: any }): RequestBlock {
@@ -198,7 +265,7 @@ class Store {
         };
     }
 
-    formatTransaction(data: any): TransactionData {
+    formatTxs(data: any): TransactionData {
         let txData = {
             druid_info: data.druid_info,
             inputs: data.inputs,
@@ -207,7 +274,7 @@ class Store {
         }
         return txData
     }
-
 }
+
 
 export default new Store();

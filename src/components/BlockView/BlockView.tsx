@@ -123,7 +123,7 @@ export const BlockView = () => {
             if (key === 'previousHash') {
                 return {
                     heading: key,
-                    value: <a href={`/tx/${value}`}>{value}</a>,
+                    value: value != 'N/A' ? <a href={`/block/${value}`}>{value}</a> : value,
                 };
             } else {
                 return {

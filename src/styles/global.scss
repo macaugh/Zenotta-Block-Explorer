@@ -9,6 +9,7 @@ $nav-height: 20px;
     height: 100vh;
     overflow-x: hidden;
     overflow-y: auto;
+    scroll-behavior: smooth;
   }
 
 :global body {
