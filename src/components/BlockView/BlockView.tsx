@@ -3,7 +3,7 @@ import { useObserver } from 'mobx-react';
 import { useParams } from 'react-router-dom';
 import { StoreContext } from '../../index';
 import { RowTable, RowTableRow } from '../RowTable/RowTable';
-import { TxInfo, TransactionInfoProps } from '../TxInfo/TxInfo';
+import { TxInfo } from '../TxInfo/TxInfo';
 import { RequestBlock, MiningTxData, TokenOutput, TransactionData, TransactionInputsData, TransactionOutputsData, TransactionInfo } from '../../interfaces';
 import { formatToBlockInfo } from '../../formatData';
 import { CsvBtn } from '../CsvBtn/CsvBtn';

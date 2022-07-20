@@ -30,7 +30,7 @@ export const ItemList = (props: ItemListProps) => {
         if (props.data.length === 0) {
             timeoutId = setTimeout(() => {
                 setLoadtimeout(true)
-            }, 5000);
+            }, 10000);
         } 
 
         return () => {

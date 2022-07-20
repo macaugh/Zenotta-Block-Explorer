@@ -1,6 +1,6 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
-import { RequestData, RequestBlock, MiningTxHashAndNoceData, BlockData, TransactionData, ItemType, TransactionTableData } from "../interfaces";
+import { RequestData, RequestBlock, MiningTxHashAndNoceData, BlockData, TransactionData, TransactionTableData } from "../interfaces";
 
 const FILENAME = 'transactions';
 

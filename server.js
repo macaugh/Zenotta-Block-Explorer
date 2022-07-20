@@ -31,7 +31,8 @@ const storageNode = fullConfig.STORAGE_NODE;
 
 // Caches
 const cacheCapacity = fullConfig.CACHE_CAPACITY;
-const bItemCache = new cache.NetworkCache(cacheCapacity * 3);
+const blocksCache = new cache.NetworkCache(cacheCapacity * 3);
+const txsCache = new cache.NetworkCache(cacheCapacity * 3);
 const bNumCache = new cache.NetworkCache(cacheCapacity);
 
 /** Fetch latest block */
@@ -46,18 +47,29 @@ app.get('/api/latestBlock', (_, res) => {
     .catch(error => {
         res.status(500).send(error);
     });
-
 });
 
 /** Fetch blockchain item */
 app.post('/api/blockchainItem', (req, res) => {
     const hash = req.body.hash;
     const storagePath = `${storageNode}/blockchain_entry_by_key`;
-    const posEntry = bItemCache.get(hash);
+    const isBlock = hash[0] !== 'g';
+
+    let posEntry = null;
+
+    if (isBlock) {
+        posEntry = blocksCache.get(hash);
+    } else { // Transaction
+        posEntry = txsCache.get(hash);
+    }
 
     if (!posEntry) {
         calls.fetchBlockchainItem(storagePath, hash).then(bItem => {
-            bItemCache.add(hash, bItem);
+            if (bItem.hasOwnProperty('Block')) {
+                blocksCache.add(hash, bItem);
+            } else if (bItem.hasOwnProperty('Transaction')) {
+                txsCache.add(hash, bItem);
+            }
             res.json(bItem);
         }).catch(error => {
             res.status(500).send(error);
@@ -65,7 +77,6 @@ app.post('/api/blockchainItem', (req, res) => {
     } else { // Serving from cache
         res.json(posEntry);
     }
-
 });
 
 /** Fetch block range */
@@ -91,9 +102,9 @@ app.post('/api/blockRange', (req, res) => {
                 for (let b of blocks) {
                     bNumCache.add(b[1].block.header.b_num, b);
 
-                    // Add to bItemCache too coz why not
-                    if (!bItemCache.get(b[0])) {
-                        bItemCache.add(b[0], { "Block": b[1] });
+                    // Add to blocksCache too coz why not
+                    if (!blocksCache.get(b[0])) {
+                        blocksCache.add(b[0], { "Block": b[1] });
                     }
 
                     knowns.push(b);
