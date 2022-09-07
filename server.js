@@ -10,7 +10,7 @@ const { extractTxs } = require('./utils/getTransactions');
 // Server setup
 const app = express();
 const fullConfig = config.getConfig("./serverConfig.json");
-const port = fullConfig.PORT;
+const port = process.env.PORT || fullConfig.PORT;
 const env = process.env.NODE_ENV || 'production';
 
 console.log(`Starting server in ${env} mode`);
@@ -39,9 +39,12 @@ const bNumCache = new cache.NetworkCache(cacheCapacity);
 app.get('/api/latestBlock', (_, res) => {
     const storagePath = `${storageNode}/latest_block`;
 
-    calls.fetchLatestBlock(storagePath).then(latestBlock => {
-        extractTxs(latestBlock.block.header.b_num); // Extract transaction data to json file
-        console.log('Latest block: ', latestBlock.block.header.b_num);
+    calls.fetchLatestBlock(storagePath).then(latestBlock => {  
+        try {
+            extractTxs(latestBlock.content.block.header.b_num); // Extract transaction data to json file
+        } catch (error) {
+            console.log('Failed to retrive latest transactions: ', error);
+        }
         res.json(latestBlock);
     })
     .catch(error => {
@@ -52,7 +55,7 @@ app.get('/api/latestBlock', (_, res) => {
 /** Fetch blockchain item */
 app.post('/api/blockchainItem', (req, res) => {
     const hash = req.body.hash;
-    const storagePath = `${storageNode}/blockchain_entry_by_key`;
+    const storagePath = `${storageNode}/blockchain_entry`;
     const isBlock = hash[0] !== 'g';
 
     let posEntry = null;
@@ -65,12 +68,12 @@ app.post('/api/blockchainItem', (req, res) => {
 
     if (!posEntry) {
         calls.fetchBlockchainItem(storagePath, hash).then(bItem => {
-            if (bItem.hasOwnProperty('Block')) {
-                blocksCache.add(hash, bItem);
-            } else if (bItem.hasOwnProperty('Transaction')) {
-                txsCache.add(hash, bItem);
+            if (bItem.content.hasOwnProperty('Block')) {
+                blocksCache.add(hash, bItem.content);
+            } else if (bItem.content.hasOwnProperty('Transaction')) {
+                txsCache.add(hash, bItem.content);
             }
-            res.json(bItem);
+            res.json(bItem.content);
         }).catch(error => {
             res.status(500).send(error);
         });
@@ -97,19 +100,16 @@ app.post('/api/blockRange', (req, res) => {
     }
 
     if (unknowns.length) {
-        calls.fetchBlockRange(storagePath, unknowns).then(blocks => {
-            if (blocks && blocks.length) {
-                for (let b of blocks) {
+        calls.fetchBlockRange(storagePath, unknowns).then(response => {
+            if (response.status == 'Success' && response.content.length) {
+                for (let b of response.content) {
                     bNumCache.add(b[1].block.header.b_num, b);
-
                     // Add to blocksCache too coz why not
                     if (!blocksCache.get(b[0])) {
                         blocksCache.add(b[0], { "Block": b[1] });
                     }
-
                     knowns.push(b);
                 }
-
                 res.json(knowns);
             }
         }).catch(error => {

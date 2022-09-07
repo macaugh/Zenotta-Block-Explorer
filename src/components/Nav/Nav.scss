@@ -1,53 +1,111 @@
-@import '../../styles/global.scss';
+@import 'styles/global.scss';
 
-.nav {
-    background: white;
-    padding: 15px 10px;
+// :export {
+//   topNavHeight: $topNavHeight;
+// }
+
+
+// .linkContainer{
+//   background-color: red;
+// }
+
+// .itemContainer {
+//   background-color: blue;
+//   width: 100%;
+//   // justify-content: flex-start;
+// }
+
+.topNav {
+  z-index: 200;
+  height: auto;
+
+  .nav {
+    z-index: 999;
     box-shadow: 0px 0px 5px #898c91;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    // justify-content: center;
-    height: $nav-height;
-}
+    background: $nav;
+    padding-right: 15px;
+    padding-left: 5px;
+    transition: .5s;
 
-.navCompact {
-    justify-content: space-between;
-}
-
-.logo {
-    width: auto;
-    img {
-        width: 120px;
+    .navContainer {
+      width: 100%;
+      flex-flow: column wrap;
     }
-}
 
-.navLinks {
-    width: 50%;
-    padding: 0 15px;
+    .navItems {
+      width: 100%;
+      display: flex;
+      justify-content: end;
+      align-items: center;
+    }
 
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
+    .navSearch {
+      height: 30px;
+    }
 
-    a {
-        margin: 0 10px;
+    .searchBar {
+      width: 100%;
+      display: flex;
+      justify-content: end;
+
+    }
+
+
+    a.nav-link {
+      color: darkgray;
+      font-weight: 500pt;
+      padding: 0px 10px;
+
+
+
+      &:hover {
+        background-color: black;
+        color: white;
+        cursor: pointer;
         text-decoration: none;
-        color: rgb(60, 60, 60);
-        font-weight: lighter;
+        // box-shadow: 0px 2px 0px darkgray;
+        // outline: solid 1px darkgray;
 
-        &:hover {
-            color: #1890ff;
-            cursor: pointer;
+        @media only screen and (max-width: 992px) {
+          box-shadow: 0px 0px 0px darkgray;
         }
+      }
     }
+
+    a.nav-link:hover {
+      background-color: red;
+    }
+
+    .navIcon {
+      position: relative;
+      padding-top: 4px;
+      transition-duration: 0.2s, 0.2s, 0.6s;
+      transition-property: transform, opacity, margin-left;
+
+      img {
+        width: 20px;
+        color: white; // take from global css
+        pointer-events: none;
+        user-select: none;
+      }
+    }
+
+    .brand {
+      margin-left: 20px;
+
+      &:hover {
+        box-shadow: 0px 0px 0px darkgray;
+      }
+
+      img {
+        width: 160px;
+      }
+    }
+  }
 }
 
-.leftContainer {
-    width: auto;
-    height: 30px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-}
+// @media only screen and (max-width: $widthThreshold) {
+//   .topNav {
+//     height: $collapedtopNavHeight;
+//   }
+// }

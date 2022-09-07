@@ -1,6 +1,6 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
-import { RequestData, RequestBlock, MiningTxHashAndNoceData, BlockData, TransactionData, TransactionTableData } from "../interfaces";
+import { Block, BlockDataV0_1, BlockDataV2, BlockDataWrapperV0_1, BlockTableData, InputData, OutputData, Transaction, TransactionData, TransactionTableData } from "../interfaces";
 
 const FILENAME = 'transactions';
 
@@ -9,24 +9,24 @@ class Store {
         makeAutoObservable(this)
     }
 
-    @observable latestBlock: RequestBlock | null = null;
-    @observable blocksTableData: RequestData[] = [];
-    @observable latestTx: TransactionData | null = null;
+    @observable latestBlock: Block | null = null;
+
+    @observable blocksTableData: BlockTableData[] = [];
     @observable txsTableData: TransactionTableData[] = [];
+
     @observable nbTxs: number = 0;
     @observable blockchainItemCache: any = {};
 
     /** SET */
-
-    @action setTxsTableData(tableData: any) {
+    @action setTxsTableData(tableData: any[]) {
         this.txsTableData = tableData;
     }
 
-    @action setLatestBlock(block: RequestBlock) {
+    @action setLatestBlock(block: Block) {
         this.latestBlock = block;
     }
 
-    @action setBlockTableData(tableData: RequestData[]) {
+    @action setBlockTableData(tableData: BlockTableData[]) {
         this.blocksTableData = tableData;
     }
 
@@ -40,34 +40,34 @@ class Store {
 
     /** BLOCK */
 
+    // TODO : check for block version (currently it is safe to assume all latest blocks are version 2)
     @action
     async fetchLatestBlock() {
         await axios.get('http://localhost:8090/api/latestBlock').then(async (response) => {
-            this.setLatestBlock(this.formatBlock(response.data));
+            this.setLatestBlock(this.formatBlock(response.data.content));
         });
     }
 
-    @action async fetchBlockchainItem(hash: string): Promise<RequestBlock | TransactionData> {
+    @action async fetchBlockchainItem(hash: string): Promise<Block | Transaction |  null> {
         let bItemData = null;
         if (Object.keys(this.blockchainItemCache).indexOf(hash) == -1) {
-            bItemData = await axios.post(`http://localhost:8090/api/blockchainItem`, { hash }).then(res => res.data);
+            bItemData = await axios.post(`http://localhost:8090/api/blockchainItem`, { hash }).then(res => { return res.data });
             this.setBcItemCache(hash, bItemData);
         } else {
             bItemData = this.blockchainItemCache[hash];
         }
 
         let itemType = Object.getOwnPropertyNames(bItemData)[0]
-
         if (itemType === 'Block') {
-            return this.formatBlock(bItemData.Block);
+            return this.formatBlock(bItemData.Block) as Block;
         } else if (itemType === 'Transaction') {
-            return this.formatTxs(bItemData.Transaction);
+            return this.formatTxs(bItemData.Transaction) as Transaction;
         }
-        return bItemData
+        return null
     }
 
     @action
-    async fetchBlockRange(startBlock: number, endBlock: number): Promise<RequestData[]> {
+    async fetchBlockRange(startBlock: number, endBlock: number) {
         const nums = [...Array(endBlock - startBlock + 1).keys()].map(x => x + startBlock); // Generate number array from range
         let data = await axios.post('http://localhost:8090/api/blockRange', { nums }).then(res => res.data);
         return this.formatBlockSet(data)
@@ -146,73 +146,163 @@ class Store {
     }
 
     /** TXS */
-
     @action
-    async fetchTxsIdRange(startTxs: number, endTxs: number, ascending: boolean) {
+    async fetchTxsTableData(pageNumber: number, maxTxsPerPage: number) {
+        // Define range
+        const start = pageNumber * maxTxsPerPage;
+        const end = maxTxsPerPage;
+        const txsObj = await this.fetchTxsIdRange(start, end);
+        if (txsObj) {
+            let result = await this.fetchTxsContents(txsObj);
+            this.setTxsTableData(result);
+        }
+    }
+
+    /** Extracts transactions ids from static files generated from express server (runs audit on every new block and stores transactions in json file)
+ * Will be updated to a more efficient method in the future (Database on server)
+*/
+    @action
+    async fetchTxsIdRange(startTxs: number, endTxs: number): Promise<{ blockNum: number, tx: string } | null> {
         let txsIdRange = await axios.get(`http://localhost:8090/${FILENAME}.json`).then(response => {
             const isJson = response.headers['content-type'] && response.headers['content-type'].search('application/json') != -1 ? true : false;
             let data = isJson ? JSON.parse(JSON.stringify(response.data)) : null;
 
-            const dataLength = data ? Object.keys(data.transactions).length : 0;
-            if (dataLength > 0) {
-                this.setNbTxs(dataLength);
-                if (ascending) {
-                    return this.extractTxsIds(data, startTxs, endTxs);
-                } else {
-                    const start = dataLength - startTxs;
-                    const end = (dataLength - startTxs) + endTxs;
-                    return this.extractTxsIds(data, start < 0 ? 0 : start + 1, end);
-                }
+            // Format transaction data. This is a bit hacky, but it works for now. Should change base structure of stored transactions.
+            const txIds = data.transactions.map(({ blockNum, txs }: any) => {
+                const formatted = txs.map((tx: any) => {
+                    return { blockNum, tx }
+                });
+                return [...formatted];
+            }).flat();
+
+
+            if (txIds.length > 0) {
+                this.setNbTxs(txIds.length);
+
+                const start = (txIds.length - 1) - startTxs;
+                const end = (txIds.length - startTxs) + endTxs;
+
+                return txIds.slice(start < 0 ? 0 : start + 1, end).reverse();
             }
         });
         return txsIdRange;
     }
 
-    @action
-    async fetchTxsTableData(pageNumber: number, maxTxs: number) {
-        const start = pageNumber * maxTxs;
-        const end = maxTxs;
-        const txsObj = await this.fetchTxsIdRange(start, end, false);
-
-        if (txsObj) {
-            let result = await this.fetchTxsContents(txsObj);
-            this.setTxsTableData(result.reverse());
-        }
-    }
-
-    @action extractTxsIds(data: any, startTxs: number, endTxs: number) {
-        const txsData = data.transactions.slice(startTxs - 1 < 0 ? 0 : startTxs - 1, endTxs);
-        return txsData
-    }
-
     @action async fetchTxsContents(txsObj: any) {
-        let result: TransactionTableData[] = [];
-        for (let i = 0; i < txsObj.length; i++) {
-            for (let j = 0; j < txsObj[i].txs.length; j++) {
-                const tx = await this.fetchBlockchainItem(txsObj[i].txs[j]) as TransactionData;
-                const TxTableData: TransactionTableData = {
-                    hash: txsObj[i].txs[j],
-                    transaction: tx,
-                    blockNum: txsObj[i].blockNum,
-                }
-                result.push(TxTableData);
-            }
-        }
+        const result = await Promise.all(txsObj.map(async (txObj: any) => {
+            const txData = await this.fetchBlockchainItem(txObj.tx);
+            return ({
+                hash: txObj.tx,
+                transaction: txData,
+                blockNum: txObj.blockNum,
+            })
+        }));
         return result;
     }
 
-    /** GET */
+    /** FORMAT */
+    formatBlockSet(data: any[]): any[] {
+        let blockSet: any[] = [];
+        data.map((array: any[]) => {
 
+            let hash = array[0];
+            let block = this.formatBlock(array[1]);
+
+
+            blockSet.push({
+                hash: hash,
+                block: block,
+            });
+        });
+        return blockSet;
+    }
+
+    /** Format block data to Block object
+     *  Handles up to block version 2
+    */
+    formatBlock(content: BlockDataV0_1 | BlockDataV2): Block {
+        // Check for block type
+        const block: Block = this.handleBlockVersionFormat(content)
+        return block
+    }
+
+    handleBlockVersionFormat(content: any): Block {
+        // Block with different version have different structures
+        if (content.block.header.version > 1) { // V2
+            const blockData = content.block as BlockDataV2;
+            return {
+                bNum: blockData.header.b_num,
+                previousHash: blockData.header.previous_hash,
+                seed: blockData.header.seed_value,
+                version: blockData.header.version,
+                bits: blockData.header.bits,
+                miningTxHashNonces: {
+                    hash: blockData.header.nonce_and_mining_tx_hash[1],
+                    nonce: blockData.header.nonce_and_mining_tx_hash[0]
+                },
+                merkleRootHash: {
+                    merkleRootHash: blockData.header.txs_merkle_root_and_hash[1],
+                    txsHash: blockData.header.txs_merkle_root_and_hash[0]
+                },
+                transactions: blockData.transactions,
+            }
+        } else { // V0_1
+            const blockData = content.block as BlockDataV0_1;
+            const miningTxHashNonces = content.mining_tx_hash_and_nonces;
+            return {
+                bNum: blockData.header.b_num,
+                previousHash: blockData.header.previous_hash ? blockData.header.previous_hash : '',
+                seed: blockData.header.seed_value,
+                version: blockData.header.version,
+                bits: blockData.header.bits,
+                miningTxHashNonces: {
+                    hash: miningTxHashNonces['1'][0],
+                    nonce: miningTxHashNonces['1'][1]
+                },
+                merkleRootHash: {
+                    merkleRootHash: blockData.header.merkle_root_hash,
+                    txsHash: ''
+                },
+                transactions: blockData.transactions,
+            }
+        }
+    }
+
+    formatTxs(data: TransactionData): Transaction {
+        let txData = {
+            druidInfo: data.druid_info,
+            inputs: data.inputs.map((input: InputData) => {return {
+                previousOut: input.previous_out ? {
+                    num: input.previous_out.n,
+                    tHash: input.previous_out.t_hash,
+                } : null,
+                scriptSig: input.script_signature,
+            }}),
+            outputs: data.outputs.map((output: OutputData) => {
+                return {
+                    drsBHash: output.drs_block_hash,
+                    drsTHash: output.drs_tx_hash,
+                    locktime: output.locktime,
+                    scriptPubKey: output.script_public_key,
+                    value: output.value,
+                }
+            }),
+            version: data.version
+        }
+        return txData;
+    }
+
+    /** GET */
     getLatestBlockHeight() {
         if (this.latestBlock) {
-            return this.latestBlock.block.header.b_num;
+            return this.latestBlock.bNum;
         }
         return null;
     }
 
     getNEntries(pageNumber: number, maxBlocks: number): number[] | null {
         if (this.latestBlock) {
-            let latestb_num = this.latestBlock.block.header.b_num - (pageNumber - 1) * maxBlocks;
+            let latestb_num = this.latestBlock.bNum - (pageNumber - 1) * maxBlocks;
             let nums = [];
 
             for (let i = latestb_num; i > Math.max(latestb_num - maxBlocks, -1); i--) {
@@ -222,59 +312,9 @@ class Store {
         }
         return null;
     }
-
-    /** FORMAT */
-
-    // formatTxsSet(data: any) {
-    //     let tableData = [];
-    // }
-
-    formatBlockSet(data: any[]): RequestData[] {
-        let blockSet: RequestData[] = [];
-        data.map((array: any[]) => {
-            let hash = array[0];
-            let { block, miningTxHashAndNonces } = this.formatBlock(array[1]);
-
-            blockSet.push({
-                hash: hash,
-                block: block,
-                miningTxHashAndNonces: miningTxHashAndNonces
-            });
-        });
-        return blockSet;
-    }
-
-    formatBlock(data: { block: BlockData, mining_tx_hash_and_nonces: any }): RequestBlock {
-        let block = data.block;
-        if (block.header.merkle_root_hash === "") {
-            block.header.merkle_root_hash = "N/A";
-        }
-
-        if (block.header.previous_hash === "") {
-            block.header.previous_hash = "N/A";
-        }
-
-        let miningTxHashAndNonces: MiningTxHashAndNoceData = {
-            hash: data.mining_tx_hash_and_nonces['1'][0],
-            nonce: data.mining_tx_hash_and_nonces['1'][1]
-        };
-
-        return {
-            block,
-            miningTxHashAndNonces
-        };
-    }
-
-    formatTxs(data: any): TransactionData {
-        let txData = {
-            druid_info: data.druid_info,
-            inputs: data.inputs,
-            outputs: data.outputs,
-            version: data.version,
-        }
-        return txData
-    }
 }
+
+
 
 
 export default new Store();

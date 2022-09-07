@@ -1,8 +1,15 @@
-$bg: #E5E8EF;
-$cta: blue;
-$shadow-border: #898c91;
+@import './variables';
 
-$default-spacing: 25px;
+$containerBackground: #f0f0f0;
+$bg: white;
+$nav: #09314D;
+$shadow-border: #898c91;
+$support: #3498db;
+$cta: $shockPink;
+
+$box-shadow: 0px -1px 5px #cecece; 
+
+$default-spacing: 15px;
 $nav-height: 20px;
 
 :global html {

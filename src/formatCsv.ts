@@ -1,7 +1,6 @@
-import { RequestData } from './interfaces';
 import { formatToBlockInfo } from './formatData';
 
-export const blockRangeToCsv = (data: RequestData[]) => {
+export const blockRangeToCsv = (data: any[]) => {
     if (data.length > 0) {
         let csvRows = [];
         let headers: any[] = Object.keys(formatToBlockInfo(data[0]));
@@ -33,50 +32,54 @@ export const itemToCsv = (item: any) => {
 }
 
 export const formatCsvTxs = (txs: any[]) => {
-    let highestInCount = -1;
-    let highestOutCount = -1;
-    let highestIn = null;
-    let highestOut = null;
-    for (let index in txs) {
-        let tx = txs[index];
+    // let highestInCount = -1;
+    // let highestOutCount = -1;
+    // let highestIn = null;
+    // let highestOut = null;
+    // for (let index in txs) {
+    //     let tx = txs[index];
 
-        tx = flattenTxOutputs(tx);
-        tx = flattenTxInputs(tx);
+    //     console.log('before',txs[index])
 
-        if (!highestInCount && !highestIn) {
-            highestInCount = tx.txInHashes.length;
-            highestIn = tx;
-        } else {
-            if (tx.txInHashes && tx.txInHashes.length > highestInCount) {
-                highestIn = tx;
-            }
-        }
-        if (!highestOutCount && !highestOut) {
-            highestOutCount = tx.outputs.length;
-            highestOut = tx;
-        } else {
-            if (tx.outputs.length > highestOutCount) {
-                highestOut = tx;
-                highestOutCount = tx.outputs.length;
-            }
-        }
+    //     tx = flattenTxOutputs(tx);
+    //     tx = flattenTxInputs(tx);
 
-        if (tx.txInHashes.length > 0)
-            delete tx.txInHashes;
-        else 
-            tx.txInHashes = 'N/A'
+    //     if (!highestInCount && !highestIn) {
+    //         highestInCount = tx.txInHashes.length;
+    //         highestIn = tx;
+    //     } else {
+    //         if (tx.txInHashes && tx.txInHashes.length > highestInCount) {
+    //             highestIn = tx;
+    //         }
+    //     }
+    //     if (!highestOutCount && !highestOut) {
+    //         highestOutCount = tx.outputs.length;
+    //         highestOut = tx;
+    //     } else {
+    //         if (tx.outputs.length > highestOutCount) {
+    //             highestOut = tx;
+    //             highestOutCount = tx.outputs.length;
+    //         }
+    //     }
 
-        delete tx.outputs;
-    }
+    //     console.log('TX', tx);
 
-    const inKeys = Object.keys(highestIn);
-    const outKeys = Object.keys(highestOut);
+    //     if (tx.txInHashes.length > 0)
+    //         delete tx.txInHashes;
+    //     else 
+    //         tx.txInHashes = 'N/A'
 
-    let headers = inKeys.concat(outKeys.filter((item: any) =>  // Merge item header with most inputs with item header with most outputs
-        inKeys.indexOf(item) < 0 // Check for duplicates
-    ));
+    //     delete tx.outputs;
+    // }
 
-    return { txs, headers: headers }
+    // const inKeys = Object.keys(highestIn);
+    // const outKeys = Object.keys(highestOut);
+
+    // let headers = inKeys.concat(outKeys.filter((item: any) =>  // Merge item header with most inputs with item header with most outputs
+    //     inKeys.indexOf(item) < 0 // Check for duplicates
+    // ));
+
+    return { txs, headers: [] }
 }
 
 export const downloadFile = (fileName: string, data: any) => {

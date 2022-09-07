@@ -6,6 +6,7 @@ import { toJS } from 'mobx';
 
 import { ItemList, DataType } from '../ItemList/ItemList';
 import styles from './Overview.scss';
+import Search from 'components/Search/Search';
 
 export const Overview = () => {
     const store = React.useContext(StoreContext);
@@ -14,13 +15,22 @@ export const Overview = () => {
         store.fetchLatestBlock().then(() => {
             store.fetchBlocksTableData(1, 10);
             store.fetchTxsTableData(1, 10);
+
         });
     }, []);
 
     return useObserver(() => (
-        <div className={styles.container}>
-            <ItemList title={'Latest Blocks'} data={store.blocksTableData} dataType={DataType.Block} />
-            <ItemList title={'Latest Transactions'} data={store.txsTableData} dataType={DataType.Transaction} />
-        </div>
-    )) as any;
+        <>
+
+            {/* <h1 className={styles.title}>Zenotta Block Explorer</h1> */}
+            <Search />
+
+            <div className={styles.container}>
+                <ItemList title={'Latest Blocks'} data={store.blocksTableData} dataType={DataType.Block} />
+                <ItemList title={'Latest Transactions'} data={store.txsTableData} dataType={DataType.Transaction} />
+            </div>
+
+            {/* <div className={styles.backgroundBanner} /> */}
+        </>
+    )) as JSX.Element;
 }

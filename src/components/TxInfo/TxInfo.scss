@@ -1,3 +1,5 @@
+@import 'styles/global.scss';
+
 .container {
     width: 100%;
     background: white;
@@ -10,7 +12,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
 
-    box-shadow: 0px -1px 5px #cecece;
+    box-shadow: $box-shadow;
 
     margin-bottom: 15px;
 }
@@ -67,7 +69,7 @@
         text-decoration: none;
 
         &:hover {
-            text-decoration: underline;
+            // text-decoration: underline;
         }
     }
 }

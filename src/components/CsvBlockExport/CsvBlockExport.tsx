@@ -3,11 +3,11 @@ import { useObserver } from 'mobx-react';
 import { Button } from 'chi-ui';
 import { StoreContext } from '../../index';
 import { blockRangeToCsv, downloadFile } from '../../formatCsv';
-import styles from './CsvExport.scss';
+import styles from './CsvBlockExport.scss';
 
 const DEFAULT_WARNING = 'Please enter range of blocks to export';
 
-export const CsvExport = () => {
+export const CsvBlockExport = () => {
   const store = React.useContext(StoreContext);
   const [startingBlock, setStartingBlock] = React.useState<number>(0);
   const [endingBlock, setEndingBlock] = React.useState<number>(9);
@@ -38,23 +38,23 @@ export const CsvExport = () => {
   };
 
   const downloadBlockRange = async () => {
-    if (!disabled && startingBlock >= 0 && endingBlock) {
-      setLoading(true);
-      store
-        .fetchBlockRange(startingBlock, endingBlock)
-        .then((blockRange: any) => {
-          if (blockRange.length > 0) {
-            let csv = blockRangeToCsv(blockRange);
-            downloadFile('block_range.csv', csv);
-            setWarningMsg('');
-          }
-        })
-        .catch((err: any) => {
-          setWarningMsg('Range is to big, please reduce range size');
-          console.log(err.message);
-        });
-      setLoading(false);
-    }
+    // if (!disabled && startingBlock >= 0 && endingBlock) {
+    //   setLoading(true);
+    //   store
+    //     .fetchBlockRange(startingBlock, endingBlock)
+    //     .then((blockRange: any) => {
+    //       if (blockRange.length > 0) {
+    //         let csv = blockRangeToCsv(blockRange);
+    //         downloadFile('block_range.csv', csv);
+    //         setWarningMsg('');
+    //       }
+    //     })
+    //     .catch((err: any) => {
+    //       setWarningMsg('Range is to big, please reduce range size');
+    //       console.log(err.message);
+    //     });
+    //   setLoading(false);
+    // }
   };
 
   React.useEffect(() => {
@@ -68,8 +68,8 @@ export const CsvExport = () => {
     if (!store.latestBlock) {
       store.fetchLatestBlock().then(() => {
         if (store.latestBlock) {
-          setStartingBlock(store.latestBlock.block.header.b_num - 9)
-          setEndingBlock(store.latestBlock.block.header.b_num)
+          setStartingBlock(store.latestBlock.bNum >= 9 ? store.latestBlock.bNum - 9 : 9)
+          setEndingBlock(store.latestBlock.bNum)
         }
       });
     }
@@ -77,10 +77,10 @@ export const CsvExport = () => {
 
   return useObserver(() => (
     <div className={styles.container}>
-      <h2 className={styles.heading}>Csv Export</h2>
+      <h2 className={styles.heading}>Csv Export - Blocks</h2>
 
       <div className={styles.content}>
-        <p>Export a blocks from range</p>
+        <p>Export block range</p>
         <div className={styles.inputs}>
           <input
             className={styles.txtInput}

@@ -1,0 +1,72 @@
+input {
+  border-radius: 4px;
+  width: auto;
+  transition: 0.1s;
+  font-size: 0.875rem;
+  border: 1px solid #cecece;
+  box-sizing: border-box;
+  margin: 15px;
+}
+
+.container {
+  width: 60vw;
+  margin-left: auto;
+  margin-right: auto;
+
+  h2 span {
+    text-transform: none;
+  }
+
+  .content {
+    width: auto;
+    height: auto;
+    border-radius: 4px;
+    background: white;
+    border-collapse: collapse;
+    box-shadow: 0px -1px 5px #cecece;
+    padding: 25px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+
+    p {
+      margin-top: 0;
+      align-self: flex-start;
+    }
+
+    .warningMsg {
+      width: 100%;
+      font-size: small;
+      font-style: italic;
+      color: lightgray;
+      text-align: center;
+    }
+
+    .blockRange {
+      width: 100%;
+      font-size: small;
+      color: darkgrey;
+      text-align: center;
+    }
+
+    .inputs {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+
+      .txtInput {
+        width: 40%;
+        display: inline-block;
+        padding: 15px;
+      }
+    }
+
+    .btn {
+      width: 20%;
+    }
+  }
+}

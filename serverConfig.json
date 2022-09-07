@@ -1,6 +1,6 @@
 {
     "port": 8090,
-    "storageNode": "http://54.202.39.133:3002",
+    "storageNode": "http://34.222.4.174:3002",
     "computeNode":"http://44.239.251.56:3001",
     "cacheCapacity": 100
 }

@@ -1,0 +1,40 @@
+[
+    "b0af914b7c1c20d6173535afe174678bbb138b45a0527c031b220e49488b341c5",
+    {
+        "block": {
+            "header": {
+                "version": 1,
+                "bits": 0,
+                "nonce": [],
+                "b_num": 400000,
+                "seed_value": [],
+                "previous_hash": "b57f57eaa0c490b11c56d708d59dc315ea7db008fba4cc85f18e9bbda0372344e",
+                "merkle_root_hash": ""
+            },
+            "transactions": []
+        },
+        "mining_tx_hash_and_nonces": {
+            "1": [
+                "ge889bc6f4c044b506f7c151bc9f591d",
+                [
+                    122,
+                    58,
+                    40,
+                    9,
+                    172,
+                    4,
+                    6,
+                    69,
+                    98,
+                    131,
+                    60,
+                    89,
+                    197,
+                    42,
+                    46,
+                    156
+                ]
+            ]
+        }
+    }
+]

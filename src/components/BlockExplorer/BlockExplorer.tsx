@@ -2,38 +2,48 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useObserver } from 'mobx-react';
 import { StoreContext } from '../../index';
+import { useLocation } from 'react-router-dom';
 
 import { Pagination, Table } from 'chi-ui';
-import { RequestData } from '../../interfaces';
+import { Dropdown } from 'react-bootstrap';
 import styles from './BlockExplorer.scss';
 import { CsvBtn } from '../CsvBtn/CsvBtn';
-import { toJS } from 'mobx';
+import { Loading } from 'chi-ui';
+import { Block } from 'interfaces';
+
+function useQuery() {
+    const { search } = useLocation();
+    return React.useMemo(() => new URLSearchParams(search), [search]);
+}
 
 export const BlockExplorer = () => {
+    const query = useQuery();
+    const page = query.get('page');
+
     const [totalBlocks, setTotalBlocks] = useState(0);
-    const [maxBlocksPerPage] = useState(10);
-    const [leftArrowClass, setLeftArrowClass] = useState(styles.leftArrowDisabled);
-    const [rightArrowClass, setRightArrowClass] = useState('');
+    const [maxBlocksPerPage, setMaxBlocksPerPage] = useState(10);
+    const [loading, setLoading] = useState(false);
+    const [currentPage] = useState(page ? parseInt(page) : 1);
 
     const tableHeadings = [
-        { value: "Block Number", isNumeric: true },
+        { value: "Block Nb", isNumeric: true },
         { value: "Block Hash", isNumeric: false },
         { value: "Previous Hash", isNumeric: false },
         { value: "Merkle Root Hash", isNumeric: false },
-        { value: "Transactions", isNumeric: true },
+        { value: "Txs", isNumeric: true },
     ];
 
     const store = React.useContext(StoreContext);
 
-    const mungeTableData = (data: RequestData[]) => {
+    const mungeTableData = (data: {block: Block, hash: string}[]) => {
         let body = [];
-        
+
         for (let obj of data) {
-            let prevHash = obj.block.header.previous_hash || "N/A";
-            let merkleRoot = obj.block.header.merkle_root_hash || "N/A";
+            let prevHash = obj.block.previousHash || "N/A";
+            let merkleRoot = obj.block.merkleRootHash.merkleRootHash || "N/A";
 
             let row = [
-                { value: obj.block.header.b_num, isNumeric: true },
+                { value: obj.block.bNum, isNumeric: true },
                 { value: <a href={`/block/${obj.hash}`}>{obj.hash}</a>, isNumeric: false },
                 { value: prevHash, isNumeric: false },
                 { value: merkleRoot, isNumeric: false },
@@ -48,45 +58,80 @@ export const BlockExplorer = () => {
 
     const onPageChange = (currentPage: number) => {
         if (totalBlocks > 0) {
-            setLeftArrowClass(currentPage === 1 ? styles.leftArrowDisabled : '');
-            setRightArrowClass(currentPage === Math.ceil(totalBlocks / maxBlocksPerPage) ? styles.rightArrowDisabled : '');
-
+            window.history.pushState('data', '', '/blocks?page=' + currentPage);
             store.setBlockTableData([]);
             store.fetchLatestBlock().then(() => {
                 store.fetchBlocksTableData(currentPage, maxBlocksPerPage);
-                store.latestBlock ? setTotalBlocks(store.latestBlock.block.header.b_num) : setTotalBlocks(0);
+                store.latestBlock ? setTotalBlocks(store.latestBlock.bNum) : setTotalBlocks(0);
             });
         }
+    }
+
+    const reloadTable = (maxBlocksPerPage: number) => {
+        setLoading(true);
+        store.fetchLatestBlock().then(() => {
+            store.fetchBlocksTableData(1, maxBlocksPerPage);
+            store.latestBlock ? setTotalBlocks(store.latestBlock.bNum) : setTotalBlocks(0);
+            setLoading(false);
+        });
+        setMaxBlocksPerPage(maxBlocksPerPage);
+    }
+
+    const generateSelect = () => {
+        let select: React.ReactNodeArray = [];
+        const value = 10;
+        for (let i = 1; i <= 10; i++)
+            select.push(<Dropdown.Item key={value * i} onClick={() => { reloadTable(value * i) }}>{value * i}</Dropdown.Item>);
+
+        return (
+            <Dropdown className={`${styles.selectNbItems} shadow-none`} title={'Test'}>
+                <Dropdown.Toggle id="dropdown-autoclose-true">
+                    {maxBlocksPerPage}
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu>
+                    {select}
+                </Dropdown.Menu>
+            </Dropdown>
+        );
     }
 
     useEffect(() => {
         store.fetchLatestBlock().then(() => {
             store.fetchBlocksTableData(1, maxBlocksPerPage);
-            store.latestBlock ? setTotalBlocks(store.latestBlock.block.header.b_num) : setTotalBlocks(0);
+            store.latestBlock ? setTotalBlocks(store.latestBlock.bNum) : setTotalBlocks(0)
         });
     }, []);
 
 
     return useObserver(() => (
-
         <section className={styles.blockTable}>
-            <CsvBtn action={() => {window.location.href = '/csv-export'}}/>
+            <div className={styles.blockTableHeader}>
+                <div className={styles.selectContainer}>
+                    {generateSelect()}
+                    {loading && <Loading className={styles.loading} colour={'#999'} />}
+                </div>
+                <CsvBtn action={() => { window.location.href = '/csv-block-export' }} />
+            </div>
             <Table
                 sortable={true}
                 header={tableHeadings}
                 body={mungeTableData(store.blocksTableData)}
                 className={styles.table} />
-
-            <Pagination
-                itemsPerPage={maxBlocksPerPage}
-                totalItems={totalBlocks}
-                maxPageNumbersDisplayed={9}
-                onPaginate={onPageChange}
-                backgroundColor="#FFFFFF"
-                mainColor="#A6D4FF"
-                enableArrowBackground
-                className={`${styles.pagination} ${leftArrowClass} ${rightArrowClass}`} />
+            {totalBlocks > 0 &&
+                <Pagination
+                    itemsPerPage={maxBlocksPerPage}
+                    totalItems={totalBlocks}
+                    maxPageNumbersDisplayed={9}
+                    onPaginate={onPageChange}
+                    currentPage={currentPage}
+                    backgroundColor="#FFFFFF"
+                    mainColor="#A6D4FF"
+                    enableArrowBackground
+                    enableArrowCheck
+                    className={`${styles.pagination}`} />
+            }
         </section>
 
-    )) as any;
+    )) as JSX.Element;
 }
