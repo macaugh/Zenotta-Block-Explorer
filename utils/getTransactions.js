@@ -8,6 +8,8 @@ const BATCH_SIZE = 99
 const FILENAME = 'transactions';
 
 async function extractTxs(latestBlockNum) {
+    console.log("LATEST BNUM", latestBlockNum);
+    console.log('extractTXS');
     let jsonFile = await fetchJsonFile(FILENAME).then((res) => { return res ? res : null });
 
     if (jsonFile != null) {

@@ -1,3 +1,5 @@
+@import 'styles/global.scss';
+
 .container {
     width: 100%;
     margin: 0 auto;
@@ -16,7 +18,7 @@
     // }
 
     .infoContainer {
-      box-shadow: 0px -1px 5px #cecece;
+      box-shadow: $box-shadow;
       border-radius: 4px;
       margin-bottom: 20px;
     }

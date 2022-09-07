@@ -2,27 +2,26 @@ import * as React from 'react';
 import { useObserver } from 'mobx-react';
 import { useParams } from 'react-router-dom';
 import { StoreContext } from '../../index';
-import { ReceiptOutput, TokenOutput, TransactionData, TransactionInputsData, TransactionOutputsData } from '../../interfaces';
 
 import styles from './TxView.scss';
-import { RowTable } from '../RowTable/RowTable';
 import { TxInfo } from '../TxInfo/TxInfo';
-import { CsvBtn } from '../CsvBtn/CsvBtn';
 import { downloadFile, formatCsvTxs, itemToCsv } from '../../formatCsv';
 import { formatNumber } from '../../formatData';
+import { Card } from 'components/Card/Card';
+import { Block, Input, InputInfo, Output, ReceiptInfo, StackData, TokenInfo, Transaction, TransactionInfo } from 'interfaces';
 
 export const TxView = () => {
     let { hash } = useParams<any>();
     const store = React.useContext(StoreContext);
-    const [localData, setLocalData] = React.useState<any>(null);
+    const [localData, setLocalData] = React.useState<TransactionInfo | null>(null);
     const [mainTxData, setMainTxData] = React.useState<any>(null);
 
-    const checkSeenTxIns = (t: TransactionInputsData, seenIns: string[]) => {
-        if (t.previous_out && t.previous_out.t_hash) {
-            let t_hash = t.previous_out.t_hash;
+    const checkSeenTxIns = (t: Input, seenIns: string[]) => {
+        if (t.previousOut && t.previousOut.tHash) {
+            let tHash = t.previousOut.tHash;
 
-            if (seenIns.indexOf(t_hash) == -1) {
-                seenIns.push(t_hash);
+            if (seenIns.indexOf(tHash) == -1) {
+                seenIns.push(tHash);
                 return true;
             }
             return false;
@@ -30,7 +29,7 @@ export const TxView = () => {
         return false;
     };
 
-    const formatScript = (stack: any[]) => {
+    const formatScript = (stack: StackData[]) => {
         let combo = [];
         for (let entry of stack) {
             let key: any = Object.keys(entry)[0];
@@ -41,38 +40,38 @@ export const TxView = () => {
         return combo.join('\n');
     };
 
-    const formatTransactionInputs = (inputs: TransactionInputsData[]) => {
+    const formatTransactionInputs = (inputs: Input[]) => {
         return inputs.map((input) => {
-            const previousOutputHash = input.previous_out && input.previous_out.t_hash ? input.previous_out.t_hash : 'N/A';
+            const previousOutHash = input.previousOut && input.previousOut.tHash ? input.previousOut.tHash : 'N/A';
             return {
-                previousOutputHash,
-                scriptSig: formatScript(input.script_signature.stack),
+                previousOutHash: previousOutHash,
+                scriptSig: formatScript(input.scriptSig.stack),
             };
         });
     };
 
-    const formatTransactionOutputs = (outputs: TransactionOutputsData[]) => {
-        return outputs.map((output) => {
+    const formatTransactionOutputs = (outputs: Output[]): TokenInfo[] | ReceiptInfo[] => {
+        return outputs.map((output: Output) => {
             if (output.value.hasOwnProperty('Token')) { // is a token output
-                const token = (output.value as TokenOutput).Token;
+                const tokens = (output.value as { Token: number }).Token;
                 return {
-                    address: output.script_public_key,
-                    tokens: `${formatNumber((token / 25200).toFixed(2))} ZENO`,
-                    fractionatedTokens: `${formatNumber(token)}`,
+                    address: output.scriptPubKey,
+                    tokens: `${formatNumber((tokens / 25200).toFixed(2))} ZENO`,
+                    fractionatedTokens: `${formatNumber(tokens)}`,
                     lockTime: output.locktime,
-                };
+                } as TokenInfo;
             } else if (output.value.hasOwnProperty('Receipt')) { // is a Receipt output
-                const obj = output.value as ReceiptOutput;
+                const receipts = (output.value as { Receipt: number }).Receipt;
                 return {
-                    address: output.script_public_key,
-                    receipts: obj.Receipt,
+                    address: output.scriptPubKey,
+                    receipts: receipts,
                     lockTime: output.locktime,
-                };
+                } as ReceiptInfo;
             }
-        });
+        }) as TokenInfo[] | ReceiptInfo[];
     };
 
-    const formatTransactions = (transactions: TransactionData[], hashes: string[]) => {
+    const formatTransactions = (transactions: Transaction[], hashes: string[]) => {
         if (!transactions || !transactions.length) {
             return [];
         }
@@ -91,8 +90,7 @@ export const TxView = () => {
         if (!localData) { return null }
         return Object.keys(localData).map(key => {
             const value = localData[key];
-
-            if (key === 'previousOutputHash' && value != 'N/A') { // Add clickable link if displayed as a block transaction
+            if (key === 'previousOutHash' && value != 'N/A') { // Add clickable link if displayed as a block transaction
                 return {
                     heading: key,
                     value: <a href={`/tx/${value}`}>{value}</a>
@@ -106,25 +104,29 @@ export const TxView = () => {
         });
     }
 
-    const formatIncomingData = (tx: TransactionData) => {
-        setMainTxData(formatTransactions([tx], [hash]));
-        return {
-            inputs: formatTransactionInputs(tx.inputs as TransactionInputsData[]),
-            outputs: formatTransactionOutputs(tx.outputs as TransactionOutputsData[]),
-        };
+    const formatIncomingData = (tx: Transaction | null): TransactionInfo | null => {
+        if (tx) {
+            setMainTxData(formatTransactions([tx], [hash]));
+
+            return {
+                inputs: formatTransactionInputs(tx.inputs as Input[]),
+                outputs: formatTransactionOutputs(tx.outputs as Output[]),
+            };
+        }
+        return null
     };
 
-    const extractTransactionInfo = (tx: any, hashes: string[], index: number) => {
+    const extractTransactionInfo = (tx: Transaction, hashes: string[], index: number) => {
         let seenIns: string[] = [];
         return {
             hash: hashes[index],
-            totalTokens: formatNumber(tx.outputs.reduce((acc: number, o: any) => acc + o.value.Token, 0)),
-            txInHashes: tx.inputs.filter((t: any) => checkSeenTxIns(t, seenIns)).map((i: any) => i.previous_out.t_hash),
-            outputs: tx.outputs.map((o: any) => {
+            totalTokens: formatNumber(tx.outputs.reduce((acc: number, o: Output) => acc + (o.value as { Token: number }).Token, 0)),
+            txInHashes: tx.inputs.filter((t: Input) => checkSeenTxIns(t, seenIns)).map((i: Input) => i.previousOut && i.previousOut.tHash),
+            outputs: tx.outputs.map((o: Output) => {
                 return {
-                    publicKey: o.script_public_key,
+                    publicKey: o.scriptPubKey,
                     lockTime: o.locktime,
-                    tokens: formatNumber(o.value.Token),
+                    tokens: formatNumber((o.value as { Token: number }).Token),
                 };
             }),
         };
@@ -136,24 +138,18 @@ export const TxView = () => {
         }).join('');
     };
 
-    const downloadTx = async () => {
-        const { txs, headers } = formatCsvTxs([localData]);
-        const csv = itemToCsv(txs[0]);
-        // downloadFile(`tx-${localData.blockNum}`, csv);
-    };
+    // const downloadTx = async () => {
+    //     if (localData) {
+    //         const { txs, headers } = formatCsvTxs([localData]);
+    //         const csv = itemToCsv(txs[0]);
+    //         downloadFile(`tx-${hash}`, csv);
+    //     }
+    // };
 
     React.useEffect(() => {
         if (!localData) {
-            store.fetchBlockchainItem(hash).then((fetchedData) => {
-                if (fetchedData.hasOwnProperty('druid_info')) {
-                    setLocalData(formatIncomingData(fetchedData as TransactionData));
-                } else if (fetchedData.hasOwnProperty('block')) {
-                    // Temp fix for searches on wrong filter. Must be changed on search level
-                    localStorage.setItem('DROPDOWN_SELECT', 'Block Hash');
-                    window.location.href = '/block/' + hash
-                } else {
-                    window.location.href = '/?invalid_search';
-                }
+            store.fetchBlockchainItem(hash).then((fetchedData: Transaction | Block | null) => {
+                setLocalData(formatIncomingData(fetchedData ? fetchedData as Transaction : null));
             });
         }
     }, []);
@@ -177,16 +173,16 @@ export const TxView = () => {
                 {localData && localData.inputs && localData.inputs.length > 0 &&
                     <>
                         <h2 id="inputs">Inputs</h2>
-                        {localData.inputs.map((input: any, i: number) => {
-                            return <div className={styles.infoContainer} key={i} ><RowTable rows={formatDataForTable(input)} /></div>;
+                        {localData.inputs.map((input: InputInfo, i: number) => {
+                            return <div className={styles.infoContainer} key={i} ><Card rows={formatDataForTable(input)} /></div>;
                         })}
                     </>}
 
                 {localData && localData.outputs && localData.outputs.length > 0 &&
                     <div>
                         <h2 id='outputs'>Outputs</h2>
-                        {localData && localData.outputs.map((output: any, i: number) => {
-                            return <div className={styles.infoContainer} key={i} ><RowTable rows={formatDataForTable(output)} /></div>;
+                        {localData && (localData.outputs as any).map((output: TokenInfo | ReceiptInfo, i: number) => {
+                            return <div className={styles.infoContainer} key={i} ><Card rows={formatDataForTable(output)} /></div>;
                         })}
                     </div>}
             </div>

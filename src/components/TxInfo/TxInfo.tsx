@@ -5,7 +5,7 @@ import arrowIcon from '../../static/img/left-arrow.svg';
 export interface TransactionInfoProps {
   hash: string;
   txInHashes: string[];
-  totalTokens: number[];
+  totalTokens: number;
   outputs: TxOutPuts[];
   txView?: boolean; // Removes link reference when on TxView
 }
@@ -16,7 +16,7 @@ interface TxOutPuts {
   tokens: number;
 }
 
-export const TxInfo = (props: any) => {
+export const TxInfo = (props: TransactionInfoProps) => {
   return (
     <div className={styles.container}>
       <div className={styles.left}>
@@ -31,7 +31,7 @@ export const TxInfo = (props: any) => {
               }
             </div>
           </li>
-          {props.totalTokens.length > 0 && (
+          {props.totalTokens && (
             <li>
               <div className={styles.row}>
                 <p>Total Fractionated Tokens</p>
@@ -67,7 +67,7 @@ export const TxInfo = (props: any) => {
 
       <div className={styles.right}>
         <ul>
-          {props.outputs.map((o: any, i: number) => {
+          {props.outputs.map((o: TxOutPuts, i: number) => {
             return (
               <li key={i}>
                 <div className={styles.row}>

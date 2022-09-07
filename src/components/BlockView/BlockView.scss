@@ -1,99 +1,144 @@
 .container {
-    width: 100%;
-    margin: 0 auto;
-    padding-bottom: 20px;
+  width: 100%;
+  margin: 0 auto;
+  padding-bottom: 20px;
 
-    .transactionContainer {
+  .header {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #e6e6e6;
+    margin-bottom: 5px;
+  }
 
-      .txHeading {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+  .transactionContainer {
 
-        .txTitle {
-          margin-bottom: 20px;
-        }
-
-        .txBtn {
-          height: 30px;
-          width: auto;
-          justify-self: flex-end;
-        }
-
-      }
-
-      .hidden {
-        margin: 0 auto;
-        font-weight: 200;
-        color: #999;
-        font-style: italic;
-        border: solid white 1px;
-        box-shadow: 0px -1px 5px #cecece;
-        background-color: white;
-        border-radius: 3px;
-        width: auto;
-        padding: 5px;
-      }
-    }
-  
-    h2 {
-      margin-bottom: 0px;
-    }
-  
-    h2 span {
-      text-transform: none;
-    }
-  
-    .blockNum {
-      font-size: medium;
-      font-style: italic;
-      font-weight: 200;
-      color: rgb(115, 115, 115);
-    }
-  
-    .dlContainer {
+    .txHeading {
       display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-end;
-  
-      .dlBtn {
+      align-items: center;
+      justify-content: space-between;
+
+      .txTitle {
+        margin-bottom: 20px;
+
+        .badge {
+          width: 50px;
+          font-size: medium;
+          font-weight: bold;
+          border-radius: 25px;
+          background-color: #c4c4c4;
+          margin-left: 10px;
+          padding: 8px;
+        }
+      }
+
+      .txBtn {
+        height: 30px;
         width: auto;
-        display: inline-block;
-        margin: 0;
-        font-size: 12px;
-        color: #999;
+        justify-self: flex-end;
+      }
+
+    }
+
+    .hidden {
+      margin: 0 auto;
+      font-weight: 200;
+      color: #999;
+      font-style: italic;
+      border: solid white 1px;
+      box-shadow: 0px -1px 5px #cecece;
+      background-color: white;
+      border-radius: 3px;
+      width: auto;
+      padding: 5px;
+    }
+  }
+
+  h2 {
+    margin-top: 15px;
+    margin-bottom: 0px;
+  }
+
+  h2 span {
+    text-transform: none;
+  }
+
+  .blockNum {
+    font-size: medium;
+    font-style: italic;
+    font-weight: 200;
+    color: rgb(115, 115, 115);
+  }
+
+  .dlContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+
+    .dlBtn {
+      width: auto;
+      display: inline-block;
+      margin: 0;
+      font-size: 12px;
+      color: #999;
+      transition: 0.5s;
+      padding: 5px;
+
+      &:hover {
+        cursor: pointer;
+        box-shadow: 0px 0px 5px #999;
+        border-radius: 3px;
         transition: 0.5s;
-        padding: 5px;
-  
-        &:hover {
-          cursor: pointer;
-          box-shadow: 0px 0px 5px #999;
-          border-radius: 3px;
+        font-size: 13px;
+      }
+
+      &:hover .dlicon {
+        transform: scale(1.2);
+        transition: 0.5s;
+      }
+
+      &:active {
+        background-color: lightgray;
+      }
+
+      .csvExport {
+        color: #00a8ff;
+
+        .dlicon {
+          width: 12px;
+          padding-left: 8px;
+          padding-right: 8px;
           transition: 0.5s;
-          font-size: 13px;
-        }
-  
-        &:hover .dlicon {
-          transform: scale(1.2);
-          transition: 0.5s;
-        }
-  
-        &:active {
-          background-color: lightgray;
-        }
-  
-        .csvExport {
-          color: #00a8ff;
-  
-          .dlicon {
-            width: 12px;
-            padding-left: 8px;
-            padding-right: 8px;
-            transition: 0.5s;
-          }
         }
       }
     }
   }
-  
+}
+
+.leftBtn {
+  margin-left: 15px;
+  margin-right: 5px;
+}
+
+.disNav {
+  background-color: rgb(221, 221, 221) !important;
+  border: #c4c4c4 1px solid !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+.navBtnGroup {
+  display: flex;
+  align-self: flex-end;
+
+  height: 100%;
+
+  .navBtn {
+    width: 25px;
+    height: 25px;
+    font-size: small;
+    padding: 0;
+  }
+}

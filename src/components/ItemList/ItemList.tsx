@@ -1,10 +1,8 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Button } from 'chi-ui';
-import { RequestData } from '../../interfaces';
 import { useObserver } from 'mobx-react';
 import styles from './ItemList.scss';
-import { StoreContext } from '../..';
 import { BlockItem } from './BlockItem/BlockItem';
 import { TransactionItem } from './TransactionItem/TransactionItem';
 import { Loading } from 'chi-ui';
@@ -30,8 +28,8 @@ export const ItemList = (props: ItemListProps) => {
         if (props.data.length === 0) {
             timeoutId = setTimeout(() => {
                 setLoadtimeout(true)
-            }, 10000);
-        } 
+            }, 5000);
+        }
 
         return () => {
             clearTimeout(timeoutId);
@@ -44,16 +42,17 @@ export const ItemList = (props: ItemListProps) => {
                 <h2>{props.title}</h2>
             </div>
             <div className={styles.content}>
-                {props.data != [] &&
+                {props.data.length > 0 &&
                     <>
-                        {props.dataType == DataType.Block && props.data.map((obj: RequestData, index: number) => {
+                        {props.dataType == DataType.Block && props.data.map((obj: any, index: number) => {
                             return (<BlockItem data={obj} key={index} />)
                         })}
 
                         {props.dataType == DataType.Transaction && props.data.map((txs: any, index: number) => {
                             return <TransactionItem data={txs} key={index} />
                         })}
-                    </>}
+                    </>
+                }
 
                 {!loadTimeout && props.data.length < 1 &&
                     <>
@@ -73,5 +72,5 @@ export const ItemList = (props: ItemListProps) => {
                 <span></span>
             </div>
         </div>
-    )) as any;
+    )) as JSX.Element;
 }

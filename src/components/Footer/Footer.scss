@@ -1,7 +1,11 @@
+@import 'styles/_variables.scss';
+@import 'styles/global.scss';
+
+
 .container {
     position: relative;
     width: 100vw;
-    height: 100px;
-    background-color: white;
+    height: $footerHeight;
+    background-color: $nav;
     box-shadow: 0px 0px 5px #898c91;
 }

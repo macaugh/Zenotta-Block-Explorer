@@ -1,111 +1,165 @@
-/** Global */ 
+/** Global */
 export enum ItemType {
     Block,
     Transaction
 }
 
+/** Request data structures */
+
+export interface BlockDataWrapperV0_1 {
+    block: BlockDataV0_1,
+    mining_tx_hash_and_nonces: any
+}
+
+export interface BlockDataV0_1 {
+    header: {
+        version: number,
+        bits: number,
+        nonce: number[],
+        b_num: number,
+        seed_value: number[],
+        previous_hash: string | null,
+        merkle_root_hash: string,
+    },
+    transactions: string[]
+}
+
+export interface BlockDataV2 {
+    header: {
+        version: number,
+        bits: number,
+        nonce_and_mining_tx_hash: any[],
+        b_num: number,
+        seed_value: number[],
+        previous_hash: string,
+        txs_merkle_root_and_hash: string[],
+    },
+    transactions: string[]
+}
+
+export interface TransactionData {
+    druid_info: null,
+    inputs: InputData[],
+    outputs: OutputData[],
+    version: number
+}
+
+export interface InputData {
+    previous_out: {
+        n: number,
+        t_hash: string
+    },
+    script_signature: {
+        stack: StackData[]
+    }
+}
+
+export interface OutputData {
+    drs_block_hash: string | null,
+    drs_tx_hash: string | null,
+    locktime: number,
+    script_public_key: string,
+    value: { Token: number } | { Receipt: number }
+}
+
+export interface StackData {
+    Op?: string,
+    Num?: number,
+    Bytes?: string,
+    Signature?: number[],
+    PubKey?: number[]
+}
+
+/** Application interfaces */
+
+export interface Block {
+    bNum: number,
+    previousHash: string,
+    seed: number[],
+    bits: number,
+    version: number,
+    miningTxHashNonces: {
+        hash: string,
+        nonce: number[],
+    },
+    merkleRootHash: {
+        merkleRootHash: string,
+        txsHash: string
+    },
+    transactions: string[],
+}
+
+export interface Transaction {
+    druidInfo: null,
+    inputs: Input[],
+    outputs: Output[],
+    version: number
+}
+
+export interface Input {
+    previousOut: {
+        num: number,
+        tHash: string
+    } | null,
+    scriptSig: {
+        stack: StackData[]
+    }
+}
+
+export interface Output {
+    drsBHash: string | null,
+    drsTHash: string | null,
+    locktime: number,
+    scriptPubKey: string,
+    value: { Token: number } | { Receipt: number }
+}
+
 /** UI Interfaces */
 export interface BlockInfo {
     hash: string,
-    blockNum: number,
+    bNum: number,
     merkleRootHash: string,
     previousHash: string,
     version: number,
     byteSize: string,
-    transactions: number
+    nbTransactions: number
 }
 
 export interface TransactionInfo {
-    hash: string,
-    outputs: TokenOutput[] | ReceiptOutput[],
-    totalTokens: number,
-    txInHashes: any[],
+    inputs: {
+        previousOutHash: string,
+        scriptSig: string,
+    }[],
+    outputs: TokenInfo[] | ReceiptInfo[],
 }
 
-/** Store Interfaces */
-export interface RequestData {
-    hash: string,
-    block: BlockData,
-    miningTxHashAndNonces: MiningTxHashAndNoceData,
-};
-
-export interface RequestBlock {
-    block: BlockData,
-    miningTxHashAndNonces: MiningTxHashAndNoceData,
+export interface InputInfo {
+    previousOutHash: string,
+    scriptSig: string,
 }
 
-export interface BlockData {
-    header: BlockHeader,
-    transactions: any[]
+export interface TokenInfo {
+    address: string,
+    tokens: string,
+    fractionatedTokens: string,
+    lockTime: number,
 }
 
-export interface TransactionData {
-    druid_info: any,
-    inputs: TransactionInputsData[],
-    outputs: TransactionOutputsData[],
-    version: number,
+export interface ReceiptInfo {
+    address: string,
+    receipts: number,
+    lockTime: number,
 }
 
-export interface TransactionTableData {
-    hash: string,
-    transaction: TransactionData,
+export interface TransactionTableData{
     blockNum: number,
-}
-
-export interface MiningTxHashAndNoceData {
     hash: string,
-    nonce: number[]
+    transaction: Transaction
 }
 
-export interface MiningTxData {
-    tokens: number,
-    tokensDivided: number,
-    scriptPublicKey: string,
-    version: number
+export interface BlockTableData{
+    block: Block,
+    hash: string
 }
-
-export interface TransactionInputsData {
-    previous_out: any,
-    script_signature: ScriptSignature,
-}
-
-export interface TransactionOutputsData {
-    drs_block_hash: any,
-    drs_tx_hash: any,
-    locktime: number,
-    script_public_key: string,
-    value: TokenOutput | ReceiptOutput
-}
-
-export interface TokenOutput {
-    Token: number
-}
-
-export interface ReceiptOutput {
-    Receipt: number
-}
-
-
-interface BlockHeader {
-    version: number,
-    bits: number,
-    nonce: any[],
-    b_num: number,
-    seedValue: any[],
-    previous_hash: string,
-    merkle_root_hash: string,
-}
-
-interface ScriptSignature {
-    stack: any[]
-}
-
-// export interface Stack {
-//     Op?: string,
-//     Num?: number,
-//     Bytes?: string,
-//     Signature?: number[],
-//     PubKey?: number[]
-// }
 
 

@@ -1,3 +1,5 @@
+@import 'styles/global.scss';
+
 .computeNodesContainer {
   ul {
     padding: 0;
@@ -12,43 +14,84 @@
 }
 
 .table {
-  background: white;
+  background: $containerBackground;
   margin-top: 0;
   box-shadow: 0px 0px 5px #898c91;
+
+  tbody tr {
+    background-color: white;
+
+    &:hover {
+      background-color: #f5f5f5;
+      cursor: pointer;
+    }
+  }
 
 }
 
 .blockTable {
-  padding-top: 10px;
   margin: 0 auto;
   width: 100%;
   min-width: 40vw;
+
+  .blockTableHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 5px;
+
+    .selectContainer{
+      display: flex;
+      flex-direction: row;
+      .loading {
+        width: 25px;
+        margin-left: 5px;
+      }
+    }
+  }
 }
 
 .pagination {
+  padding-top: $default-spacing;
   ul {
+    margin-bottom: 0px;
+    li {
+      margin: 2px;
+      width: auto !important;
+      min-width: 40px !important;
+    }
     li {
       margin: 2px;
       width: auto !important;
       min-width: 40px !important;
     }
   }
-
-  &.leftArrowDisabled {
-    div:first-child {
-      display: none;
-    }
-  }
-
-  &.rightArrowDisabled {
-    div:last-child {
-      display: none;
-    }
-  }
 }
 
-// :global nav {
-//   ul li {
-//     width: 50px !important;
-//   }
-// }
+.selectNbItems button {
+  width: auto;
+  background: white;
+  box-shadow: 0px 0px 5px #898c91;
+  border: none;
+  color: black;
+  outline: none;
+
+  &:hover {
+    box-shadow: 0px 0px 10px #898c91;
+    background-color: #f5f5f5;
+    color: black;
+    outline: none;
+  }
+
+  &:active {
+    background: #f5f5f5;
+    color: black;
+    outline: none;
+  }
+
+  &:focus {
+    background: #f5f5f5;
+    color: black;
+    outline: none;
+  }
+}

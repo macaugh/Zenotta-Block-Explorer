@@ -1,0 +1,68 @@
+/* 
+    This file hold all global CSS variables (Colours, Fonts and fixed values) 
+    Used in most .scss files and in _themeVariables.
+*/
+
+/*=========== COLOURS ===========*/
+
+// Zenotta Colour scheme 
+$white: #ffffff;
+$black: #000000;
+$anthraciteZenotta: #5B5B5B;
+$darkblueZenotta: #09314D;
+$teal: #008080;
+$eturquoise: #30D5C8;
+$mint: #A3E3D2;
+$brightYellow: #FFEC31;
+$shockPink: #F90171;
+// Default text colours
+$dark-text-colour: rgba(97, 97, 97, 0.897);
+$mid-text-colour: rgba(255,255,255,.7);
+$light-text-colour: rgba(255, 255, 255, .8);
+// Other
+$layerMaskColour: rgba($color: #ffffff, $alpha: 0.5);
+
+/*=========== FONTS ===========*/
+
+$firaSans: "Fira Sans", sans-serif;
+$firaCode: "Fira Code", monospace;
+$clashGrotesk: "Clash Grotesk", sans-serif;
+$defaultWeight: 300;
+$titleWeight: 500;
+$navBarWeight: 400;
+
+/*=========== VALUES ===========*/
+
+// Main content
+$largeWidth: 95vw;
+$mediumWidth: 75vw;
+$smallWidth: 65vw;
+$tinyWidth: 55vw;
+// Nav
+$topNavHeight: 60px; // Based on boostrap Nav default hight
+$collapedtopNavHeight: 40.2px; // Based on boostrap collapsed Nav default height
+// Threshold value that defines when in Tablette/Mobile mode 
+$widthThreshold: 992px;
+// Transition
+$defaultTransitionTime: .5s;
+// Spacing
+$defaultSpacing: 15px;
+// Footer
+$footerHeight: 100px;
+
+/*=========== OTHER ===========*/
+
+// Theme variables (Temporary, will be moved to _themeVariables)
+$cta: $shockPink;
+$tertiary: #d1f7ff;
+$primary: $darkblueZenotta;
+$primaryLight: #F2F2F2;
+$secondary: $eturquoise;
+$support-a: #4c7a9a;
+$support-b: #8d8980;
+$support-c: #575267;
+$support-d: #3498db;
+$support-e: #00b7ff;
+$backgroud-support: #003f59;
+$backgroud: #005678;
+

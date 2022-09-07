@@ -3,50 +3,30 @@ import { useObserver } from 'mobx-react';
 import { StoreContext } from '../../index';
 
 import * as styles from "./App.scss";
-import { BlockExplorer } from '../BlockExplorer/BlockExplorer';
-import { TxsExplorer } from '../TxsExplorer/TxsExplorer';
-import { Overview } from '../Overview/Overview';
 import { Footer } from '../Footer/Footer';
-import { CsvExport } from '../CsvExport/CsvExport';
-import Search from '../Search/Search';
-import { BlockView } from '../BlockView/BlockView';
-import { TxView } from '../TxView/TxView';
 
 import {
   BrowserRouter as Router,
   Switch,
   Route
 } from "react-router-dom";
-import Nav from '../Nav/Nav';
+import { Nav } from '../Nav/Nav';
+import { MainRoutes, routes } from 'routes';
 
 export default function App() {
-  const store = React.useContext(StoreContext);
-  
+
   return useObserver(() => (
     <Router>
       <div className={styles.container}>
         <Nav />
         <div className={styles.content}>
           <Switch>
-            <Route exact path="/txs">
-              <TxsExplorer />
-            </Route>
-            <Route exact path="/blocks">
-              <BlockExplorer />
-            </Route>
-            <Route exact path="/block/:hash">
-              <BlockView />
-            </Route>
-            <Route exact path="/tx/:hash">
-              <TxView />
-            </Route>
-            <Route exact path="/csv-export">
-              <CsvExport />
-            </Route>
-            <Route exact path="/">
-              <Search />
-              <Overview />
-            </Route>
+            {routes.map((route: MainRoutes) => {
+              return (
+                <Route exact path={route.path} key={route.path}>
+                  <route.Component />
+                </Route>)
+            })}
             <Route path="*">
               <div>
                 <h1>Not found</h1>

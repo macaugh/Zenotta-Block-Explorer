@@ -1,6 +1,5 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-
 import storeInstance from "./store/Store";
 
 // import './i18n';

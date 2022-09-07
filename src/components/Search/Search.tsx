@@ -2,32 +2,35 @@ import * as React from 'react';
 import { useObserver } from 'mobx-react';
 import { TextInput, Notification } from 'chi-ui';
 import { StoreContext } from '../../index';
+import SearchIcon from 'static/img/search.svg';
 
 import * as styles from "./Search.scss";
-import { Dropdown } from '../Dropdown/Dropdown';
+import { Button, Dropdown, DropdownButton, Form, InputGroup } from 'react-bootstrap';
 
 interface NavProps {
     nav?: boolean
 }
 
 export default function Search(props: NavProps) {
-    const [searchOptions, _setSearchOptions] = React.useState<any[]>([
-        "Transaction Hash",
+    const [searchOptions, _setSearchOptions] = React.useState<string[]>([
         "Block Hash",
         "Block Number",
+        "Tx Hash",
     ]);
     const localStorageValue = localStorage.getItem('DROPDOWN_SELECT');
-    const [currentSearchOption, setCurrentSearchOption] = React.useState<string>(localStorageValue ? localStorageValue : 'Transaction Hash');
+    const [currentSearchOption, setCurrentSearchOption] = React.useState<string>(localStorageValue ? localStorageValue : searchOptions[0]);
     const [searchValue, setSearchValue] = React.useState<string>("");
     const [searchError, setSearchError] = React.useState<string>("");
     const store = React.useContext(StoreContext);
 
     const submitSearchValue = async () => {
         if (currentSearchOption != "Block Number") {
+            console.log('submitSearchValue');
             const validity = await store.searchHashIsValid(searchValue, currentSearchOption);
+            console.log(validity);
 
             if (validity.isValid) {
-                if (currentSearchOption === 'Transaction Hash')
+                if (currentSearchOption === 'Tx Hash')
                     window.location.href = `/tx/${searchValue}`;
                 else if (currentSearchOption === 'Block Hash')
                     window.location.href = `/block/${searchValue}`;
@@ -75,22 +78,23 @@ export default function Search(props: NavProps) {
                     className={styles.notification}>
                     {searchError}
                 </Notification>}
-            <div className={`${props.nav ? styles.navSearchContainer : styles.searchContainer}`}>
-                <div className={styles.innerContainer}>
-                    <Dropdown
-                        onItemClick={(item: any) => handleSearchOptionSelect(item)}
-                        listItems={searchOptions}
-                        nav={props.nav ? true : false} />
 
-                    <TextInput
-                        type="search"
-                        label="Search here..."
-                        iconType="text"
-                        className={styles.search}
-                        shouldSubmitOnEnter={true}
-                        onChange={(e: any) => handleSearchInput(e.target.value)}
-                        onSubmit={() => submitSearchValue()} />
-                </div>
+
+            <div className={`${styles.searchContainer} ${props.nav ? styles.navSearchContainer : ''}`}>
+                <InputGroup className={`${styles.inputGroup}`}>
+                    <DropdownButton
+                        variant="outline-secondary"
+                        title={currentSearchOption}
+                        id="input-group-dropdown-1"
+                    >
+                        {searchOptions.map((item: string, index: number) => {
+                            if (item !== currentSearchOption)
+                                return <Dropdown.Item key={index} onClick={() => handleSearchOptionSelect(item)}>{item}</Dropdown.Item>
+                        })}
+                    </DropdownButton>
+                    <Form.Control aria-label="Search" onChange={(e: any) => handleSearchInput(e.target.value)} onSubmit={() => submitSearchValue()} />
+                    <Button variant="outline-secondary" onClick={() => submitSearchValue()} ><img className={styles.searchIcon} src={SearchIcon} /></Button>
+                </InputGroup>
             </div>
         </>
     ));
