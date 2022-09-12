@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useObserver } from 'mobx-react';
-import { StoreContext } from '../../index';
 
 import * as styles from "./App.scss";
 import { Footer } from '../Footer/Footer';

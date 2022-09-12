@@ -21,7 +21,7 @@
 
   .nav {
     z-index: 999;
-    box-shadow: 0px 0px 5px #898c91;
+   // box-shadow: 0px 0px 5px #898c91;
     background: $nav;
     padding-right: 15px;
     padding-left: 5px;
@@ -30,6 +30,10 @@
     .navContainer {
       width: 100%;
       flex-flow: column wrap;
+
+      @media only screen and (min-width: 992px) {
+        flex-flow: row;
+      }
     }
 
     .navItems {
@@ -37,6 +41,10 @@
       display: flex;
       justify-content: end;
       align-items: center;
+
+      @media only screen and (min-width: 992px) {
+        margin-top: 15px;
+      }
     }
 
     .navSearch {

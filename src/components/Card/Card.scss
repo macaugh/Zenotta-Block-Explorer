@@ -7,6 +7,13 @@
     border-collapse: collapse;
     box-shadow: $box-shadow;
     overflow: auto;
+    border: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 50px;
+
+    tbody td:first-child {
+        border-top-left-radius: 5px;
+    }
 
     td {
         padding: 10px;

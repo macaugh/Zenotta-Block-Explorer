@@ -1,5 +1,7 @@
 @import '../../styles/global.scss';
 
+$search-spacing: 50px;
+
 .title {
     margin-bottom: 0px !important;
     font-size: 1.3rem;
@@ -20,8 +22,25 @@
 .container {
     position: relative;
     // z-index: 99;
-    margin-top: $default-spacing;
+    margin-top: $default-spacing + ($search-spacing * 2);
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
+    margin-bottom: 50px;
+}
+
+.searchContainer {
+    background-image: url('../../static/img/bg.svg');
+    background-color: #09314D;
+    background-size: cover;
+    position: absolute;
+    width: 100%;
+    top: 50px;
+    padding: $search-spacing 0;
+    left: 0;
+
+    & > div {
+        margin: 10px auto;
+        box-shadow: none;
+    }
 }
