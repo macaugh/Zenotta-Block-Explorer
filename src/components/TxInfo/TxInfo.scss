@@ -7,14 +7,20 @@
     padding: 25px;
     display: flex;
     box-sizing: border-box;
+    border: 1px solid #ccc;
 
-    white-space: nowrap;
+    flex-direction: column;
     overflow: hidden;
     text-overflow: ellipsis;
 
     box-shadow: $box-shadow;
 
-    margin-bottom: 15px;
+    margin-bottom: 50px;
+
+    @media only screen and (min-width: 1000px) {
+        flex-direction: row;
+        white-space: nowrap;
+    }
 }
 
 .left {

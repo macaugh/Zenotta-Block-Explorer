@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useObserver } from 'mobx-react';
 import { TextInput, Notification } from 'chi-ui';
 import { StoreContext } from '../../index';
-import SearchIcon from 'static/img/search.svg';
+import SearchIcon from 'static/img/search-white.svg';
 
 import * as styles from "./Search.scss";
 import { Button, Dropdown, DropdownButton, Form, InputGroup } from 'react-bootstrap';
@@ -93,7 +93,7 @@ export default function Search(props: NavProps) {
                         })}
                     </DropdownButton>
                     <Form.Control aria-label="Search" onChange={(e: any) => handleSearchInput(e.target.value)} onSubmit={() => submitSearchValue()} />
-                    <Button variant="outline-secondary" onClick={() => submitSearchValue()} ><img className={styles.searchIcon} src={SearchIcon} /></Button>
+                    <Button style={{ background: '#4cc9f0', border: 0 }} variant="outline-secondary" onClick={() => submitSearchValue()} ><img className={styles.searchIcon} src={SearchIcon} /></Button>
                 </InputGroup>
             </div>
         </>

@@ -5,8 +5,6 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { Navbar, Nav as BTNav, Stack } from 'react-bootstrap';
 import { routes, MainRoutes } from 'routes';
 import Search from 'components/Search/Search';
-import { Console } from 'console';
-import { emitWarning } from 'process';
 
 const handleScreenWidth = () => {
   if (window.innerWidth >= 992) {
@@ -56,15 +54,15 @@ export const Nav = () => {
         <Navbar.Toggle id="navbar-toggle" aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <BTNav activeKey={location.pathname} className={styles.navContainer}>
+            {!mobileMenuOpen &&
+              <div className={`${styles.navItems} ${searchEnabled ? styles.navSearch : ''}`}>
+                {generateNavLinks()}
+              </div>}
             <div className={`${styles.searchBar}`}>
               {location.pathname !== '/' ?
                 <Search nav={searchEnabled} />
                 : null}
             </div>
-            {!mobileMenuOpen &&
-              <div className={`${styles.navItems} ${searchEnabled ? styles.navSearch : ''}`}>
-                {generateNavLinks()}
-              </div>}
             {mobileMenuOpen &&
               generateNavLinks()}
           </BTNav>

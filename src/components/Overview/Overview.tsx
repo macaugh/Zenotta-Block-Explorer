@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useObserver } from 'mobx-react';
 import { StoreContext } from '../../index';
-import { toJS } from 'mobx';
 
 import { ItemList, DataType } from '../ItemList/ItemList';
 import styles from './Overview.scss';
@@ -23,7 +22,9 @@ export const Overview = () => {
         <>
 
             {/* <h1 className={styles.title}>Zenotta Block Explorer</h1> */}
-            <Search />
+            <div className={styles.searchContainer}>
+                <Search />
+            </div>
 
             <div className={styles.container}>
                 <ItemList title={'Latest Blocks'} data={store.blocksTableData} dataType={DataType.Block} />

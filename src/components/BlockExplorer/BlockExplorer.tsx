@@ -84,7 +84,7 @@ export const BlockExplorer = () => {
             select.push(<Dropdown.Item key={value * i} onClick={() => { reloadTable(value * i) }}>{value * i}</Dropdown.Item>);
 
         return (
-            <Dropdown className={`${styles.selectNbItems} shadow-none`} title={'Test'}>
+            <Dropdown className={`${styles.selectNbItems} shadow-none`} title={'Blocks per Page'}>
                 <Dropdown.Toggle id="dropdown-autoclose-true">
                     {maxBlocksPerPage}
                 </Dropdown.Toggle>
