@@ -4,7 +4,8 @@ const lruCache = require('./cache');
 const DEFAULTS = {
     regularBuckets: 54,
     stashBuckets: 6,
-    bucketSize: 14
+    bucketSize: 14,
+    maxSegments: 1000
 };
 
 /**
@@ -27,9 +28,9 @@ class Segment {
      * @param {number} bucketSize - Number of entries in a bucket
      */
     constructor(regularBuckets, stashBuckets, bucketSize) {
-        this.regularBucketsSize = regularBuckets || DEFAULTS.regularBuckets;
-        this.stashBucketsSize = stashBuckets || DEFAULTS.stashBuckets;
-        this.bucketSize = bucketSize || DEFAULTS.bucketSize;
+        this.regularBucketsSize = regularBuckets;
+        this.stashBucketsSize = stashBuckets;
+        this.bucketSize = bucketSize;
 
         this.regularBuckets = this.constructBuckets(this.regularBucketsSize, false);
         this.stashBuckets = this.constructBuckets(this.stashBucketsSize, true);
@@ -105,46 +106,77 @@ class Segment {
 }
 
 class DragonflyCache {
-    constructor(segRegularBuckets, segStashBuckets) {
+    /**
+     * @description Constructs a DragonflyCache
+     * 
+     * @param {number} segRegularBuckets - Number of regular buckets per segment
+     * @param {number} segStashBuckets - Number of stash buckets per segment
+     * @param {number} maxSegments - Maximum number of segments. Optional, defaults to 1000
+     * @param {number} bucketSize - Number of entries in a bucket
+     */
+    constructor(segRegularBuckets, segStashBuckets, maxSegments, bucketSize) {
         this.cache = new Map();
-        this.segRegularBuckets = segRegularBuckets;
-        this.segStashBuckets = segStashBuckets;
+        this.segRegularBuckets = segRegularBuckets || DEFAULTS.regularBuckets;
+        this.segStashBuckets = segStashBuckets || DEFAULTS.stashBuckets;
+        this.bucketSize = bucketSize || DEFAULTS.bucketSize;
+        this.maxSegments = maxSegments || DEFAULTS.maxSegments;
     }
 
-    generateKey(input) {
-        const hexDigest = crypto.createHash('md5').update(input).digest('hex');
-        farmhash.fingerprint32(hexDigest);
-    }
-
+    /**
+     * @description Generates a segment specific key for a given value
+     * 
+     * @param {object} input 
+     * @returns A segment key integer
+     */
     generateSegmentKey(input) {
         const key = generateKey(input);
-        return key % 1000;
+        return key % this.maxSegments;
     }
 
+    /**
+     * @description Adds a value to the cache
+     * 
+     * @param {object} value 
+     */
     add(value) {
         const key = generateKey(value);
         const segmentKey = this.generateSegmentKey(key);
         const segment = this.getSegment(segmentKey);
 
         if (segment) {
-            let addResult = segment.add(value);
+            segment.add(value);
 
         } else {
-            this.setSegment(segmentKey);
+            this.addSegment(segmentKey);
             this.add(value);
         }
+    }
+
+    /**
+     * Gets a value from cache
+     * 
+     * @param {object} value 
+     * @returns 
+     */
+    get(key) {
+        const key = generateKey(value);
+        const segmentKey = this.generateSegmentKey(key);
+        const segment = this.getSegment(segmentKey);
+
+        if (segment) {
+            return segment.get(value);
+        }
+
+        return null;
     }
 
     getSegment(key) {
         return this.cache.get(key);
     }
 
-    setSegment(key) {
+    addSegment(key) {
+        const segment = new Segment(this.segRegularBuckets, this.segStashBuckets, );
         this.cache.set(key, new Segment(this.segRegularBuckets, this.segStashBuckets));
-    }
-
-    getKeys() {
-        return this.cache.keys();
     }
 
     clear() {

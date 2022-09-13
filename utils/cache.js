@@ -1,5 +1,6 @@
 class Node {
-    constructor(value) {
+    constructor(id, value) {
+        this.id = id;
         this.value = value;
         this.prev = null;
         this.next = null;
@@ -28,8 +29,8 @@ class NetworkCache {
      * @param {string} id 
      * @param {any} value 
      */
-    add(value) {
-        let entry = new Node(value);
+    add(id, value) {
+        let entry = new Node(id, value);
 
         if (this.reachedCapacity()) {
             this.ejectLRU();
@@ -66,14 +67,13 @@ class NetworkCache {
      * @param {object} value - The value to get
      * @param {boolean} promote - Whether the entry should be promoted toward the head of the cache
      */
-    get(value, promote) {
-        const entry = new Node(value);
+    get(id, promote) {
         let current = this.head;
         let prev = null;
         promote = promote || false;
 
         while (current) {
-            if (current.value === entry.value) {
+            if (current.id === id) {
                 if (promote) {
                     this.promoteWithPrev(current, prev);
                 } else {
@@ -122,9 +122,13 @@ class NetworkCache {
      */
     promoteWithPrev(entry, prev) {
         if (prev) {
-            let temp = prev.value;
+            const tempId = prev.id;
+            const tempVal = prev.value;
+
+            prev.id = entry.id;
+            entry.id = tempId;
             prev.value = entry.value;
-            entry.value = temp;
+            entry.value = tempVal;
         }
     }
 
@@ -137,15 +141,18 @@ class NetworkCache {
         let current = this.head;
         let prev = null;
 
-        while (current.value != entry.value) {
+        while (current.id != entry.id) {
             prev = current;
             current = current.next;
         }
 
         if (prev && current) {
-            let temp = prev.value;
+            let tempVal = prev.value;
+            let tempId = prev.id;
             prev.value = entry.value;
-            current.value = temp;
+            prev.id = entry.id;
+            current.value = tempVal;
+            current.id = tempId;
         }
     }
 
