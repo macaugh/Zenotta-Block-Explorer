@@ -7,12 +7,19 @@ class Node {
 }
 
 class NetworkCache {
-    constructor(capacity) {
+    /**
+     * Network cache constructor. Is LRU cache.
+     * 
+     * @param {number} capacity 
+     * @param {boolean} addFromHead
+     */
+    constructor(capacity, addFromHead) {
         this.head = null;
         this.tail = null;
-        this.lookup = {};
+        this.filled = 0;
 
         this.capacity = capacity;
+        this.addFromHead = addFromHead;
     }
 
     /**
@@ -21,40 +28,65 @@ class NetworkCache {
      * @param {string} id 
      * @param {any} value 
      */
-    add(id, value) {
+    add(value) {
         let entry = new Node(value);
 
         if (this.reachedCapacity()) {
             this.ejectLRU();
+        } else {
+            this.filled++;
         }
 
-        if (this.tail) {
-            this.tail.next = entry;
-            entry.prev = this.tail;
-            this.tail = entry;
+        if (this.addFromHead && this.head) {
+            this.addAsHead(entry);
+        }
+        else if (!this.addFromHead && this.tail) {
+            this.addAsTail(entry)
         } else {
             this.head = entry;
             this.tail = entry;
         }
+    }
 
-        this.lookup[id] = entry;
+    addAsHead(entry) {
+        this.head.prev = entry;
+        entry.next = this.head;
+        this.head = entry;
+    }
+
+    addAsTail(entry) {
+        this.tail.next = entry;
+        entry.prev = this.tail;
+        this.tail = entry;
     }
 
     /**
      * Gets an entry by id
      * 
-     * @param {string} id 
+     * @param {object} value - The value to get
+     * @param {boolean} promote - Whether the entry should be promoted toward the head of the cache
      */
-    get(id) {
-        if (this.lookup.hasOwnProperty(id)) {
-            let entry = this.lookup[id];
+    get(value, promote) {
+        const entry = new Node(value);
+        let current = this.head;
+        let prev = null;
+        promote = promote || false;
 
-            this.makeMostRecent(entry);
-            this.removeFromPosition(entry);
+        while (current) {
+            if (current.value === entry.value) {
+                if (promote) {
+                    this.promoteWithPrev(current, prev);
+                } else {
+                    this.removeFromPosition(current);
+                }
 
-            return entry.value;
+                return current.value;
+            }
+
+            prev = current;
+            current = current.next;
         }
-        
+
         return null;
     }
 
@@ -62,21 +94,6 @@ class NetworkCache {
     ejectLRU() {
         this.head = this.head.next;
         this.head.prev = null;
-    }
-
-    /**
-     * Makes the passed entry the most recently tagged in the cache
-     * 
-     * @param {Node} entry
-     */
-    makeMostRecent(entry) {
-        let newEntry = new Node(entry.value);
-
-        // Create new tail
-        newEntry.next = null;
-        newEntry.prev = this.tail;
-        this.tail.next = newEntry;
-        this.tail = newEntry;
     }
 
     /**
@@ -97,10 +114,46 @@ class NetworkCache {
     }
 
     /**
+     * @description Promotes the entry toward the head of the cache, requiring 
+     * the previous entry as argument
+     * 
+     * @param {object} entry 
+     * @param {object} prev 
+     */
+    promoteWithPrev(entry, prev) {
+        if (prev) {
+            let temp = prev.value;
+            prev.value = entry.value;
+            entry.value = temp;
+        }
+    }
+
+    /**
+     * Promotes the entry toward the head of the cache
+     * 
+     * @param {Node} entry 
+     */
+    promote(entry) {
+        let current = this.head;
+        let prev = null;
+
+        while (current.value != entry.value) {
+            prev = current;
+            current = current.next;
+        }
+
+        if (prev && current) {
+            let temp = prev.value;
+            prev.value = entry.value;
+            current.value = temp;
+        }
+    }
+
+    /**
      * Predicate for checking whether cache has reached capacity
      */
     reachedCapacity() {
-        return Object.keys(this.lookup).length >= this.capacity;
+        return this.filled >= this.capacity;
     }
 }
 
