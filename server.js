@@ -57,7 +57,7 @@ app.post('/api/blockchainItem', (req, res) => {
     const hash = req.body.hash;
     const storagePath = `${storageNode}/blockchain_entry`;
     const genesisTxRegex = /0{5}[0-9]/;
-    const isBlock = hash[0] !== 'g' && !hash.match(genesisTxRegex).length;
+    const isBlock = hash[0] !== 'g' && !hash.match(genesisTxRegex);
 
     let posEntry = null;
 
