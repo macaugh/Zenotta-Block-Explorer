@@ -2,8 +2,8 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const calls = require('./utils/calls');
-const cache = require('./utils/cache');
 const config = require('./utils/config');
+const DragonflyCache = require('dragonfly-cache').DragonflyCache;
 
 const { extractTxs } = require('./utils/getTransactions');
 
@@ -31,9 +31,9 @@ const storageNode = fullConfig.STORAGE_NODE;
 
 // Caches
 const cacheCapacity = fullConfig.CACHE_CAPACITY;
-const blocksCache = new cache.NetworkCache(cacheCapacity * 3);
-const txsCache = new cache.NetworkCache(cacheCapacity * 3);
-const bNumCache = new cache.NetworkCache(cacheCapacity);
+const blocksCache = new DragonflyCache();
+const txsCache = new DragonflyCache();
+const bNumCache = new DragonflyCache();
 
 /** Fetch latest block */
 app.get('/api/latestBlock', (_, res) => {
@@ -62,6 +62,7 @@ app.post('/api/blockchainItem', (req, res) => {
 
     if (isBlock) {
         posEntry = blocksCache.get(hash);
+        console.log('retrieved from cache', posEntry);
     } else { // Transaction
         posEntry = txsCache.get(hash);
     }

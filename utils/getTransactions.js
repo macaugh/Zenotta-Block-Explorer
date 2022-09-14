@@ -1,7 +1,7 @@
 /** Extract transaction from block 0 to latest and saves them to a JSON file **/
 const axios = require('axios');
 const fs = require('fs');
-const config = require('./utils/config');
+const config = require('./config');
 
 const BATCH_SIZE = 99
 const FILENAME = 'transactions';

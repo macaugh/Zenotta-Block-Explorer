@@ -27,6 +27,7 @@
     "clean-css": "^4.2.3",
     "concurrently": "^6.0.0",
     "cors": "^2.8.5",
+    "dragonfly-cache": "^1.0.1",
     "express": "*",
     "function": "^0.6.1",
     "html-webpack-inline-source-plugin": "0.0.10",
