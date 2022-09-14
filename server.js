@@ -56,7 +56,8 @@ app.get('/api/latestBlock', (_, res) => {
 app.post('/api/blockchainItem', (req, res) => {
     const hash = req.body.hash;
     const storagePath = `${storageNode}/blockchain_entry`;
-    const isBlock = hash[0] !== 'g';
+    const genesisTxRegex = /0{5}[0-9]/;
+    const isBlock = hash[0] !== 'g' && !hash.match(genesisTxRegex).length;
 
     let posEntry = null;
 
@@ -65,6 +66,7 @@ app.post('/api/blockchainItem', (req, res) => {
         console.log('retrieved from cache', posEntry);
     } else { // Transaction
         posEntry = txsCache.get(hash);
+        console.log('retrieved from cache', posEntry);
     }
 
     if (!posEntry) {
@@ -104,6 +106,7 @@ app.post('/api/blockRange', (req, res) => {
         calls.fetchBlockRange(storagePath, unknowns).then(response => {
             if (response.status == 'Success' && response.content.length) {
                 for (let b of response.content) {
+                    console.log('adding to cache', b);
                     bNumCache.add(b[1].block.header.b_num, b);
                     // Add to blocksCache too coz why not
                     if (!blocksCache.get(b[0])) {
