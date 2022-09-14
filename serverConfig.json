@@ -2,5 +2,7 @@
     "port": 8090,
     "storageNode": "http://34.222.4.174:3002",
     "computeNode":"http://44.239.251.56:3001",
-    "cacheCapacity": 100
+    "localNode": "http://localhost",
+    "localPort": 8090,
+    "cacheCapacity": 1000
 }

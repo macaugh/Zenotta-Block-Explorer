@@ -2,8 +2,8 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const calls = require('./utils/calls');
-const cache = require('./utils/cache');
 const config = require('./utils/config');
+const DragonflyCache = require('dragonfly-cache').DragonflyCache;
 
 const { extractTxs } = require('./utils/getTransactions');
 
@@ -31,9 +31,9 @@ const storageNode = fullConfig.STORAGE_NODE;
 
 // Caches
 const cacheCapacity = fullConfig.CACHE_CAPACITY;
-const blocksCache = new cache.NetworkCache(cacheCapacity * 3);
-const txsCache = new cache.NetworkCache(cacheCapacity * 3);
-const bNumCache = new cache.NetworkCache(cacheCapacity);
+const blocksCache = new DragonflyCache();
+const txsCache = new DragonflyCache();
+const bNumCache = new DragonflyCache();
 
 /** Fetch latest block */
 app.get('/api/latestBlock', (_, res) => {
@@ -56,14 +56,17 @@ app.get('/api/latestBlock', (_, res) => {
 app.post('/api/blockchainItem', (req, res) => {
     const hash = req.body.hash;
     const storagePath = `${storageNode}/blockchain_entry`;
-    const isBlock = hash[0] !== 'g';
+    const genesisTxRegex = /0{5}[0-9]/;
+    const isBlock = hash[0] !== 'g' && !hash.match(genesisTxRegex);
 
     let posEntry = null;
 
     if (isBlock) {
         posEntry = blocksCache.get(hash);
+        console.log('retrieved from cache', posEntry);
     } else { // Transaction
         posEntry = txsCache.get(hash);
+        console.log('retrieved from cache', posEntry);
     }
 
     if (!posEntry) {
@@ -103,6 +106,7 @@ app.post('/api/blockRange', (req, res) => {
         calls.fetchBlockRange(storagePath, unknowns).then(response => {
             if (response.status == 'Success' && response.content.length) {
                 for (let b of response.content) {
+                    console.log('adding to cache', b);
                     bNumCache.add(b[1].block.header.b_num, b);
                     // Add to blocksCache too coz why not
                     if (!blocksCache.get(b[0])) {

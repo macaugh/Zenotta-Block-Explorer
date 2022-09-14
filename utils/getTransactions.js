@@ -1,15 +1,13 @@
 /** Extract transaction from block 0 to latest and saves them to a JSON file **/
 const axios = require('axios');
 const fs = require('fs');
-const calls = require('./calls');
-
+const config = require('./config');
 
 const BATCH_SIZE = 99
 const FILENAME = 'transactions';
+const FULL_CONFIG = config.getConfig('./serverConfig.json');
 
 async function extractTxs(latestBlockNum) {
-    console.log("LATEST BNUM", latestBlockNum);
-    console.log('extractTXS');
     let jsonFile = await fetchJsonFile(FILENAME).then((res) => { return res ? res : null });
 
     if (jsonFile != null) {
@@ -45,7 +43,7 @@ async function extractTxs(latestBlockNum) {
 }
 
 async function fetchJsonFile(filename) {
-    return axios.get(`http://localhost:8090/${filename}.json`).then(response => {
+    return axios.get(`http://${FULL_CONFIG.LOCAL_NODE}:${FULL_CONFIG.LOCAL_PORT}/${filename}.json`).then(response => {
         const isJson = response.headers['content-type']?.search('application/json') != -1 ? true : false;
         return isJson ? JSON.parse(JSON.stringify(response.data)) : null;
     }).catch(error => {
@@ -55,7 +53,7 @@ async function fetchJsonFile(filename) {
 
 async function fetchBlockRange(startBlock, endBlock) {
     const nums = [...Array(endBlock - startBlock + 1).keys()].map(x => x + startBlock); // Generate number array from range
-    return axios.post('http://localhost:8090/api/blockRange', { nums }).then(res => res.data);
+    return axios.post(`http://${FULL_CONFIG.LOCAL_NODE}:${FULL_CONFIG.LOCAL_PORT}/api/blockRange`, { nums }).then(res => res.data);
 }
 
 async function createJsonFile(filename, data) {

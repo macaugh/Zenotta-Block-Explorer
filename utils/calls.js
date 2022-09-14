@@ -1,5 +1,4 @@
 const axios = require('axios');
-const { has } = require('mobx');
 const { v4: uuidv4 } = require('uuid');
 
 // Fetch the latest block from the specified path
