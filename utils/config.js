@@ -5,7 +5,8 @@ const DEFAULTS = {
     computeNode: "http://localhost:3001",
     localNode: "http://localhost",
     localPort: 8090,
-    cacheCapacity: 100
+    cacheCapacity: 100,
+    protocol: "http"
 };
 
 function getConfig(path) {
@@ -17,7 +18,8 @@ function getConfig(path) {
         COMPUTE_NODE: obj.computeNode || DEFAULTS.computeNode,
         LOCAL_NODE: obj.localNode || DEFAULTS.localNode,
         LOCAL_PORT: obj.localPort || DEFAULTS.localPort,
-        CACHE_CAPACITY: obj.cacheCapacity || DEFAULTS.cacheCapacity
+        CACHE_CAPACITY: obj.cacheCapacity || DEFAULTS.cacheCapacity,
+        PROTOCOL: obj.protocol || DEFAULTS.protocol
     };
 }
 

@@ -88,6 +88,8 @@ export default function Search(props: NavProps) {
                         id="input-group-dropdown-1"
                     >
                         {searchOptions.map((item: string, index: number) => {
+                            console.log(item);
+                            console.log(currentSearchOption);
                             if (item !== currentSearchOption)
                                 return <Dropdown.Item key={index} onClick={() => handleSearchOptionSelect(item)}>{item}</Dropdown.Item>
                         })}

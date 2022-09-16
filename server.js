@@ -36,8 +36,11 @@ const txsCache = new DragonflyCache();
 const bNumCache = new DragonflyCache();
 
 /** Fetch latest block */
-app.get('/api/latestBlock', (_, res) => {
-    const storagePath = `${storageNode}/latest_block`;
+app.post('/api/latestBlock', (req, res) => {
+    const network = req.body.network;
+
+    console.log('network', network);
+    const storagePath = `${fullConfig.PROTOCOL}://${network.sIp}:${network.sPort}/latest_block`;
 
     calls.fetchLatestBlock(storagePath).then(latestBlock => {  
         try {
@@ -54,8 +57,9 @@ app.get('/api/latestBlock', (_, res) => {
 
 /** Fetch blockchain item */
 app.post('/api/blockchainItem', (req, res) => {
+    const network = req.body.network;
     const hash = req.body.hash;
-    const storagePath = `${storageNode}/blockchain_entry`;
+    const storagePath = `${fullConfig.PROTOCOL}://${network.sIp}:${network.sPort}/blockchain_entry`;
     const genesisTxRegex = /0{5}[0-9]/;
     const isBlock = hash[0] !== 'g' && !hash.match(genesisTxRegex);
 
@@ -87,7 +91,8 @@ app.post('/api/blockchainItem', (req, res) => {
 
 /** Fetch block range */
 app.post('/api/blockRange', (req, res) => {
-    const storagePath = `${storageNode}/block_by_num`;
+    const network = req.body.network;
+    const storagePath = `${fullConfig.PROTOCOL}://${network.sIp}:${network.sPort}/block_by_num`;
     let nums = Array.isArray(req.body.nums) ? req.body.nums.filter(num => Number.isFinite(num)) : [];
     let unknowns = [];
     let knowns = [];
