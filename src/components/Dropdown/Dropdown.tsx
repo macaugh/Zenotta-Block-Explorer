@@ -5,6 +5,7 @@ import OutsideAlerter from './OutsideAlerter';
 
 export interface DropdownProps {
     listItems: string[],
+    storageKey: string,
     onItemClick?: Function,
     nav?: boolean,
 }
@@ -14,7 +15,7 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
     const [dropdownClass, setDropdownClass] = useState('');
 
     const onSelect = (selection: any) => {
-        localStorage.setItem('DROPDOWN_SELECT', selection);
+        localStorage.setItem(props.storageKey, selection);
         setSelected(selection);
         setDropdownClass('');
 
@@ -28,7 +29,7 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
     }
 
     useEffect(() => {
-        const localVal = localStorage.getItem('DROPDOWN_SELECT');
+        const localVal = localStorage.getItem(props.storageKey);
         if (localVal) {
             setSelected(localVal);
         }

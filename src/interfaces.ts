@@ -4,6 +4,13 @@ export enum ItemType {
   Transaction,
 }
 
+export interface Network {
+  name: string;
+  chainId: number;
+  sIp: string;
+  sPort: number;
+}
+
 /** Request data structures */
 
 export interface BlockDataWrapperV0_1 {

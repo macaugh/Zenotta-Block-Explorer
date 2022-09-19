@@ -4,5 +4,6 @@
     "computeNode":"http://44.239.251.56:3001",
     "localNode": "http://localhost",
     "localPort": 8090,
-    "cacheCapacity": 1000
+    "cacheCapacity": 1000,
+    "protocol": "http"
 }
