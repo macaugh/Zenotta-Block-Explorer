@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "rm -rf public/*.chunk.js && export NODE_ENV=production && webpack --config tools/webpack/webpack.prod.js",
-    "start-dev": "export NODE_ENV=development webpack-dev-server --config tools/webpack/webpack.dev.js",
+    "start-dev": "export NODE_ENV=development && webpack-dev-server --config tools/webpack/webpack.dev.js",
     "start-server-dev": "export NODE_ENV=development; node server.js",
     "start": "node server.js"
   },

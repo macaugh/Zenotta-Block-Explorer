@@ -63,7 +63,7 @@ class Store {
   @action
   async fetchLatestBlock() {
     await axios
-      .post("http://35.85.8.36/api/latestBlock", { network: this.network })
+      .post("http://localhost:8090/api/latestBlock", { network: this.network })
       .then(async (response) => {
         this.setLatestBlock(this.formatBlock(response.data.content));
       });
@@ -75,7 +75,7 @@ class Store {
     let bItemData = null;
     if (Object.keys(this.blockchainItemCache).indexOf(hash) == -1) {
       bItemData = await axios
-        .post(`http://35.85.8.36/api/blockchainItem`, {
+        .post(`http://localhost:8090/api/blockchainItem`, {
           hash,
           network: this.network,
         })
@@ -102,7 +102,7 @@ class Store {
       (x) => x + startBlock
     ); // Generate number array from range
     let data = await axios
-      .post("http://35.85.8.36/api/blockRange", {
+      .post("http://localhost:8090/api/blockRange", {
         nums,
         network: this.network,
       })
@@ -124,7 +124,7 @@ class Store {
   @action
   async fetchBlockHashByNum(num: number) {
     let data = await axios
-      .post("http://35.85.8.36/api/blockRange", {
+      .post("http://localhost:8090/api/blockRange", {
         nums: [num],
         network: this.network,
       })
@@ -222,7 +222,7 @@ class Store {
     endTxs: number
   ): Promise<{ blockNum: number; tx: string } | null> {
     let txsIdRange = await axios
-      .get(`http://35.85.8.36/${FILENAME}.json`)
+      .get(`http://localhost:8090/${FILENAME}.json`)
       .then((response) => {
         const isJson =
           response.headers["content-type"] &&

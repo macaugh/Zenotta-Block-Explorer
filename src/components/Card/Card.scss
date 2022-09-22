@@ -20,9 +20,8 @@
         border-bottom: 1px solid #ececec;
         max-width: 500px;
         box-sizing: border-box;
-        overflow: hidden;
-        white-space: pre-wrap;
-        text-overflow: ellipsis;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
     }
 
     tr td:first-child {

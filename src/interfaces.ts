@@ -139,6 +139,8 @@ export interface BlockInfo {
   version: number;
   byteSize: string;
   nbTransactions: number;
+  unicornSeed: string; // these are bigints, better as strings
+  unicornWitness: string; // these are bigints, better as strings 
 }
 
 export interface TransactionInfo {

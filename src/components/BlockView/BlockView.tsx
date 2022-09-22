@@ -2,16 +2,16 @@ import * as React from 'react';
 import { useObserver } from 'mobx-react';
 import { useParams } from 'react-router-dom';
 import { StoreContext } from '../../index';
-import { RowTable, RowTableRow } from '../RowTable/RowTable';
+import { RowTableRow } from '../RowTable/RowTable';
 import { TransactionInfoProps, TxInfo } from '../TxInfo/TxInfo';
 import { formatToBlockInfo } from '../../formatData';
 import { CsvBtn } from '../CsvBtn/CsvBtn';
 
 import styles from './BlockView.scss';
 import { Button } from 'chi-ui';
-import { itemToCsv, downloadFile, formatCsvTxs, txsToCsv } from '../../formatCsv';
+import { itemToCsv, downloadFile } from '../../formatCsv';
 import { Card } from 'components/Card/Card';
-import { Block, BlockInfo, Input, InputInfo, Output, Transaction } from 'interfaces';
+import { Block, BlockInfo, Input, Output, Transaction } from 'interfaces';
 
 enum txBtn {
     show = "Show transactions",
@@ -164,13 +164,6 @@ export const BlockView = () => {
             { heading: 'Version', value: miningTx.version.toString() },
             { heading: 'Script Public Key', value: miningTx.scriptPublicKey },
         ];
-    };
-
-    const downloadBlock = async () => {
-        if (localData) {
-            const csv = itemToCsv(localData);
-            downloadFile(`block-${localData.bNum}`, csv);
-        }
     };
 
     const downloadTxs = async () => {
