@@ -1,7 +1,7 @@
 {
   "name": "block-explorer",
   "author": "Zenotta AG",
-  "version": "0.8.0",
+  "version": "1.0.0",
   "description": "This is zenotta's block explorer",
   "license": "MIT",
   "engines": {
