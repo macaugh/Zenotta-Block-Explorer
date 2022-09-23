@@ -1,7 +1,10 @@
 <!--- PROJECT LOGO --->
 
 <div align="center">
-    <img src="https://github.com/Zenotta/Block-Explorer/blob/main/assets/hero.svg" alt="Block Explorer Logo" />
+    <a>
+        <img src="https://github.com/Zenotta/Block-Explorer/blob/main/assets/hero.svg" alt="Block Explorer Logo" style="width: 350px">
+    </a>
+
     <h3 align="center">Zenotta Block Explorer</h3>
 
     <p align="center">
