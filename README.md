@@ -2,19 +2,20 @@
 
 <div align="center">
     <a>
-        <img src="https://github.com/Zenotta/Block-Explorer/blob/main/assets/hero.svg" alt="Block Explorer Logo" style="width: 350px">
-    </a>
-
-    <h3 align="center">Zenotta Block Explorer</h3>
-
-    <p align="center">
-        The repo of Zenotta's block explorer
-        <br />
-        <br />
-        <a href="https://zenotta.io"><strong>Official documentation »</strong></a>
-        <br />
-        <br />
-    </p>
+        <img src="https://github.com/Zenotta/Block-Explorer/blob/main/assets/hero.svg" alt="Block Explorer Logo" style="width: 350px" />
+    </a> 
+<br />
+<br />
+<h3 align="center">Zenotta Block Explorer</h3> 
+    
+<p align="center">
+    The repo of Zenotta's block explorer
+    <br />
+    <br />
+    <a href="https://zenotta.io"><strong>Official documentation »</strong></a>
+    <br />
+    <br />
+</p>
 </div>
 
 ## Set Up and Run
