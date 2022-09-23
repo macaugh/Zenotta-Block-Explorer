@@ -1,6 +1,18 @@
-# Zenotta Block Explorer
+<!--- PROJECT LOGO --->
 
-The open source repo for the Zenotta blockchain block explorer.
+<div align="center">
+    <img src="https://github.com/Zenotta/Block-Explorer/blob/main/assets/hero.svg" alt="Block Explorer Logo" />
+    <h3 align="center">Zenotta Block Explorer</h3>
+
+    <p align="center">
+        The repo of Zenotta's block explorer
+        <br />
+        <br />
+        <a href="https://zenotta.io"><strong>Official documentation »</strong></a>
+        <br />
+        <br />
+    </p>
+</div>
 
 ## Set Up and Run
 
