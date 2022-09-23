@@ -1,4 +1,6 @@
 <!--- PROJECT LOGO --->
+<br />
+<br />
 
 <div align="center">
     <a>
@@ -9,7 +11,7 @@
 <h3 align="center">Zenotta Block Explorer</h3> 
     
 <p align="center">
-    The repo of Zenotta's block explorer
+    It's the repo of Zenotta's block explorer!
     <br />
     <br />
     <a href="https://zenotta.io"><strong>Official documentation »</strong></a>
