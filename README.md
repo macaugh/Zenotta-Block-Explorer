@@ -2,18 +2,27 @@
 
 The open source repo for the Zenotta blockchain block explorer.
 
+## Set Up and Run
 
-## Running the Block Explorer
+The block explorer can be run in a dev environment using the following
 
-The Zenotta block explorer can be run with Webpack's `dev-server`:
+```bash
+npm install
 
+# In one tab
+npm run start-server-dev
+
+# In another tab
+npm run start-dev
 ```
+
+If you'd like to run the explorer yourself somewhere in a production 
+environment, you can do this by running
+
+```bash
+npm run build
 npm run start
 ```
 
-But pulling data from the blockchain requires it to be run by the Express server, which 
-is how the explorer will run in production. The server can be started with
-
-```
-npm run start-server
-```
+You can also change the configuration for the server by editing the parameters 
+in `serverConfig.json` before running the above.
