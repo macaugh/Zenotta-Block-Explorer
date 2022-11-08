@@ -1,9 +1,15 @@
 const express = require('express');
+const https = require('https');
 const path = require('path');
 const cors = require('cors');
 const calls = require('./utils/calls');
 const config = require('./utils/config');
 const DragonflyCache = require('dragonfly-cache').DragonflyCache;
+const httpsOptions = {
+    ca: fs.readFileSync("ca_bundle_explorer.crt"),
+    key: fs.readFileSync("private_explorer.key"),
+    cert: fs.readFileSync("certificate_explorer.crt")
+};
 
 const { extractTxs } = require('./utils/getTransactions');
 
@@ -42,7 +48,7 @@ app.post('/api/latestBlock', (req, res) => {
     console.log('network', network);
     const storagePath = `${fullConfig.PROTOCOL}://${network.sIp}:${network.sPort}/latest_block`;
 
-    calls.fetchLatestBlock(storagePath).then(latestBlock => {  
+    calls.fetchLatestBlock(storagePath).then(latestBlock => {
         try {
             extractTxs(latestBlock.content.block.header.b_num); // Extract transaction data to json file
         } catch (error) {
@@ -50,9 +56,9 @@ app.post('/api/latestBlock', (req, res) => {
         }
         res.json(latestBlock);
     })
-    .catch(error => {
-        res.status(500).send(error);
-    });
+        .catch(error => {
+            res.status(500).send(error);
+        });
 });
 
 /** Fetch blockchain item */
@@ -136,6 +142,8 @@ app.get('*', function (_, res) {
     res.sendFile('public/index.html', { root: path.join(__dirname, '/') });
 });
 
-app.listen(port, () => {
-    console.log('Server started on port:' + port);
-});
+https
+  .createServer(httpsOptions, app)
+  .listen(port, ()=>{
+    console.log(`server is runing at port ${port}`)
+  });
