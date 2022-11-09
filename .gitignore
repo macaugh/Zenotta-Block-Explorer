@@ -120,6 +120,8 @@ dist
 
 .idea/
 
-public
+public/*.pem
+public/*.json
+public/*.chunk.js
 
 .DS_Store
