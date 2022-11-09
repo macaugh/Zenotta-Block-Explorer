@@ -229,7 +229,7 @@ export const TxView = () => {
   React.useEffect(() => {
     if (localData && window.location.hash) {
       let elmnt = document.getElementById(window.location.hash.substring(1));
-      if (elmnt) elmnt.scrollIntoView(true);
+      // if (elmnt) elmnt.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'nearest' });
     }
   }, [localData]);
 
