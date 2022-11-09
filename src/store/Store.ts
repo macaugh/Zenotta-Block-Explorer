@@ -1,7 +1,7 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
-import { HOST_PROTOCOL, HOST_NAME, HOST_PORT } from "../constants";
+import { HOST_PROTOCOL, HOST_NAME } from "../constants";
 import { NETWORKS } from "networks";
 import {
   Block,
@@ -64,7 +64,7 @@ class Store {
   @action
   async fetchLatestBlock() {
     await axios
-      .post(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/api/latestBlock`, { network: this.network })
+      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/latestBlock`, { network: this.network })
       .then(async (response) => {
         this.setLatestBlock(this.formatBlock(response.data.content));
       });
@@ -76,7 +76,7 @@ class Store {
     let bItemData = null;
     if (Object.keys(this.blockchainItemCache).indexOf(hash) == -1) {
       bItemData = await axios
-        .post(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/api/blockchainItem`, {
+        .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockchainItem`, {
           hash,
           network: this.network,
         })
@@ -103,7 +103,7 @@ class Store {
       (x) => x + startBlock
     ); // Generate number array from range
     let data = await axios
-      .post(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/api/blockRange`, {
+      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
         nums,
         network: this.network,
       })
@@ -125,7 +125,7 @@ class Store {
   @action
   async fetchBlockHashByNum(num: number) {
     let data = await axios
-      .post(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/api/blockRange`, {
+      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
         nums: [num],
         network: this.network,
       })
@@ -223,7 +223,7 @@ class Store {
     endTxs: number
   ): Promise<{ blockNum: number; tx: string } | null> {
     let txsIdRange = await axios
-      .get(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/${FILENAME}.json`)
+      .get(`${HOST_PROTOCOL}://${HOST_NAME}/${FILENAME}.json`)
       .then((response) => {
         const isJson =
           response.headers["content-type"] &&
