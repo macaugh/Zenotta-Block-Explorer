@@ -1,7 +1,7 @@
 {
   "name": "block-explorer",
   "author": "Zenotta AG",
-  "version": "1.0.0",
+  "version": "0.8.0",
   "description": "This is zenotta's block explorer",
   "license": "MIT",
   "engines": {
@@ -9,8 +9,8 @@
     "npm": "6.14.8"
   },
   "scripts": {
-    "build": "rm -rf public/*.chunk.js && export NODE_ENV=production && webpack --config tools/webpack/webpack.prod.js",
-    "start-dev": "export NODE_ENV=development && webpack-dev-server --config tools/webpack/webpack.dev.js",
+    "build": "rm -rf public/*.chunk.js && cross-env NODE_ENV=production webpack --config tools/webpack/webpack.prod.js",
+    "start-dev": "cross-env NODE_ENV=development webpack-dev-server --config tools/webpack/webpack.dev.js",
     "start-server-dev": "export NODE_ENV=development; node server.js",
     "start": "node server.js"
   },

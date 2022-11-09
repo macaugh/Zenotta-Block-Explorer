@@ -25,10 +25,7 @@ export default function Search(props: NavProps) {
 
     const submitSearchValue = async () => {
         if (currentSearchOption != "Block Number") {
-            console.log('submitSearchValue');
             const validity = await store.searchHashIsValid(searchValue, currentSearchOption);
-            console.log(validity);
-
             if (validity.isValid) {
                 if (currentSearchOption === 'Tx Hash')
                     window.location.href = `/tx/${searchValue}`;
@@ -88,8 +85,6 @@ export default function Search(props: NavProps) {
                         id="input-group-dropdown-1"
                     >
                         {searchOptions.map((item: string, index: number) => {
-                            console.log(item);
-                            console.log(currentSearchOption);
                             if (item !== currentSearchOption)
                                 return <Dropdown.Item key={index} onClick={() => handleSearchOptionSelect(item)}>{item}</Dropdown.Item>
                         })}

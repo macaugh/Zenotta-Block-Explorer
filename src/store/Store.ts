@@ -14,7 +14,7 @@ import {
   TransactionTableData,
 } from "../interfaces";
 
-const FILENAME = "transactions";
+const FILENAME = "Txs";
 
 class Store {
   constructor() {
@@ -222,7 +222,7 @@ class Store {
     endTxs: number
   ): Promise<{ blockNum: number; tx: string } | null> {
     let txsIdRange = await axios
-      .get(`http://localhost:8090/${FILENAME}.json`)
+      .get(`http://localhost:8090/${this.network + FILENAME}.json`)
       .then((response) => {
         const isJson =
           response.headers["content-type"] &&
