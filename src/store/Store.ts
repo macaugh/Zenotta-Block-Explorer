@@ -221,14 +221,17 @@ class Store {
     startTxs: number,
     endTxs: number
   ): Promise<{ blockNum: number; tx: string } | null> {
+    console.log("Fetching txs id range");
     let txsIdRange = await axios
-      .get(`http://localhost:8090/${this.network + FILENAME}.json`)
+      .get(`http://localhost:8090/${this.network.name.split(' ')[0].toLowerCase() + FILENAME}.json`)
       .then((response) => {
+        console.log('response.data', response)
         const isJson =
           response.headers["content-type"] &&
           response.headers["content-type"].search("application/json") != -1
             ? true
             : false;
+
         let data = isJson ? JSON.parse(JSON.stringify(response.data)) : null;
 
         // Format transaction data. This is a bit hacky, but it works for now. Should change base structure of stored transactions.
