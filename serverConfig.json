@@ -1,9 +1,9 @@
 {
     "port": 8090,
-    "storageNode": "http://34.222.4.174:3002",
-    "computeNode":"http://44.239.251.56:3001",
-    "localNode": "http://localhost",
+    "storageNode": "http://storage-odin-1.zenotta.com:3002",
+    "computeNode":"http://mempool-odin-1.zenotta.com:3001",
+    "localNode": "https://explorer.zenotta.com",
     "localPort": 8090,
     "cacheCapacity": 1000,
-    "protocol": "http"
+    "protocol": "https"
 }

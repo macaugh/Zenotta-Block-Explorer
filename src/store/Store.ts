@@ -1,6 +1,7 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
+import { HOST_PROTOCOL, HOST_NAME } from "../constants";
 import { NETWORKS } from "networks";
 import {
   Block,
@@ -63,7 +64,7 @@ class Store {
   @action
   async fetchLatestBlock() {
     await axios
-      .post("http://localhost:8090/api/latestBlock", { network: this.network })
+      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/latestBlock`, { network: this.network })
       .then(async (response) => {
         this.setLatestBlock(this.formatBlock(response.data.content));
       });
@@ -75,7 +76,7 @@ class Store {
     let bItemData = null;
     if (Object.keys(this.blockchainItemCache).indexOf(hash) == -1) {
       bItemData = await axios
-        .post(`http://localhost:8090/api/blockchainItem`, {
+        .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockchainItem`, {
           hash,
           network: this.network,
         })
@@ -102,7 +103,7 @@ class Store {
       (x) => x + startBlock
     ); // Generate number array from range
     let data = await axios
-      .post("http://localhost:8090/api/blockRange", {
+      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
         nums,
         network: this.network,
       })
@@ -124,7 +125,7 @@ class Store {
   @action
   async fetchBlockHashByNum(num: number) {
     let data = await axios
-      .post("http://localhost:8090/api/blockRange", {
+      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
         nums: [num],
         network: this.network,
       })
@@ -223,7 +224,7 @@ class Store {
   ): Promise<{ blockNum: number; tx: string } | null> {
     console.log("Fetching txs id range");
     let txsIdRange = await axios
-      .get(`http://localhost:8090/${this.network.name.split(' ')[0].toLowerCase() + FILENAME}.json`)
+      .get(`${HOST_PROTOCOL}://${HOST_NAME}/${this.network.name.split(' ')[0].toLowerCase() + FILENAME}.json`)
       .then((response) => {
         console.log('response.data', response)
         const isJson =

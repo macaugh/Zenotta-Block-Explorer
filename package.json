@@ -9,8 +9,8 @@
     "npm": "6.14.8"
   },
   "scripts": {
-    "build": "rm -rf public/*.chunk.js && cross-env NODE_ENV=production webpack --config tools/webpack/webpack.prod.js",
-    "start-dev": "cross-env NODE_ENV=development webpack-dev-server --config tools/webpack/webpack.dev.js",
+    "build": "rm -rf public/*.chunk.js public/index.html && cp public/index_clean.html public/index.html && export NODE_ENV=production && webpack --config tools/webpack/webpack.prod.js",
+    "start-dev": "export NODE_ENV=development && webpack-dev-server --config tools/webpack/webpack.dev.js",
     "start-server-dev": "export NODE_ENV=development; node server.js",
     "start": "node server.js"
   },

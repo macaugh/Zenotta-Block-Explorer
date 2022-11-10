@@ -1,4 +1,6 @@
+const fs = require('fs');
 const express = require('express');
+const https = require('https');
 const path = require('path');
 const cors = require('cors');
 const calls = require('./utils/calls');
@@ -6,6 +8,11 @@ const config = require('./utils/config');
 const DragonflyCache = require('dragonfly-cache').DragonflyCache;
 const Semaphore = require('./utils/semaphore').Semaphore;
 
+const httpsOptions = {
+    ca: fs.readFileSync("public/chain.pem", 'utf8'),
+    key: fs.readFileSync("public/privkey.pem", 'utf8'),
+    cert: fs.readFileSync("public/cert.pem", 'utf8')
+};
 
 const { extractTxs } = require('./utils/getTransactions');
 
@@ -27,12 +34,7 @@ app.use(express.urlencoded({
     extended: true
 }));
 
-// Network connection
-const storageNode = fullConfig.STORAGE_NODE;
-// const computeNode = fullConfig.COMPUTE_NODE;
-
 // Caches
-const cacheCapacity = fullConfig.CACHE_CAPACITY;
 const blocksCache = new DragonflyCache();
 const txsCache = new DragonflyCache();
 const bNumCache = new DragonflyCache();
@@ -135,6 +137,8 @@ app.get('*', function (_, res) {
     res.sendFile('public/index.html', { root: path.join(__dirname, '/') });
 });
 
-app.listen(port, () => {
-    console.log('Server started on port:' + port + ' \n');
-});
+https
+  .createServer(httpsOptions, app)
+  .listen(port, ()=>{
+    console.log(`server is runing at port ${port}`)
+  });
