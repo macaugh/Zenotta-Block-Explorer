@@ -3,7 +3,7 @@ const axios = require('axios');
 const fs = require('fs');
 const config = require('./config');
 
-const BATCH_SIZE = 999
+const BATCH_SIZE = 99
 const FILENAME = 'Txs';
 const FULL_CONFIG = config.getConfig('./serverConfig.json');
 
@@ -14,10 +14,11 @@ const FULL_CONFIG = config.getConfig('./serverConfig.json');
  * @param {*} network 
  */
 async function extractLatestTxs(latestBlockNum, network) {
-    console.log('Check for latest txs...');
-    const filePrefix = network.name.split(' ')[0].toLowerCase();
-
     return await new Promise(async (resolve, reject) => {
+
+        console.log('Check for latest txs...');
+        
+        const filePrefix = network.name.split(' ')[0].toLowerCase();
         let err = null;
         let jsonFile = await fetchJsonFile(filePrefix + FILENAME).then((res) => { return res ? res : null }).catch((err) => { console.log('ERR', err); return null });
 
