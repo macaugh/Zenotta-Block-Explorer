@@ -47,6 +47,7 @@ export const Nav = () => {
       if (!route.hidden) {
         result.push(
           <BTNav.Link
+            key={route.path}
             as={NavLink}
             to={route.path}
             eventKey={route.name}
@@ -95,8 +96,6 @@ export const Nav = () => {
       </Navbar.Collapse>
     );
   };
-
-  let eventKeyCount = 0; // Counter for Nav.Link eventKey
   return (
     <div className={styles.topNav} id="topNav">
       <Navbar
