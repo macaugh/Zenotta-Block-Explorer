@@ -1,67 +1,91 @@
 /** Extract transaction from block 0 to latest and saves them to a JSON file **/
 const axios = require('axios');
 const fs = require('fs');
-const config = require('./config');
 
 const BATCH_SIZE = 99
-const FILENAME = 'transactions';
-const FULL_CONFIG = config.getConfig('./serverConfig.json');
+const FILENAME = 'Txs';
 
-async function extractTxs(latestBlockNum) {
-    let jsonFile = await fetchJsonFile(FILENAME).then((res) => { return res ? res : null });
+/**
+ * Extract transaction from latest checked block to latest block and saves them to a JSON file
+ * Temporary solution until db is implemented
+ * @param {*} latestBlockNum 
+ * @param {*} network 
+ */
+async function extractLatestTxs(latestBlockNum, network, config) {
+    return await new Promise(async (resolve, reject) => {
+        console.log('\nCheck for latest txs...');
+        const filePrefix = network.name.split(' ')[0].toLowerCase();
+        let err = null;
+        let jsonFile = await fetchJsonFile(filePrefix + FILENAME).then((res) => { return res ? res : null }).catch((err) => { console.log('ERR', err); return null });
 
-    if (jsonFile != null) {
-        if (latestBlockNum && jsonFile.latestCheckedBlockNum < latestBlockNum) {
-            let i = jsonFile.latestCheckedBlockNum;
+        if (jsonFile) {
+            if (latestBlockNum && jsonFile.latestCheckedBlockNum < latestBlockNum) {
+                let i = jsonFile.latestCheckedBlockNum;
+                let nbTxs = 0;
+                while (i < latestBlockNum) {
+                    const endBlock = i + BATCH_SIZE <= latestBlockNum ? i + BATCH_SIZE : latestBlockNum;
+                    const startBlock = i;
 
-            while (i < latestBlockNum) {
-                const endBlock = i + BATCH_SIZE <= latestBlockNum ? i + BATCH_SIZE : latestBlockNum;
-                const startBlock = i;
+                    console.log(startBlock, endBlock)
 
-                console.log(startBlock, endBlock)
-
-                let blockRange = await fetchBlockRange(startBlock, endBlock);
-                if (blockRange) {
-                    for (const d of blockRange) {
-                        if (d[1].block.transactions.length > 0) {
-                            jsonFile.transactions.push({ blockNum: d[1].block.header.b_num, txs: d[1].block.transactions })
+                    let blockRange = await fetchBlockRange(startBlock, endBlock, network, config);
+                    if (blockRange) {
+                        for (const d of blockRange) {
+                            if (d[1].block.transactions.length > 0) {
+                                console.log(`${d[1].block.transactions.length} tx(s) in block ${d[1].block.header.b_num}`);
+                                jsonFile.transactions.push({ blockNum: d[1].block.header.b_num, txs: d[1].block.transactions })
+                                nbTxs += d[1].block.transactions.length;
+                            }
                         }
+                        jsonFile.latestCheckedBlockNum = endBlock; // Update latest checked block number
+                        i += BATCH_SIZE + 1; // Increment i by batch size
+                        writeToJsonFile(filePrefix + FILENAME, jsonFile);
+                    } else {
+                        err = 'Error while fetching block range';
+                        break;
                     }
                 }
-                jsonFile.latestCheckedBlockNum = endBlock;
-                i += BATCH_SIZE + 1;
-                createJsonFile(FILENAME, jsonFile);
+                writeToJsonFile(filePrefix + FILENAME, jsonFile).then(() => {
+                    let msg = `No new tx(s) found \nFinished at block ${jsonFile.latestCheckedBlockNum}`;
+                    if (nbTxs > 0)
+                        msg = `Extracted total of ${nbTxs} tx(s) \nFinished at block ${jsonFile.latestCheckedBlockNum}`;
+                    resolve(`\n${msg}`);
+                });
+            } else {
+                err = 'No new blocks to check';
             }
-            await createJsonFile(FILENAME, jsonFile);
-            console.log('Finished tsx extraction at block ', jsonFile.latestCheckedBlockNum);
         } else {
-            console.log('No new transactions');
+            err = 'Error while fetching json file';
         }
-    } else {
-        console.log('No json file found.');
-    }
+        if (err)
+            reject(err);
+    });
+}
+
+async function fetchBlockRange(startBlock, endBlock, network, config) {
+    const nums = [...Array(endBlock - startBlock + 1).keys()].map(x => x + startBlock); // Generate number array from range
+    return axios.post(`${config.LOCAL_NODE}:${config.LOCAL_PORT}/api/blockRange`, { nums, network: network })
+        .then(res => {
+            return res.data
+        })
+        .catch(err => {
+            return null
+        });
 }
 
 async function fetchJsonFile(filename) {
-    return axios.get(`http://${FULL_CONFIG.LOCAL_NODE}:${FULL_CONFIG.LOCAL_PORT}/${filename}.json`).then(response => {
-        const isJson = response.headers['content-type']?.search('application/json') != -1 ? true : false;
-        return isJson ? JSON.parse(JSON.stringify(response.data)) : null;
-    }).catch(error => {
-        console.log(error)
-    })
+    let jsonData = fs.readFileSync(`public/${filename}.json`, "utf8");
+    if (jsonData)
+        return JSON.parse(jsonData);
+    return null;
 }
 
-async function fetchBlockRange(startBlock, endBlock) {
-    const nums = [...Array(endBlock - startBlock + 1).keys()].map(x => x + startBlock); // Generate number array from range
-    return axios.post(`http://${FULL_CONFIG.LOCAL_NODE}:${FULL_CONFIG.LOCAL_PORT}/api/blockRange`, { nums }).then(res => res.data);
-}
-
-async function createJsonFile(filename, data) {
+async function writeToJsonFile(filename, data) {
     fs.writeFile(`public/${filename}.json`, JSON.stringify(data), "utf8", (err) => {
         if (err) console.log('error', err);
     });
 }
 
 module.exports = {
-    extractTxs
+    extractTxs: extractLatestTxs
 };

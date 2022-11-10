@@ -98,7 +98,7 @@ export const TxView = () => {
           const drsTxHash = (receipt as { Receipt: OutputValueV2 }).Receipt
             .drs_tx_hash;
 
-            console.log('drsTxHash', drsTxHash);
+          console.log('drsTxHash', drsTxHash);
           return {
             address: output.scriptPubKey,
             receipts: amount,
@@ -229,7 +229,11 @@ export const TxView = () => {
   React.useEffect(() => {
     if (localData && window.location.hash) {
       let elmnt = document.getElementById(window.location.hash.substring(1));
-      if (elmnt) elmnt.scrollIntoView(true);
+      if (elmnt) {
+        elmnt.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+        // (elmnt.parentNode as HTMLElement).scrollTop = elmnt.offsetTop - 30;
+
+      }
     }
   }, [localData]);
 
@@ -256,7 +260,7 @@ export const TxView = () => {
         )}
 
         {localData && localData.outputs && localData.outputs.length > 0 && (
-          <div>
+          <>
             <h2 id="outputs">Outputs</h2>
             {localData &&
               (localData.outputs as any).map(
@@ -268,7 +272,7 @@ export const TxView = () => {
                   );
                 }
               )}
-          </div>
+          </>
         )}
       </div>
     </div>

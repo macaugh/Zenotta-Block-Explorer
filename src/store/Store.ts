@@ -15,7 +15,7 @@ import {
   TransactionTableData,
 } from "../interfaces";
 
-const FILENAME = "transactions";
+const FILENAME = "Txs";
 
 class Store {
   constructor() {
@@ -223,13 +223,14 @@ class Store {
     endTxs: number
   ): Promise<{ blockNum: number; tx: string } | null> {
     let txsIdRange = await axios
-      .get(`${HOST_PROTOCOL}://${HOST_NAME}/${FILENAME}.json`)
+      .get(`${HOST_PROTOCOL}://${HOST_NAME}/${this.network.name.split(' ')[0].toLowerCase() + FILENAME}.json`)
       .then((response) => {
         const isJson =
           response.headers["content-type"] &&
           response.headers["content-type"].search("application/json") != -1
             ? true
             : false;
+
         let data = isJson ? JSON.parse(JSON.stringify(response.data)) : null;
 
         // Format transaction data. This is a bit hacky, but it works for now. Should change base structure of stored transactions.

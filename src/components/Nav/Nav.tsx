@@ -50,7 +50,7 @@ export const Nav = () => {
             key={route.path}
             as={NavLink}
             to={route.path}
-            eventKey={eventKeyCount++}
+            eventKey={route.name}
             exact
           >
             {route.name}
@@ -96,8 +96,6 @@ export const Nav = () => {
       </Navbar.Collapse>
     );
   };
-
-  let eventKeyCount = 0; // Counter for Nav.Link eventKey
   return (
     <div className={styles.topNav} id="topNav">
       <Navbar

@@ -6,19 +6,14 @@ const cors = require('cors');
 const calls = require('./utils/calls');
 const config = require('./utils/config');
 const DragonflyCache = require('dragonfly-cache').DragonflyCache;
-const httpsOptions = {
-    ca: fs.readFileSync("public/chain.pem", 'utf8'),
-    key: fs.readFileSync("public/privkey.pem", 'utf8'),
-    cert: fs.readFileSync("public/cert.pem", 'utf8')
-};
-
+const Semaphore = require('./utils/semaphore').Semaphore;
 const { extractTxs } = require('./utils/getTransactions');
 
 // Server setup
 const app = express();
-const fullConfig = config.getConfig("./serverConfig.json");
-const port = process.env.PORT || fullConfig.PORT;
 const env = process.env.NODE_ENV || 'production';
+const fullConfig = env == 'production' ? config.getConfig('./serverConfig.json') : config.getConfig();
+const port = process.env.PORT || fullConfig.PORT;
 
 console.log(`Starting server in ${env} mode`);
 
@@ -37,24 +32,24 @@ const blocksCache = new DragonflyCache();
 const txsCache = new DragonflyCache();
 const bNumCache = new DragonflyCache();
 
+// Semaphore
+const throttler = new Semaphore(1); // Semaphore to limit the number of concurrent requests to 1
+
 /** Fetch latest block */
 app.post('/api/latestBlock', (req, res) => {
     const network = req.body.network;
-
-    console.log('network', network);
     const storagePath = `${fullConfig.PROTOCOL}://${network.sIp}:${network.sPort}/latest_block`;
 
     calls.fetchLatestBlock(storagePath).then(latestBlock => {
         try {
-            extractTxs(latestBlock.content.block.header.b_num); // Extract transaction data to json file
+            throttler.callFunction(extractTxs, latestBlock.content.block.header.b_num, network, fullConfig).then(res => console.log(res)).catch(err => console.log(err));
         } catch (error) {
-            console.log('Failed to retrive latest transactions: ', error);
+            console.log('Failed to retrive latest block: ', error);
         }
         res.json(latestBlock);
-    })
-        .catch(error => {
-            res.status(500).send(error);
-        });
+    }).catch(error => {
+        res.status(500).send(error);
+    });
 });
 
 /** Fetch blockchain item */
@@ -67,13 +62,11 @@ app.post('/api/blockchainItem', (req, res) => {
 
     let posEntry = null;
 
-    if (isBlock) {
+    if (isBlock)
         posEntry = blocksCache.get(hash);
-        console.log('retrieved from cache', posEntry);
-    } else { // Transaction
+    else  // Transaction
         posEntry = txsCache.get(hash);
-        console.log('retrieved from cache', posEntry);
-    }
+
 
     if (!posEntry) {
         calls.fetchBlockchainItem(storagePath, hash).then(bItem => {
@@ -113,7 +106,6 @@ app.post('/api/blockRange', (req, res) => {
         calls.fetchBlockRange(storagePath, unknowns).then(response => {
             if (response.status == 'Success' && response.content.length) {
                 for (let b of response.content) {
-                    console.log('adding to cache', b);
                     bNumCache.add(b[1].block.header.b_num, b);
                     // Add to blocksCache too coz why not
                     if (!blocksCache.get(b[0])) {
@@ -138,8 +130,18 @@ app.get('*', function (_, res) {
     res.sendFile('public/index.html', { root: path.join(__dirname, '/') });
 });
 
-https
-  .createServer(httpsOptions, app)
-  .listen(port, ()=>{
-    console.log(`server is runing at port ${port}`)
-  });
+if (env == 'development') {
+    app.listen(port, () => {
+        console.log(`Server listening on port ${port}`);
+    });
+} else if (env == 'production') {
+    const httpsOptions = {
+        ca: fs.readFileSync("public/chain.pem", 'utf8'),
+        key: fs.readFileSync("public/privkey.pem", 'utf8'),
+        cert: fs.readFileSync("public/cert.pem", 'utf8')
+    };
+
+    https.createServer(httpsOptions, app).listen(port, () => {
+        console.log(`Server listening on port ${port}`);
+    });
+}
