@@ -222,11 +222,9 @@ class Store {
     startTxs: number,
     endTxs: number
   ): Promise<{ blockNum: number; tx: string } | null> {
-    console.log("Fetching txs id range");
     let txsIdRange = await axios
       .get(`${HOST_PROTOCOL}://${HOST_NAME}/${this.network.name.split(' ')[0].toLowerCase() + FILENAME}.json`)
       .then((response) => {
-        console.log('response.data', response)
         const isJson =
           response.headers["content-type"] &&
           response.headers["content-type"].search("application/json") != -1

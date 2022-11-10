@@ -7,26 +7,25 @@ const calls = require('./utils/calls');
 const config = require('./utils/config');
 const DragonflyCache = require('dragonfly-cache').DragonflyCache;
 const Semaphore = require('./utils/semaphore').Semaphore;
-
-const httpsOptions = {
-    ca: fs.readFileSync("public/chain.pem", 'utf8'),
-    key: fs.readFileSync("public/privkey.pem", 'utf8'),
-    cert: fs.readFileSync("public/cert.pem", 'utf8')
-};
-
 const { extractTxs } = require('./utils/getTransactions');
 
 // Server setup
 const app = express();
-const fullConfig = config.getConfig("./serverConfig.json");
-const port = process.env.PORT || fullConfig.PORT;
 const env = process.env.NODE_ENV || 'production';
+const fullConfig = env == 'production' ? config.getConfig('./serverConfig.json') : config.getConfig('');
+const port = process.env.PORT || fullConfig.PORT;
 
 console.log(`Starting server in ${env} mode`);
 
 // Middleware
 if (env == 'development') {
     app.use(cors());
+} else if (env == 'production') {
+    const httpsOptions = {
+        ca: fs.readFileSync("public/chain.pem", 'utf8'),
+        key: fs.readFileSync("public/privkey.pem", 'utf8'),
+        cert: fs.readFileSync("public/cert.pem", 'utf8')
+    };
 }
 
 app.use(express.json());
@@ -49,7 +48,7 @@ app.post('/api/latestBlock', (req, res) => {
 
     calls.fetchLatestBlock(storagePath).then(latestBlock => {
         try {
-            throttler.callFunction(extractTxs, latestBlock.content.block.header.b_num, network).then(res => console.log(res)).catch(err => console.log(err));
+            throttler.callFunction(extractTxs, latestBlock.content.block.header.b_num, network, fullConfig).then(res => console.log(res)).catch(err => console.log(err));
         } catch (error) {
             console.log('Failed to retrive latest block: ', error);
         }
@@ -137,8 +136,12 @@ app.get('*', function (_, res) {
     res.sendFile('public/index.html', { root: path.join(__dirname, '/') });
 });
 
-https
-  .createServer(httpsOptions, app)
-  .listen(port, ()=>{
-    console.log(`server is runing at port ${port}`)
-  });
+if (env == 'development') {
+    app.listen(port, () => {
+        console.log(`Server listening on port ${port}`);
+    });
+} else if (env == 'production') {
+    https.createServer(httpsOptions, app).listen(port, () => {
+        console.log(`Server listening on port ${port}`);
+    });
+}

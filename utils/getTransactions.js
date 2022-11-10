@@ -1,11 +1,9 @@
 /** Extract transaction from block 0 to latest and saves them to a JSON file **/
 const axios = require('axios');
 const fs = require('fs');
-const config = require('./config');
 
 const BATCH_SIZE = 99
 const FILENAME = 'Txs';
-const FULL_CONFIG = config.getConfig('./serverConfig.json');
 
 /**
  * Extract transaction from latest checked block to latest block and saves them to a JSON file
@@ -13,11 +11,9 @@ const FULL_CONFIG = config.getConfig('./serverConfig.json');
  * @param {*} latestBlockNum 
  * @param {*} network 
  */
-async function extractLatestTxs(latestBlockNum, network) {
+async function extractLatestTxs(latestBlockNum, network, config) {
     return await new Promise(async (resolve, reject) => {
-
-        console.log('Check for latest txs...');
-        
+        console.log('\nCheck for latest txs...');
         const filePrefix = network.name.split(' ')[0].toLowerCase();
         let err = null;
         let jsonFile = await fetchJsonFile(filePrefix + FILENAME).then((res) => { return res ? res : null }).catch((err) => { console.log('ERR', err); return null });
@@ -32,7 +28,7 @@ async function extractLatestTxs(latestBlockNum, network) {
 
                     console.log(startBlock, endBlock)
 
-                    let blockRange = await fetchBlockRange(startBlock, endBlock, network);
+                    let blockRange = await fetchBlockRange(startBlock, endBlock, network, config);
                     if (blockRange) {
                         for (const d of blockRange) {
                             if (d[1].block.transactions.length > 0) {
@@ -50,11 +46,13 @@ async function extractLatestTxs(latestBlockNum, network) {
                     }
                 }
                 writeToJsonFile(filePrefix + FILENAME, jsonFile).then(() => {
-                    resolve(`\nExtracted total of ${nbTxs} tx(s) \nFinished at block ${jsonFile.latestCheckedBlockNum}`);
+                    let msg = `No new tx(s) found \nFinished at block ${jsonFile.latestCheckedBlockNum}`;
+                    if (nbTxs > 0)
+                        msg = `Extracted total of ${nbTxs} tx(s) \nFinished at block ${jsonFile.latestCheckedBlockNum}`;
+                    resolve(`\n${msg}`);
                 });
-
             } else {
-                err = 'No new transactions';
+                err = 'No new blocks to check';
             }
         } else {
             err = 'Error while fetching json file';
@@ -64,10 +62,9 @@ async function extractLatestTxs(latestBlockNum, network) {
     });
 }
 
-
-async function fetchBlockRange(startBlock, endBlock, network) {
+async function fetchBlockRange(startBlock, endBlock, network, config) {
     const nums = [...Array(endBlock - startBlock + 1).keys()].map(x => x + startBlock); // Generate number array from range
-    return axios.post(`${FULL_CONFIG.LOCAL_NODE}:${FULL_CONFIG.LOCAL_PORT}/api/blockRange`, { nums, network: network })
+    return axios.post(`${config.LOCAL_NODE}:${config.LOCAL_PORT}/api/blockRange`, { nums, network: network })
         .then(res => {
             return res.data
         })

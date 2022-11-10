@@ -47,10 +47,9 @@ export const Nav = () => {
       if (!route.hidden) {
         result.push(
           <BTNav.Link
-            key={route.path}
             as={NavLink}
             to={route.path}
-            eventKey={eventKeyCount++}
+            eventKey={route.name}
             exact
           >
             {route.name}
