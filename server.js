@@ -12,7 +12,7 @@ const { extractTxs } = require('./utils/getTransactions');
 // Server setup
 const app = express();
 const env = process.env.NODE_ENV || 'production';
-const fullConfig = env == 'production' ? config.getConfig('./serverConfig.json') : config.getConfig('./serverConfig.json');
+const fullConfig = env == 'production' ? config.getConfig('./serverConfig.json') : config.getConfig();
 const port = process.env.PORT || fullConfig.PORT;
 
 console.log(`Starting server in ${env} mode`);

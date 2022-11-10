@@ -10,7 +10,7 @@ const DEFAULTS = {
 };
 
 function getConfig(path) {
-    const obj = JSON.parse(fs.readFileSync(path, 'utf8'));
+    const obj = path ? JSON.parse(fs.readFileSync(path, 'utf8')) : {};
 
     return {
         PORT: obj.port || DEFAULTS.port,
