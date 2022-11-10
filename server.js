@@ -12,7 +12,7 @@ const { extractTxs } = require('./utils/getTransactions');
 // Server setup
 const app = express();
 const env = process.env.NODE_ENV || 'production';
-const fullConfig = env == 'production' ? config.getConfig('./serverConfig.json') : config.getConfig('');
+const fullConfig = env == 'production' ? config.getConfig('./serverConfig.json') : config.getConfig('./serverConfig.json');
 const port = process.env.PORT || fullConfig.PORT;
 
 console.log(`Starting server in ${env} mode`);
@@ -20,12 +20,6 @@ console.log(`Starting server in ${env} mode`);
 // Middleware
 if (env == 'development') {
     app.use(cors());
-} else if (env == 'production') {
-    const httpsOptions = {
-        ca: fs.readFileSync("public/chain.pem", 'utf8'),
-        key: fs.readFileSync("public/privkey.pem", 'utf8'),
-        cert: fs.readFileSync("public/cert.pem", 'utf8')
-    };
 }
 
 app.use(express.json());
@@ -141,6 +135,12 @@ if (env == 'development') {
         console.log(`Server listening on port ${port}`);
     });
 } else if (env == 'production') {
+    const httpsOptions = {
+        ca: fs.readFileSync("public/chain.pem", 'utf8'),
+        key: fs.readFileSync("public/privkey.pem", 'utf8'),
+        cert: fs.readFileSync("public/cert.pem", 'utf8')
+    };
+
     https.createServer(httpsOptions, app).listen(port, () => {
         console.log(`Server listening on port ${port}`);
     });

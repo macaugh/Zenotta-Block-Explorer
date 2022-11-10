@@ -5,5 +5,5 @@
     "localNode": "https://explorer.zenotta.com",
     "localPort": 8090,
     "cacheCapacity": 1000,
-    "protocol": "https"
+    "protocol": "http"
 }
