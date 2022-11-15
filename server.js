@@ -3,6 +3,7 @@ const express = require('express');
 const https = require('https');
 const path = require('path');
 const cors = require('cors');
+const compression = require('compression');
 const calls = require('./utils/calls');
 const config = require('./utils/config');
 const DragonflyCache = require('dragonfly-cache').DragonflyCache;
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use(express.urlencoded({
     extended: true
 }));
+app.use(compression());
 
 // Caches
 const blocksCache = new DragonflyCache();
