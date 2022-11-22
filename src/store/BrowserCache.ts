@@ -38,23 +38,23 @@ class BrowserCache {
    */
   public add(os: string, data: any) {
     if (this.db) {
-      const objectStore = this.db
-        .transaction([os], "readwrite")
-        .objectStore(os);
-
+      const transaction = this.db.transaction([os], "readwrite");
+      const objectStore = transaction.objectStore(os);
       const request = objectStore.openCursor(data.id);
 
       request.onsuccess = (e: any) => {
         let cursor = e.target.result;
 
         if (cursor) {
+          // TODO: Update data? Under what conditions?
+          
           // key already exist
-          cursor.update(data);
-          console.log(
-            `Data updated in ${os.toUpperCase()} CACHE successfully: ${JSON.stringify(
-              e
-            )}`
-          );
+          /**  cursor.update(data);
+          // console.log(
+          //   `Data updated in ${os.toUpperCase()} CACHE successfully: ${JSON.stringify(
+          //     e
+          //   )}`
+          // );*/
         } else {
           // key not exist
           objectStore.add(data);
@@ -80,9 +80,10 @@ class BrowserCache {
    * @param key {string} - Key to be retrieved
    * @returns request
    */
-  public async get(os: string, key: number) {
+  public async get(os: string, key: number | string) {
     if (this.db) {
-      const objectStore = this.db.transaction([os], "readonly").objectStore(os);
+      const transaction = this.db.transaction([os], "readonly");
+      const objectStore = transaction.objectStore(os);
       const request = objectStore.get(key);
 
       return await new Promise((resolve, reject) => {
@@ -115,10 +116,9 @@ class BrowserCache {
    */
   public delete(os: string, key: string) {
     if (this.db) {
-      const request = this.db
-        .transaction([os], "readwrite")
-        .objectStore(os)
-        .delete(key);
+      const transaction = this.db.transaction([os], "readwrite");
+      const objectStore = transaction.objectStore(os)
+      const request = objectStore.delete(key);
 
       request.onsuccess = () => {
         console.log(`Data deleted from ${os.toUpperCase()} CACHE successfully`);

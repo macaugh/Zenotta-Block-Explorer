@@ -226,12 +226,18 @@ class Store {
     const txsObj = await this.fetchTxsIdRange(start, end);
     if (txsObj) {
       let result = await this.fetchTxsContents(txsObj);
+      console.log('fetchTxTableData', result);
       this.setTxsTableData(result);
     }
   }
 
-  /** Extracts transactions ids from static files generated from express server (runs audit on every new block and stores transactions in json file)
-   * Will be updated to a more efficient method in the future (Database on server)
+  /** 
+   * Extracts transactions ids from static files generated from express server (runs audit on every new block and stores transactions in json file)
+   * 
+   * TODO: Update to be more efficient in the DB on server side (switch to Postgres?)
+   * 
+   * @param {number} startTxs - Start index of txs to fetch
+   * @param {number} endTxs - End index of txs to fetch
    */
   @action
   async fetchTxsIdRange(
@@ -272,19 +278,46 @@ class Store {
   }
 
   @action async fetchTxsContents(txsObj: any) {
-    const result = await Promise.all(
-      txsObj.map(async (txObj: any) => {
-        const txData = await this.fetchBlockchainItem(txObj.tx);
-        return {
-          hash: txObj.tx,
-          transaction: txData,
-          blockNum: txObj.blockNum,
+    const hashes = txsObj.map((tx: any) => tx.tx);
+    let { remainingHashes, txs } = await this.getTransactionsFromCache(hashes);
+    let calls = remainingHashes.map((hash: string) => this.fetchBlockchainItem(hash));
+
+    await Promise.all(calls).then((txRes) => {
+      txRes.forEach((tx, i) => {
+        let newTx = {
+          hash: remainingHashes[i],
+          transaction: tx,
+          // Improve the efficiency below, filter every item is expensive
+          blockNum: txsObj.filter((e: any) => e.tx == remainingHashes[i]).map((e: any) => e.blockNum)[0],
         };
+
+        txs.push(newTx);
+
+        // Add to cache
+        this.addTransactionToCache(newTx);
       })
-    );
-    return result;
+    });
+
+    console.log('txs', txs);
+
+    return txs;
   }
 
+  /**
+   * Adds provided transaction to the browser cache
+   * 
+   * @param {any} tx - Transaction data
+   */
+  addTransactionToCache(tx: any) {
+    tx.id = tx.hash;
+    BrowserCache.add(IDB_TX_CACHE, tx);
+  }
+
+  /** 
+   * Adds provided blocks to the browser cache
+   * 
+   * @param {any[]} blocks - Array of blocks to add to cache
+   */
   addBlocksToCache(blocks: any[]) {
     blocks.forEach((block) => {
       block.id = block.block.bNum;
@@ -292,6 +325,12 @@ class Store {
     });
   }
 
+  /**
+   * Fetches blocks from cache by block number
+   * 
+   * @param {number[]} blockNums - Array of block numbers to fetch
+   * @returns {{ remainingNums: number[], blocks: any[] }} - Object containing remaining block numbers to fetch and array of retrieved blocks
+   */
   async getBlocksFromCache(blockNums: number[]) {
     let blocks: any[] = [];
     let remainingNums: number[] = [];
@@ -315,6 +354,37 @@ class Store {
     return { remainingNums, blocks };
   }
 
+  /**
+   * Fetches transactions from cache by transaction hash
+   * 
+   * @param {string[]} txHashes - Array of transaction hashes to fetch
+   * @returns {{ remainingHashes: string[], txs: any[] }} - Object containing remaining transaction hashes to fetch and array of retrieved transactions
+   */
+  async getTransactionsFromCache(txHashes: string[]) {
+    let txs: any[] = [];
+    let remainingHashes: string[] = [];
+
+    const calls = txHashes.map(hash => BrowserCache.get(IDB_TX_CACHE, hash));
+
+    await Promise.all(calls).then((results) => {
+      results.forEach((result: any) => {
+        // Cache hit
+        if (result && result.id) {
+          console.log('result', result);
+          delete result.id;
+          txs.push(result);
+        
+          // Not present in the cache, so we need to fetch it
+        } else {
+          console.log('result in failure', result);
+          remainingHashes.push(result.key);
+        }
+      })
+    });
+
+    return { remainingHashes, txs };
+  }
+
   /** FORMAT */
   formatBlockSet(data: any[]): any[] {
     let blockSet: any[] = [];
@@ -330,8 +400,9 @@ class Store {
     return blockSet;
   }
 
-  /** Format block data to Block object
-   *  Handles up to block version 2
+  /** 
+   * Format block data to Block object
+   * Handles up to block version 2
    */
   formatBlock(content: BlockDataV0_1 | BlockDataV2): Block {
     // Check for block type
