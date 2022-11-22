@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useObserver } from "mobx-react";
-import { TextInput, Notification } from "chi-ui";
+import { Notification } from "chi-ui";
 import { StoreContext } from "../../index";
 import SearchIcon from "static/img/search-white.svg";
 

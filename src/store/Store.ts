@@ -1,8 +1,9 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
-import { HOST_PROTOCOL, HOST_NAME } from "../constants";
+import { HOST_PROTOCOL, HOST_NAME, IDB_BLOCKS_CACHE, IDB_TX_CACHE } from "../constants";
 import { NETWORKS } from "networks";
+import BrowserCache from "./BrowserCache";
 import {
   Block,
   BlockDataV0_1,
@@ -40,6 +41,9 @@ class Store {
 
   @action setLatestBlock(block: Block) {
     this.latestBlock = block;
+
+    // let test = BrowserCache.get(IDB_BLOCKS_CACHE, block);
+    //console.log(test);
   }
 
   @action setBlockTableData(tableData: BlockTableData[]) {
@@ -102,13 +106,25 @@ class Store {
     const nums = [...Array(endBlock - startBlock + 1).keys()].map(
       (x) => x + startBlock
     ); // Generate number array from range
-    let data = await axios
-      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
-        nums,
-        network: this.network,
-      })
-      .then((res) => res.data);
-    return this.formatBlockSet(data);
+
+    const { remainingNums, blocks } = await this.getBlocksFromCache(nums);
+    let retData = blocks.length ? blocks : [];
+
+    console.log('Block numbers to fetch:', remainingNums);
+
+    if (remainingNums.length) {
+      let data = await axios
+        .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
+          nums: remainingNums,
+          network: this.network,
+        })
+        .then((res) => res.data);
+      
+      retData.push(...this.formatBlockSet(data));
+      this.addBlocksToCache(retData);
+    }
+
+    return retData;
   }
 
   @action
@@ -267,6 +283,36 @@ class Store {
       })
     );
     return result;
+  }
+
+  addBlocksToCache(blocks: any[]) {
+    blocks.forEach((block) => {
+      block.id = block.block.bNum;
+      BrowserCache.add(IDB_BLOCKS_CACHE, block);
+    });
+  }
+
+  async getBlocksFromCache(blockNums: number[]) {
+    let blocks: any[] = [];
+    let remainingNums: number[] = [];
+    
+    const calls = blockNums.map(num => BrowserCache.get(IDB_BLOCKS_CACHE, num));
+
+    await Promise.all(calls).then((results) => {
+      results.forEach((result: any) => {
+        // Cache hit
+        if (result && result.id) {
+          delete result.id;
+          blocks.push(result);
+        
+          // Not present in the cache, so we need to fetch it
+        } else {
+          remainingNums.push(result.key);
+        }
+      });
+    });
+
+    return { remainingNums, blocks };
   }
 
   /** FORMAT */
