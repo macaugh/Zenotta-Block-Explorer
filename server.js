@@ -29,6 +29,9 @@ app.use(express.urlencoded({
 }));
 app.use(compression());
 
+// Latest block
+let latestBlock = 0;
+
 // Caches
 const blocksCache = new DragonflyCache();
 const txsCache = new DragonflyCache();
@@ -45,8 +48,9 @@ app.post('/api/latestBlock', (req, res) => {
     calls.fetchLatestBlock(storagePath).then(latestBlock => {
         try {
             throttler.callFunction(extractTxs, latestBlock.content.block.header.b_num, network, fullConfig).then(res => console.log(res)).catch(err => console.log(err));
+            latestBlock = latestBlock.content.block.header.b_num;
         } catch (error) {
-            console.log('Failed to retrive latest block: ', error);
+            console.log('Failed to retrieve latest block: ', error);
         }
         res.json(latestBlock);
     }).catch(error => {
@@ -87,20 +91,31 @@ app.post('/api/blockchainItem', (req, res) => {
 });
 
 /** Fetch block range */
-app.post('/api/blockRange', (req, res) => {
+app.post('/api/blockRange', async (req, res) => {
     const network = req.body.network;
     const storagePath = `${fullConfig.PROTOCOL}://${network.sIp}:${network.sPort}/block_by_num`;
+    const storagePathLatest = `${fullConfig.PROTOCOL}://${network.sIp}:${network.sPort}/latest_block`;
     let nums = Array.isArray(req.body.nums) ? req.body.nums.filter(num => Number.isFinite(num)) : [];
     let unknowns = [];
     let knowns = [];
 
-    for (let n of nums) {
-        let posEntry = bNumCache.get(n);
+    if (!latestBlock) {
+        latestBlock = await calls.fetchLatestBlock(storagePathLatest).then(lBlock => {
+            return lBlock.content.block.header.b_num;
+        }).catch(error => {
+            res.status(500).send(error)
+        });
+    }
 
-        if (posEntry) {
-            knowns.push(posEntry);
-        } else {
-            unknowns.push(n);
+    for (let n of nums) {
+        if (n < latestBlock && n >= 0) {
+            let posEntry = bNumCache.get(n);
+    
+            if (posEntry) {
+                knowns.push(posEntry);
+            } else {
+                unknowns.push(n);
+            }
         }
     }
 
