@@ -1,3 +1,4 @@
+import { NETWORKS } from "../networks";
 import { IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
 
 class BrowserCache {
@@ -6,6 +7,7 @@ class BrowserCache {
   constructor() {
     this.db = null;
     const openReq = window.indexedDB.open("cache", 1);
+    const networks = NETWORKS.map(e => e.sIp);
 
     // error handler signifies that the database didn't open successfully
     openReq.addEventListener("error", () =>
@@ -25,8 +27,10 @@ class BrowserCache {
       // Grab a reference to the opened database
       this.db = e.target.result;
 
-      this.createObjectStore(IDB_TX_CACHE, this.createTransactionStruct);
-      this.createObjectStore(IDB_BLOCKS_CACHE, this.createBlockStruct);
+      for (let n of networks) {
+        this.createObjectStore(`${IDB_TX_CACHE}_${n}`, this.createTransactionStruct);
+        this.createObjectStore(`${IDB_BLOCKS_CACHE}_${n}`, this.createBlockStruct);
+      }
     });
   }
 
@@ -37,7 +41,7 @@ class BrowserCache {
    * @param data {any} - Data to be stored
    */
   public add(os: string, data: any) {
-    if (this.db) {
+    if (this.db && this.db.objectStoreNames.contains(os)) {
       const transaction = this.db.transaction([os], "readwrite");
       const objectStore = transaction.objectStore(os);
       const request = objectStore.openCursor(data.id);
@@ -47,7 +51,7 @@ class BrowserCache {
 
         if (cursor) {
           // TODO: Update data? Under what conditions?
-          
+
           // key already exist
           /**  cursor.update(data);
           // console.log(
@@ -81,7 +85,7 @@ class BrowserCache {
    * @returns request
    */
   public async get(os: string, key: number | string) {
-    if (this.db) {
+    if (this.db && this.db.objectStoreNames.contains(os)) {
       const transaction = this.db.transaction([os], "readonly");
       const objectStore = transaction.objectStore(os);
       const request = objectStore.get(key);
@@ -115,7 +119,7 @@ class BrowserCache {
    * @param key {string} - Key to be deleted
    */
   public delete(os: string, key: string) {
-    if (this.db) {
+    if (this.db && this.db.objectStoreNames.contains(os)) {
       const transaction = this.db.transaction([os], "readwrite");
       const objectStore = transaction.objectStore(os)
       const request = objectStore.delete(key);

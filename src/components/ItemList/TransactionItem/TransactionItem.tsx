@@ -56,7 +56,6 @@ export const TransactionItem = (props: TransactionItemProps) => {
 
     return useObserver(() => {
         if (data) {
-            console.log('data', data);
             return (<div className={styles.item}>
                 <div className={styles.content}>
                     <div className={styles.itemHeader}>

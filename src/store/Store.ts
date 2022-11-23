@@ -140,18 +140,29 @@ class Store {
 
   @action
   async fetchBlockHashByNum(num: number) {
-    let data = await axios
-      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
-        nums: [num],
-        network: this.network,
-      })
-      .then((res) => res.data)
-      .catch((error) => {
-        console.error(
-          `Fetch of block by number failed with status code ${error.status}`
-        );
-        console.error(error.data);
-      });
+    let data: any = [];
+    const { remainingNums: _, blocks } = await this.getBlocksFromCache([num]);
+
+    if (!blocks.length) {
+      data = await axios
+        .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
+          nums: [num],
+          network: this.network,
+        })
+        .then((res) => res.data)
+        .catch((error) => {
+          console.error(
+            `Fetch of block by number failed with status code ${error.status}`
+          );
+          console.error(error.data);
+        });
+      
+      this.addBlocksToCache(this.formatBlockSet(data));
+
+    } else {
+      // Weird format requirement
+      data = [[blocks[0].hash], blocks[0].bNum];
+    }
 
     if (data.length) {
       return data[0][0];
@@ -226,7 +237,6 @@ class Store {
     const txsObj = await this.fetchTxsIdRange(start, end);
     if (txsObj) {
       let result = await this.fetchTxsContents(txsObj);
-      console.log('fetchTxTableData', result);
       this.setTxsTableData(result);
     }
   }
@@ -249,9 +259,7 @@ class Store {
       .then((response) => {
         const isJson =
           response.headers["content-type"] &&
-          response.headers["content-type"].search("application/json") != -1
-            ? true
-            : false;
+          response.headers["content-type"].search("application/json") != -1;
 
         let data = isJson ? JSON.parse(JSON.stringify(response.data)) : null;
 
@@ -298,8 +306,6 @@ class Store {
       })
     });
 
-    console.log('txs', txs);
-
     return txs;
   }
 
@@ -310,7 +316,7 @@ class Store {
    */
   addTransactionToCache(tx: any) {
     tx.id = tx.hash;
-    BrowserCache.add(IDB_TX_CACHE, tx);
+    BrowserCache.add(`${IDB_TX_CACHE}_${this.network.sIp}`, tx);
   }
 
   /** 
@@ -321,7 +327,7 @@ class Store {
   addBlocksToCache(blocks: any[]) {
     blocks.forEach((block) => {
       block.id = block.block.bNum;
-      BrowserCache.add(IDB_BLOCKS_CACHE, block);
+      BrowserCache.add(`${IDB_BLOCKS_CACHE}_${this.network.sIp}`, block);
     });
   }
 
@@ -335,7 +341,7 @@ class Store {
     let blocks: any[] = [];
     let remainingNums: number[] = [];
     
-    const calls = blockNums.map(num => BrowserCache.get(IDB_BLOCKS_CACHE, num));
+    const calls = blockNums.map(num => BrowserCache.get(`${IDB_BLOCKS_CACHE}_${this.network.sIp}`, num));
 
     await Promise.all(calls).then((results) => {
       results.forEach((result: any) => {
@@ -364,19 +370,17 @@ class Store {
     let txs: any[] = [];
     let remainingHashes: string[] = [];
 
-    const calls = txHashes.map(hash => BrowserCache.get(IDB_TX_CACHE, hash));
+    const calls = txHashes.map(hash => BrowserCache.get(`${IDB_TX_CACHE}_${this.network.sIp}`, hash));
 
     await Promise.all(calls).then((results) => {
       results.forEach((result: any) => {
         // Cache hit
         if (result && result.id) {
-          console.log('result', result);
           delete result.id;
           txs.push(result);
         
-          // Not present in the cache, so we need to fetch it
+        // Not present in the cache, so we need to fetch it
         } else {
-          console.log('result in failure', result);
           remainingHashes.push(result.key);
         }
       })
