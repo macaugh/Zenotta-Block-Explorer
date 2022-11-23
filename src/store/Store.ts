@@ -330,8 +330,6 @@ class Store {
     BrowserCache.add(cacheName, tx);
 
     let rem = this.lruCaches[cacheName].add(tx.id);
-
-    console.log('LRU Cache', this.lruCaches[cacheName]);
     if (rem) {
       BrowserCache.delete(cacheName, rem);
     }
@@ -350,8 +348,6 @@ class Store {
       BrowserCache.add(cacheName, block);
 
       let rem = this.lruCaches[cacheName].add(block.id);
-
-      console.log('LRU Cache', this.lruCaches[cacheName]);
       if (rem) {
         BrowserCache.delete(cacheName, rem);
       }
@@ -375,8 +371,7 @@ class Store {
         // Cache hit
         if (result && result.id) {
           this.lruCaches[cacheName].promote(result.id);
-          
-          console.log('LRU Cache on promote', this.lruCaches[cacheName]);
+
           delete result.id;
           blocks.push(result);
         
@@ -406,11 +401,8 @@ class Store {
       results.forEach((result: any) => {
         // Cache hit
         if (result && result.id) {
-          console.log('this', this);
-          console.log('cacheName', cacheName);
           this.lruCaches[cacheName].promote(result.id);
-
-          console.log('LRU Cache on promote', this.lruCaches[cacheName]);
+          
           delete result.id;
           txs.push(result);
         
