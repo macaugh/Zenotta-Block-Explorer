@@ -125,7 +125,7 @@ class BrowserCache {
       const request = objectStore.delete(key);
 
       request.onsuccess = () => {
-        console.log(`Data deleted from ${os.toUpperCase()} CACHE successfully`);
+        console.log(`Data deleted from ${os.toUpperCase()} CACHE successfully: ${key}`);
       };
 
       request.onerror = (e: any) => {

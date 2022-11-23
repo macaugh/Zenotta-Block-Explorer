@@ -1,9 +1,10 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
-import { HOST_PROTOCOL, HOST_NAME, IDB_BLOCKS_CACHE, IDB_TX_CACHE } from "../constants";
+import { HOST_PROTOCOL, HOST_NAME, IDB_BLOCKS_CACHE, IDB_TX_CACHE, MAX_CACHE_SIZE } from "../constants";
 import { NETWORKS } from "networks";
 import BrowserCache from "./BrowserCache";
+import { LRUCache } from "./LRUCache";
 import {
   Block,
   BlockDataV0_1,
@@ -19,8 +20,16 @@ import {
 const FILENAME = "Txs";
 
 class Store {
+  private lruCaches: { [key: string]: LRUCache };
+
   constructor() {
     makeAutoObservable(this);
+    this.lruCaches = {};
+
+    for (let network of NETWORKS) {
+      this.lruCaches[`${IDB_BLOCKS_CACHE}_${network.sIp}`] = new LRUCache(MAX_CACHE_SIZE);
+      this.lruCaches[`${IDB_TX_CACHE}_${network.sIp}`] = new LRUCache(MAX_CACHE_SIZE);
+    }
   }
 
   @observable latestBlock: Block | null = null;
@@ -315,8 +324,17 @@ class Store {
    * @param {any} tx - Transaction data
    */
   addTransactionToCache(tx: any) {
+    const cacheName = `${IDB_TX_CACHE}_${this.network.sIp}`;
+
     tx.id = tx.hash;
-    BrowserCache.add(`${IDB_TX_CACHE}_${this.network.sIp}`, tx);
+    BrowserCache.add(cacheName, tx);
+
+    let rem = this.lruCaches[cacheName].add(tx.id);
+
+    console.log('LRU Cache', this.lruCaches[cacheName]);
+    if (rem) {
+      BrowserCache.delete(cacheName, rem);
+    }
   }
 
   /** 
@@ -326,8 +344,17 @@ class Store {
    */
   addBlocksToCache(blocks: any[]) {
     blocks.forEach((block) => {
+      const cacheName = `${IDB_BLOCKS_CACHE}_${this.network.sIp}`;
+
       block.id = block.block.bNum;
-      BrowserCache.add(`${IDB_BLOCKS_CACHE}_${this.network.sIp}`, block);
+      BrowserCache.add(cacheName, block);
+
+      let rem = this.lruCaches[cacheName].add(block.id);
+
+      console.log('LRU Cache', this.lruCaches[cacheName]);
+      if (rem) {
+        BrowserCache.delete(cacheName, rem);
+      }
     });
   }
 
@@ -340,17 +367,20 @@ class Store {
   async getBlocksFromCache(blockNums: number[]) {
     let blocks: any[] = [];
     let remainingNums: number[] = [];
-    
-    const calls = blockNums.map(num => BrowserCache.get(`${IDB_BLOCKS_CACHE}_${this.network.sIp}`, num));
+    const cacheName = `${IDB_BLOCKS_CACHE}_${this.network.sIp}`;
+    const calls = blockNums.map(num => BrowserCache.get(cacheName, num));
 
     await Promise.all(calls).then((results) => {
       results.forEach((result: any) => {
         // Cache hit
         if (result && result.id) {
+          this.lruCaches[cacheName].promote(result.id);
+          
+          console.log('LRU Cache on promote', this.lruCaches[cacheName]);
           delete result.id;
           blocks.push(result);
         
-          // Not present in the cache, so we need to fetch it
+        // Not present in the cache, so we need to fetch it
         } else {
           remainingNums.push(result.key);
         }
@@ -369,13 +399,18 @@ class Store {
   async getTransactionsFromCache(txHashes: string[]) {
     let txs: any[] = [];
     let remainingHashes: string[] = [];
-
-    const calls = txHashes.map(hash => BrowserCache.get(`${IDB_TX_CACHE}_${this.network.sIp}`, hash));
+    const cacheName = `${IDB_TX_CACHE}_${this.network.sIp}`;
+    const calls = txHashes.map(hash => BrowserCache.get(cacheName, hash));
 
     await Promise.all(calls).then((results) => {
       results.forEach((result: any) => {
         // Cache hit
         if (result && result.id) {
+          console.log('this', this);
+          console.log('cacheName', cacheName);
+          this.lruCaches[cacheName].promote(result.id);
+
+          console.log('LRU Cache on promote', this.lruCaches[cacheName]);
           delete result.id;
           txs.push(result);
         
