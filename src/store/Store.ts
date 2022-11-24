@@ -1,10 +1,9 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
-import { HOST_PROTOCOL, HOST_NAME, IDB_BLOCKS_CACHE, IDB_TX_CACHE, MAX_CACHE_SIZE } from "../constants";
+import { HOST_PROTOCOL, HOST_NAME, IDB_BLOCKS_CACHE, IDB_TX_CACHE } from "../constants";
 import { NETWORKS } from "networks";
-import BrowserCache from "./BrowserCache";
-import { LRUCache } from "./LRUCache";
+import { BrowserCache } from "./BrowserCache";
 import {
   Block,
   BlockDataV0_1,
@@ -20,16 +19,19 @@ import {
 const FILENAME = "Txs";
 
 class Store {
-  private lruCaches: { [key: string]: LRUCache };
+  private browserCache: BrowserCache;
 
   constructor() {
     makeAutoObservable(this);
-    this.lruCaches = {};
 
+
+    let networks = [];
     for (let network of NETWORKS) {
-      this.lruCaches[`${IDB_BLOCKS_CACHE}_${network.sIp}`] = new LRUCache(MAX_CACHE_SIZE);
-      this.lruCaches[`${IDB_TX_CACHE}_${network.sIp}`] = new LRUCache(MAX_CACHE_SIZE);
+      networks.push(`${IDB_BLOCKS_CACHE}_${network.sIp}`);
+      networks.push(`${IDB_TX_CACHE}_${network.sIp}`);
     }
+
+    this.browserCache = new BrowserCache(networks);
   }
 
   @observable latestBlock: Block | null = null;
@@ -79,6 +81,7 @@ class Store {
     await axios
       .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/latestBlock`, { network: this.network })
       .then(async (response) => {
+        console.log('response', response);
         this.setLatestBlock(this.formatBlock(response.data.content));
       });
   }
@@ -116,10 +119,8 @@ class Store {
       (x) => x + startBlock
     ); // Generate number array from range
 
-    const { remainingNums, blocks } = await this.getBlocksFromCache(nums);
+    const { remainingNums, blocks } = await this.browserCache.getBlocks(nums, this.network.sIp);
     let retData = blocks.length ? blocks : [];
-
-    console.log('Block numbers to fetch:', remainingNums);
 
     if (remainingNums.length) {
       let data = await axios
@@ -130,7 +131,7 @@ class Store {
         .then((res) => res.data);
       
       retData.push(...this.formatBlockSet(data));
-      this.addBlocksToCache(retData);
+      this.browserCache.addBlocks(retData, this.network.sIp);
     }
 
     return retData;
@@ -150,7 +151,7 @@ class Store {
   @action
   async fetchBlockHashByNum(num: number) {
     let data: any = [];
-    const { remainingNums: _, blocks } = await this.getBlocksFromCache([num]);
+    const { remainingNums: _, blocks } = await this.browserCache.getBlocks([num], this.network.sIp);
 
     if (!blocks.length) {
       data = await axios
@@ -166,11 +167,12 @@ class Store {
           console.error(error.data);
         });
       
-      this.addBlocksToCache(this.formatBlockSet(data));
+      this.browserCache.addBlocks(this.formatBlockSet(data), this.network.sIp);
 
     } else {
+      console.log('Block found in cache', blocks);
       // Weird format requirement
-      data = [[blocks[0].hash], blocks[0].bNum];
+      // data = [[blocks[0].hash], blocks[0].bNum];
     }
 
     if (data.length) {
@@ -296,7 +298,7 @@ class Store {
 
   @action async fetchTxsContents(txsObj: any) {
     const hashes = txsObj.map((tx: any) => tx.tx);
-    let { remainingHashes, txs } = await this.getTransactionsFromCache(hashes);
+    let { remainingHashes, txs } = await this.browserCache.getTransactions(hashes, this.network.sIp);
     let calls = remainingHashes.map((hash: string) => this.fetchBlockchainItem(hash));
 
     await Promise.all(calls).then((txRes) => {
@@ -311,109 +313,11 @@ class Store {
         txs.push(newTx);
 
         // Add to cache
-        this.addTransactionToCache(newTx);
+        this.browserCache.addTransaction(newTx, this.network.sIp);
       })
     });
 
     return txs;
-  }
-
-  /**
-   * Adds provided transaction to the browser cache
-   * 
-   * @param {any} tx - Transaction data
-   */
-  addTransactionToCache(tx: any) {
-    const cacheName = `${IDB_TX_CACHE}_${this.network.sIp}`;
-
-    tx.id = tx.hash;
-    BrowserCache.add(cacheName, tx);
-
-    let rem = this.lruCaches[cacheName].add(tx.id);
-    if (rem) {
-      BrowserCache.delete(cacheName, rem);
-    }
-  }
-
-  /** 
-   * Adds provided blocks to the browser cache
-   * 
-   * @param {any[]} blocks - Array of blocks to add to cache
-   */
-  addBlocksToCache(blocks: any[]) {
-    blocks.forEach((block) => {
-      const cacheName = `${IDB_BLOCKS_CACHE}_${this.network.sIp}`;
-
-      block.id = block.block.bNum;
-      BrowserCache.add(cacheName, block);
-
-      let rem = this.lruCaches[cacheName].add(block.id);
-      if (rem) {
-        BrowserCache.delete(cacheName, rem);
-      }
-    });
-  }
-
-  /**
-   * Fetches blocks from cache by block number
-   * 
-   * @param {number[]} blockNums - Array of block numbers to fetch
-   * @returns {{ remainingNums: number[], blocks: any[] }} - Object containing remaining block numbers to fetch and array of retrieved blocks
-   */
-  async getBlocksFromCache(blockNums: number[]) {
-    let blocks: any[] = [];
-    let remainingNums: number[] = [];
-    const cacheName = `${IDB_BLOCKS_CACHE}_${this.network.sIp}`;
-    const calls = blockNums.map(num => BrowserCache.get(cacheName, num));
-
-    await Promise.all(calls).then((results) => {
-      results.forEach((result: any) => {
-        // Cache hit
-        if (result && result.id) {
-          this.lruCaches[cacheName].promote(result.id);
-
-          delete result.id;
-          blocks.push(result);
-        
-        // Not present in the cache, so we need to fetch it
-        } else {
-          remainingNums.push(result.key);
-        }
-      });
-    });
-
-    return { remainingNums, blocks };
-  }
-
-  /**
-   * Fetches transactions from cache by transaction hash
-   * 
-   * @param {string[]} txHashes - Array of transaction hashes to fetch
-   * @returns {{ remainingHashes: string[], txs: any[] }} - Object containing remaining transaction hashes to fetch and array of retrieved transactions
-   */
-  async getTransactionsFromCache(txHashes: string[]) {
-    let txs: any[] = [];
-    let remainingHashes: string[] = [];
-    const cacheName = `${IDB_TX_CACHE}_${this.network.sIp}`;
-    const calls = txHashes.map(hash => BrowserCache.get(cacheName, hash));
-
-    await Promise.all(calls).then((results) => {
-      results.forEach((result: any) => {
-        // Cache hit
-        if (result && result.id) {
-          this.lruCaches[cacheName].promote(result.id);
-          
-          delete result.id;
-          txs.push(result);
-        
-        // Not present in the cache, so we need to fetch it
-        } else {
-          remainingHashes.push(result.key);
-        }
-      })
-    });
-
-    return { remainingHashes, txs };
   }
 
   /** FORMAT */

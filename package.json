@@ -28,6 +28,7 @@
     "compression": "^1.7.4",
     "concurrently": "^6.0.0",
     "cors": "^2.8.5",
+    "dexie": "^3.2.2",
     "dragonfly-cache": "^1.0.1",
     "express": "*",
     "function": "^0.6.1",

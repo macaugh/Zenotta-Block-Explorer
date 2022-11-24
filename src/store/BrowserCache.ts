@@ -1,172 +1,163 @@
-import { NETWORKS } from "../networks";
+import Dexie from "dexie";
+import { Transaction, BlockTableData, Block } from "../interfaces";
 import { IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
 
-class BrowserCache {
-  private db: IDBDatabase | null;
+export class BrowserCache extends Dexie {
+  transactions: { [key: string]: Dexie.Table<Transaction, number> };
+  blocks: { [key: string]: Dexie.Table<any, number> };
 
-  constructor() {
-    this.db = null;
-    const openReq = window.indexedDB.open("cache", 1);
-    const networks = NETWORKS.map(e => e.sIp);
+  constructor(nets: string[]) {
+    super("zen_exp_cache");
+    let tables: { [key: string]: string } = {};
+    this.transactions = {};
+    this.blocks = {};
 
-    // error handler signifies that the database didn't open successfully
-    openReq.addEventListener("error", () =>
-      console.error("Database failed to open")
-    );
-
-    // success handler signifies that the database opened successfully
-    openReq.addEventListener("success", () => {
-      console.log("Database opened successfully");
-
-      // Store the opened database object in the db variable. This is used a lot below
-      this.db = openReq.result;
-    });
-
-    // Set up the database tables if this has not already been done
-    openReq.addEventListener("upgradeneeded", (e: any) => {
-      // Grab a reference to the opened database
-      this.db = e.target.result;
-
-      for (let n of networks) {
-        this.createObjectStore(`${IDB_TX_CACHE}_${n}`, this.createTransactionStruct);
-        this.createObjectStore(`${IDB_BLOCKS_CACHE}_${n}`, this.createBlockStruct);
+    nets.forEach((net) => {
+      if (net.indexOf("blocks") != -1) {
+        tables[net] = "++id,&bNum,&hash,previousHash,bits,version";
+      } else {
+        tables[net] = "++id,druidInfo,version,&hash";
       }
     });
+
+    this.version(1).stores(tables);
+
+    nets.forEach((net) => {
+      this.transactions[net] = this.table(net);
+      this.blocks[net] = this.table(net);
+    });
   }
 
   /**
-   * Adds data to the cache
+   * Fetches blocks from cache by block number
    *
-   * @param os {string} - Object store name
-   * @param data {any} - Data to be stored
+   * @param {number[]} blockNums - Array of block numbers to fetch
+   * @param {string} net - Network name
+   * @returns {{ remainingNums: number[], blocks: BlockTableData[] }} - Object containing remaining block numbers to fetch and array of retrieved blocks
    */
-  public add(os: string, data: any) {
-    if (this.db && this.db.objectStoreNames.contains(os)) {
-      const transaction = this.db.transaction([os], "readwrite");
-      const objectStore = transaction.objectStore(os);
-      const request = objectStore.openCursor(data.id);
+  async getBlocks(
+    blockNums: number[],
+    net: string
+  ): Promise<{ remainingNums: number[]; blocks: BlockTableData[] }> {
+    let blocks: any[] = [];
+    let remainingNums: number[] = [];
+    const cacheName = `${IDB_BLOCKS_CACHE}_${net}`;
+    const calls = blockNums.map((num) => {
+      return this.blocks[cacheName].where("bNum").equals(num).toArray(); // anything other than .toArray returns undefined?
+    });
 
-      request.onsuccess = (e: any) => {
-        let cursor = e.target.result;
+    await Promise.all(calls).then((results) => {
+      results.forEach((result: any, idx: number) => {
+        result = result[0]; // required because of .toArray() above
 
-        if (cursor) {
-          // TODO: Update data? Under what conditions?
+        // Cache hit
+        if (result && result.id) {
+          delete result.id;
+          const block = {
+            hash: result.hash,
+            block: result,
+          };
 
-          // key already exist
-          /**  cursor.update(data);
-          // console.log(
-          //   `Data updated in ${os.toUpperCase()} CACHE successfully: ${JSON.stringify(
-          //     e
-          //   )}`
-          // );*/
+          blocks.push(block);
+
+          // Not present in the cache, so we need to fetch it
         } else {
-          // key not exist
-          objectStore.add(data);
-          console.log(
-            `Data added to ${os.toUpperCase()} CACHE successfully: ${JSON.stringify(
-              e
-            )}`
-          );
+          remainingNums.push(blockNums[idx]);
         }
-      };
-    } else {
-      console.warn(
-        `IndexedDB ${os.toUpperCase()} CACHE not available. Data not added.`
-      );
-    }
-  }
-
-  /**
-   * Gets a data entry from the cache, if it exists. If it doesn't 
-   * exist, the key will be returned
-   *
-   * @param os {string} - Object store name
-   * @param key {string} - Key to be retrieved
-   * @returns request
-   */
-  public async get(os: string, key: number | string) {
-    if (this.db && this.db.objectStoreNames.contains(os)) {
-      const transaction = this.db.transaction([os], "readonly");
-      const objectStore = transaction.objectStore(os);
-      const request = objectStore.get(key);
-
-      return await new Promise((resolve, reject) => {
-        request.onsuccess = () => {
-          resolve(request.result ? request.result : { key });
-        };
-
-        request.onerror = (e: any) => {
-          console.error(
-            `Error getting data from ${os.toUpperCase()} CACHE: ${JSON.stringify(
-              e
-            )}`
-          );
-          reject(e);
-        };
       });
-    }
+    });
 
-    console.warn(
-      `IndexedDB ${os.toUpperCase()} CACHE not available. Data not retrieved.`
-    );
-    return null;
+    return { remainingNums, blocks };
   }
 
   /**
-   * Deletes a data entry from the cache
+   * Fetches transactions from cache by transaction hash
    *
-   * @param os {string} - Object store name
-   * @param key {string} - Key to be deleted
+   * @param {string[]} txHashes - Array of transaction hashes to fetch
+   * @param {string} net - Network name
+   * @returns {{ remainingHashes: string[], txs: any[] }} - Object containing remaining transaction hashes to fetch and array of retrieved transactions
    */
-  public delete(os: string, key: string) {
-    if (this.db && this.db.objectStoreNames.contains(os)) {
-      const transaction = this.db.transaction([os], "readwrite");
-      const objectStore = transaction.objectStore(os)
-      const request = objectStore.delete(key);
+  async getTransactions(txHashes: string[], net: string) {
+    let txs: any[] = [];
+    let remainingHashes: string[] = [];
+    const cacheName = `${IDB_TX_CACHE}_${net}`;
+    const calls = txHashes.map((hash) => {
+      return this.transactions[cacheName]
+        .where("hash")
+        .equalsIgnoreCase(hash)
+        .toArray(); // tried 'each' and nothing, just returns undefined
+    });
 
-      request.onsuccess = () => {
-        console.log(`Data deleted from ${os.toUpperCase()} CACHE successfully: ${key}`);
-      };
+    await Promise.all(calls).then((results) => {
+      results.forEach((result: any, idx: number) => {
+        result = result[0];
 
-      request.onerror = (e: any) => {
-        console.error(
-          `Error deleting data from ${os.toUpperCase()} CACHE: ${JSON.stringify(
-            e
-          )}`
-        );
-      };
+        // Cache hit
+        if (result && result.id) {
+          delete result.id;
+          const tx = {
+            hash: result.hash,
+            bNum: result.bNum,
+            transaction: result,
+          };
+
+          txs.push(tx);
+
+          // Not present in the cache, so we need to fetch it
+        } else {
+          remainingHashes.push(txHashes[idx]);
+        }
+      });
+    });
+
+    return { remainingHashes, txs };
+  }
+
+  /**
+   * Adds provided transaction to the browser cache
+   *
+   * @param {any} tx - Transaction data
+   * @param {string} net - Network name
+   */
+  async addTransaction(tx: any, net: string) {
+    const cacheName = `${IDB_TX_CACHE}_${net}`;
+    console.log("tx original", tx);
+    const newTx = Object.assign(tx.transaction, {
+      hash: tx.hash,
+      bNum: tx.blockNum,
+    });
+
+    // Check entry doesn't exist
+    const txExist = await this.transactions[cacheName].get({
+      hash: newTx.hash,
+    });
+
+    if (!txExist) {
+      this.transactions[cacheName].add(newTx);
     }
   }
 
   /**
-   * Creates an object store on the IndexedDB instance
+   * Adds provided blocks to the browser cache
    *
-   * @param name {string} - Object store name
-   * @param cb {Function} - Callback function to create object store structure
+   * @param {any[]} blocks - Array of blocks to add to cache
+   * @param {string} net - Network name
    */
-  private async createObjectStore(name: string, cb: Function) {
-    if (this.db) {
-      const objectStore = this.db.createObjectStore(name, {
-        keyPath: "id",
+  async addBlocks(blocks: any[], net: string) {
+    const cacheName = `${IDB_BLOCKS_CACHE}_${net}`;
+
+    for (let i = blocks.length - 1; i > 0; i--) {
+      const block = blocks[i];
+
+      const newBlock = Object.assign(block.block, { hash: block.hash });
+      const blockExist = await this.blocks[cacheName].get({
+        hash: newBlock.hash,
+        bNum: newBlock.bNum,
       });
 
-      cb(objectStore);
-      console.log(`${name.toUpperCase()} CACHE setup complete`);
-    } else {
-      console.warn(
-        `IndexedDB not available. ${name.toUpperCase()} CACHE not setup.`
-      );
+      if (!blockExist) {
+        this.blocks[cacheName].add(newBlock);
+      }
     }
-  }
-
-  private createBlockStruct(blockStore: any) {
-    blockStore.createIndex("id", "id", { unique: true });
-  }
-
-  private createTransactionStruct(txStore: any) {
-    // Define transaction structure
-    txStore.createIndex("id", "id", { unique: true });
   }
 }
-
-export default new BrowserCache();

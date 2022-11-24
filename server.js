@@ -45,14 +45,14 @@ app.post('/api/latestBlock', (req, res) => {
     const network = req.body.network;
     const storagePath = `${fullConfig.PROTOCOL}://${network.sIp}:${network.sPort}/latest_block`;
 
-    calls.fetchLatestBlock(storagePath).then(latestBlock => {
+    calls.fetchLatestBlock(storagePath).then(lb => {
         try {
-            throttler.callFunction(extractTxs, latestBlock.content.block.header.b_num, network, fullConfig).then(res => console.log(res)).catch(err => console.log(err));
-            latestBlock = latestBlock.content.block.header.b_num;
+            throttler.callFunction(extractTxs, lb.content.block.header.b_num, network, fullConfig).then(res => console.log(res)).catch(err => console.log(err));
+            latestBlock = lb.content.block.header.b_num;
         } catch (error) {
             console.log('Failed to retrieve latest block: ', error);
         }
-        res.json(latestBlock);
+        res.json(lb);
     }).catch(error => {
         res.status(500).send(error);
     });
@@ -99,16 +99,14 @@ app.post('/api/blockRange', async (req, res) => {
     let unknowns = [];
     let knowns = [];
 
-    if (!latestBlock) {
-        latestBlock = await calls.fetchLatestBlock(storagePathLatest).then(lBlock => {
-            return lBlock.content.block.header.b_num;
-        }).catch(error => {
-            res.status(500).send(error)
-        });
-    }
+    latestBlock = await calls.fetchLatestBlock(storagePathLatest).then(lBlock => {
+        return lBlock.content.block.header.b_num;
+    }).catch(error => {
+        res.status(500).send(error)
+    });
 
     for (let n of nums) {
-        if (n < latestBlock && n >= 0) {
+        if (n <= latestBlock && n >= 0) {
             let posEntry = bNumCache.get(n);
     
             if (posEntry) {
