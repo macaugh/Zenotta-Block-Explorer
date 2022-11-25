@@ -31,19 +31,21 @@ export class BrowserCache extends Dexie {
   /**
    * Fetches blocks from cache by block number
    *
-   * @param {number[]} blockNums - Array of block numbers to fetch
+   * @param {number[] | string[]} blockIds - Array of block numbers or hashes to fetch
    * @param {string} net - Network name
-   * @returns {{ remainingNums: number[], blocks: BlockTableData[] }} - Object containing remaining block numbers to fetch and array of retrieved blocks
+   * @returns {{ remainingIds: number[] | string[], blocks: BlockTableData[] }} - Object containing remaining block numbers to fetch and array of retrieved blocks
    */
   async getBlocks(
-    blockNums: number[],
+    blockIds: number[] | string[],
     net: string
-  ): Promise<{ remainingNums: number[]; blocks: BlockTableData[] }> {
+  ): Promise<{ remainingIds: number[] | string[]; blocks: BlockTableData[] }> {
     let blocks: any[] = [];
-    let remainingNums: number[] = [];
+    let remainingIds: any[] = [];
+
+    const idSelector = typeof blockIds[0] === "number" ? "bNum" : "hash";
     const cacheName = `${IDB_BLOCKS_CACHE}_${net}`;
-    const calls = blockNums.map((num) => {
-      return this.blocks[cacheName].where("bNum").equals(num).toArray(); // anything other than .toArray returns undefined?
+    const calls = blockIds.map((num) => {
+      return this.blocks[cacheName].where(idSelector).equals(num).toArray(); // anything other than .toArray returns undefined?
     });
 
     await Promise.all(calls).then((results) => {
@@ -62,12 +64,12 @@ export class BrowserCache extends Dexie {
 
           // Not present in the cache, so we need to fetch it
         } else {
-          remainingNums.push(blockNums[idx]);
+          remainingIds.push(blockIds[idx]);
         }
       });
     });
 
-    return { remainingNums, blocks };
+    return { remainingIds, blocks };
   }
 
   /**

@@ -1,7 +1,12 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
-import { HOST_PROTOCOL, HOST_NAME, IDB_BLOCKS_CACHE, IDB_TX_CACHE } from "../constants";
+import {
+  HOST_PROTOCOL,
+  HOST_NAME,
+  IDB_BLOCKS_CACHE,
+  IDB_TX_CACHE,
+} from "../constants";
 import { NETWORKS } from "networks";
 import { BrowserCache } from "./BrowserCache";
 import {
@@ -24,7 +29,6 @@ class Store {
   constructor() {
     makeAutoObservable(this);
 
-
     let networks = [];
     for (let network of NETWORKS) {
       networks.push(`${IDB_BLOCKS_CACHE}_${network.sIp}`);
@@ -40,7 +44,6 @@ class Store {
   @observable txsTableData: TransactionTableData[] = [];
 
   @observable nbTxs: number = 0;
-  @observable blockchainItemCache: any = {};
   @observable network: Network =
     NETWORKS.filter((e) => e.name == localStorage.getItem("NETWORK"))[0] ||
     NETWORKS[0];
@@ -52,17 +55,10 @@ class Store {
 
   @action setLatestBlock(block: Block) {
     this.latestBlock = block;
-
-    // let test = BrowserCache.get(IDB_BLOCKS_CACHE, block);
-    //console.log(test);
   }
 
   @action setBlockTableData(tableData: BlockTableData[]) {
     this.blocksTableData = tableData;
-  }
-
-  @action setBcItemCache(key: string, value: any) {
-    this.blockchainItemCache[key] = value;
   }
 
   @action setNbTxs(nbTxs: number) {
@@ -79,9 +75,11 @@ class Store {
   @action
   async fetchLatestBlock() {
     await axios
-      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/latestBlock`, { network: this.network })
+      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/latestBlock`, {
+        network: this.network,
+      })
       .then(async (response) => {
-        console.log('response', response);
+        console.log("response", response);
         this.setLatestBlock(this.formatBlock(response.data.content));
       });
   }
@@ -89,8 +87,37 @@ class Store {
   @action async fetchBlockchainItem(
     hash: string
   ): Promise<Block | Transaction | null> {
+    const isTx = hash.charAt(0) == "g";
     let bItemData = null;
-    if (Object.keys(this.blockchainItemCache).indexOf(hash) == -1) {
+    let mustFetch = false;
+
+    // It's a transaction
+    if (isTx) {
+      const { remainingHashes: _rH, txs } =
+        await this.browserCache.getTransactions([hash], this.network.sIp);
+
+      if (txs.length) {
+        bItemData = txs[0];
+      } else {
+        mustFetch = true;
+      }
+    }
+    // It's a block
+    else {
+      const { remainingIds: _rB, blocks } = await this.browserCache.getBlocks(
+        [hash],
+        this.network.sIp
+      );
+
+      if (blocks.length) {
+        bItemData = blocks[0];
+      } else {
+        mustFetch = true;
+      }
+    }
+
+    // We need to fetch it
+    if (mustFetch) {
       bItemData = await axios
         .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockchainItem`, {
           hash,
@@ -99,9 +126,6 @@ class Store {
         .then((res) => {
           return res.data;
         });
-      this.setBcItemCache(hash, bItemData);
-    } else {
-      bItemData = this.blockchainItemCache[hash];
     }
 
     let itemType = Object.getOwnPropertyNames(bItemData)[0];
@@ -119,17 +143,20 @@ class Store {
       (x) => x + startBlock
     ); // Generate number array from range
 
-    const { remainingNums, blocks } = await this.browserCache.getBlocks(nums, this.network.sIp);
+    const { remainingIds, blocks } = await this.browserCache.getBlocks(
+      nums,
+      this.network.sIp
+    );
     let retData = blocks.length ? blocks : [];
 
-    if (remainingNums.length) {
+    if (remainingIds.length) {
       let data = await axios
         .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
-          nums: remainingNums,
+          nums: remainingIds,
           network: this.network,
         })
         .then((res) => res.data);
-      
+
       retData.push(...this.formatBlockSet(data));
       this.browserCache.addBlocks(retData, this.network.sIp);
     }
@@ -151,7 +178,10 @@ class Store {
   @action
   async fetchBlockHashByNum(num: number) {
     let data: any = [];
-    const { remainingNums: _, blocks } = await this.browserCache.getBlocks([num], this.network.sIp);
+    const { remainingIds: _, blocks } = await this.browserCache.getBlocks(
+      [num],
+      this.network.sIp
+    );
 
     if (!blocks.length) {
       data = await axios
@@ -166,11 +196,10 @@ class Store {
           );
           console.error(error.data);
         });
-      
-      this.browserCache.addBlocks(this.formatBlockSet(data), this.network.sIp);
 
+      this.browserCache.addBlocks(this.formatBlockSet(data), this.network.sIp);
     } else {
-      console.log('Block found in cache', blocks);
+      console.log("Block found in cache", blocks);
       // Weird format requirement
       // data = [[blocks[0].hash], blocks[0].bNum];
     }
@@ -252,11 +281,11 @@ class Store {
     }
   }
 
-  /** 
+  /**
    * Extracts transactions ids from static files generated from express server (runs audit on every new block and stores transactions in json file)
-   * 
+   *
    * TODO: Update to be more efficient in the DB on server side (switch to Postgres?)
-   * 
+   *
    * @param {number} startTxs - Start index of txs to fetch
    * @param {number} endTxs - End index of txs to fetch
    */
@@ -266,7 +295,11 @@ class Store {
     endTxs: number
   ): Promise<{ blockNum: number; tx: string } | null> {
     let txsIdRange = await axios
-      .get(`${HOST_PROTOCOL}://${HOST_NAME}/${this.network.name.split(' ')[0].toLowerCase() + FILENAME}.json`)
+      .get(
+        `${HOST_PROTOCOL}://${HOST_NAME}/${
+          this.network.name.split(" ")[0].toLowerCase() + FILENAME
+        }.json`
+      )
       .then((response) => {
         const isJson =
           response.headers["content-type"] &&
@@ -298,8 +331,13 @@ class Store {
 
   @action async fetchTxsContents(txsObj: any) {
     const hashes = txsObj.map((tx: any) => tx.tx);
-    let { remainingHashes, txs } = await this.browserCache.getTransactions(hashes, this.network.sIp);
-    let calls = remainingHashes.map((hash: string) => this.fetchBlockchainItem(hash));
+    let { remainingHashes, txs } = await this.browserCache.getTransactions(
+      hashes,
+      this.network.sIp
+    );
+    let calls = remainingHashes.map((hash: string) =>
+      this.fetchBlockchainItem(hash)
+    );
 
     await Promise.all(calls).then((txRes) => {
       txRes.forEach((tx, i) => {
@@ -307,14 +345,16 @@ class Store {
           hash: remainingHashes[i],
           transaction: tx,
           // Improve the efficiency below, filter every item is expensive
-          blockNum: txsObj.filter((e: any) => e.tx == remainingHashes[i]).map((e: any) => e.blockNum)[0],
+          blockNum: txsObj
+            .filter((e: any) => e.tx == remainingHashes[i])
+            .map((e: any) => e.blockNum)[0],
         };
 
         txs.push(newTx);
 
         // Add to cache
         this.browserCache.addTransaction(newTx, this.network.sIp);
-      })
+      });
     });
 
     return txs;
@@ -335,7 +375,7 @@ class Store {
     return blockSet;
   }
 
-  /** 
+  /**
    * Format block data to Block object
    * Handles up to block version 2
    */
