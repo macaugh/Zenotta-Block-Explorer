@@ -1,7 +1,8 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
-import { HOST_PROTOCOL, HOST_NAME, IDB_BLOCKS_CACHE, IDB_TX_CACHE } from "../constants";
+import { HOST_PROTOCOL, HOST_NAME, HOST_PORT } from "../constants_local";
+import { IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
 import { NETWORKS } from "networks";
 import { BrowserCache } from "./BrowserCache";
 import {
@@ -79,9 +80,9 @@ class Store {
   @action
   async fetchLatestBlock() {
     await axios
-      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/latestBlock`, { network: this.network })
+      .post(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/api/latestBlock`, { network: this.network })
       .then(async (response) => {
-        console.log('response', response);
+        // console.log('response', response);
         this.setLatestBlock(this.formatBlock(response.data.content));
       });
   }
@@ -92,7 +93,7 @@ class Store {
     let bItemData = null;
     if (Object.keys(this.blockchainItemCache).indexOf(hash) == -1) {
       bItemData = await axios
-        .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockchainItem`, {
+        .post(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/api/blockchainItem`, {
           hash,
           network: this.network,
         })
@@ -124,7 +125,7 @@ class Store {
 
     if (remainingNums.length) {
       let data = await axios
-        .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
+        .post(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/api/blockRange`, {
           nums: remainingNums,
           network: this.network,
         })
@@ -150,12 +151,13 @@ class Store {
 
   @action
   async fetchBlockHashByNum(num: number) {
+    console.log('fetchBlockHashByNum', num);
     let data: any = [];
     const { remainingNums: _, blocks } = await this.browserCache.getBlocks([num], this.network.sIp);
 
     if (!blocks.length) {
       data = await axios
-        .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
+        .post(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/api/blockRange`, {
           nums: [num],
           network: this.network,
         })
@@ -172,7 +174,9 @@ class Store {
     } else {
       console.log('Block found in cache', blocks);
       // Weird format requirement
-      // data = [[blocks[0].hash], blocks[0].bNum];
+      data = [[blocks[0].hash], blocks[0].block.bNum];
+
+      console.log(data)
     }
 
     if (data.length) {
@@ -266,7 +270,7 @@ class Store {
     endTxs: number
   ): Promise<{ blockNum: number; tx: string } | null> {
     let txsIdRange = await axios
-      .get(`${HOST_PROTOCOL}://${HOST_NAME}/${this.network.name.split(' ')[0].toLowerCase() + FILENAME}.json`)
+      .get(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/${this.network.name.split(' ')[0].toLowerCase() + FILENAME}.json`)
       .then((response) => {
         const isJson =
           response.headers["content-type"] &&

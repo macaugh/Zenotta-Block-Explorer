@@ -14,7 +14,7 @@ export class BrowserCache extends Dexie {
 
     nets.forEach((net) => {
       if (net.indexOf("blocks") != -1) {
-        tables[net] = "++id,&bNum,&hash,previousHash,bits,version";
+        tables[net] = "++id,&bNum,&hash,previousHash,bits,version"; 
       } else {
         tables[net] = "++id,druidInfo,version,&hash";
       }
@@ -52,6 +52,7 @@ export class BrowserCache extends Dexie {
 
         // Cache hit
         if (result && result.id) {
+          console.log("cache hit");
           delete result.id;
           const block = {
             hash: result.hash,
@@ -62,6 +63,7 @@ export class BrowserCache extends Dexie {
 
           // Not present in the cache, so we need to fetch it
         } else {
+          console.log("cache miss");
           remainingNums.push(blockNums[idx]);
         }
       });
@@ -121,7 +123,6 @@ export class BrowserCache extends Dexie {
    */
   async addTransaction(tx: any, net: string) {
     const cacheName = `${IDB_TX_CACHE}_${net}`;
-    console.log("tx original", tx);
     const newTx = Object.assign(tx.transaction, {
       hash: tx.hash,
       bNum: tx.blockNum,
@@ -154,6 +155,9 @@ export class BrowserCache extends Dexie {
         hash: newBlock.hash,
         bNum: newBlock.bNum,
       });
+
+      // Alternative to fix dexie warning, only accessing through bNum index 
+      // const blockExist = this.blocks[cacheName].where("bNum").equals(block.block.bNum).toArray();
 
       if (!blockExist) {
         this.blocks[cacheName].add(newBlock);
