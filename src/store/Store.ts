@@ -1,8 +1,8 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
-import { HOST_PROTOCOL, HOST_NAME, HOST_PORT } from "../constants_local";
-import { IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
+// import { HOST_PROTOCOL, HOST_NAME, HOST_PORT } from "../constants_local";
+import { HOST_PROTOCOL, HOST_NAME, HOST_PORT, IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
 import { NETWORKS } from "networks";
 import { BrowserCache } from "./BrowserCache";
 import {
