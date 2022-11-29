@@ -3,7 +3,7 @@ import { Transaction, BlockTableData, Block } from "../interfaces";
 import { IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
 
 export class BrowserCache extends Dexie {
-  transactions: { [key: string]: Dexie.Table<Transaction, number> };
+  transactions: { [key: string]: Dexie.Table<any, number> };
   blocks: { [key: string]: Dexie.Table<any, number> };
 
   constructor(nets: string[]) {
@@ -14,7 +14,7 @@ export class BrowserCache extends Dexie {
 
     nets.forEach((net) => {
       if (net.indexOf("blocks") != -1) {
-        tables[net] = "++id,&bNum,&hash,previousHash,bits,version"; 
+        tables[net] = "++id,&bNum,&hash,previousHash,bits,version";
       } else {
         tables[net] = "++id,druidInfo,version,&hash";
       }
@@ -33,17 +33,19 @@ export class BrowserCache extends Dexie {
    *
    * @param {number[] | string[]} blockIds - Array of block numbers or hashes to fetch
    * @param {string} net - Network name
-   * @returns {{ remainingIds: number[] | string[], blocks: BlockTableData[] }} - Object containing remaining block numbers to fetch and array of retrieved blocks
+   * @returns {{ remainingIds: number[] | string[], blocks: any[] }} - Object containing remaining block numbers to fetch and array of retrieved blocks
    */
   async getBlocks(
     blockIds: number[] | string[],
     net: string
-  ): Promise<{ remainingIds: number[] | string[]; blocks: BlockTableData[] }> {
+  ): Promise<{ remainingIds: number[] | string[]; blocks: any[] }> {
     let blocks: any[] = [];
     let remainingIds: any[] = [];
 
     const idSelector = typeof blockIds[0] === "number" ? "bNum" : "hash";
     const cacheName = `${IDB_BLOCKS_CACHE}_${net}`;
+
+    // @ts-ignore
     const calls = blockIds.map((num) => {
       return this.blocks[cacheName].where(idSelector).equals(num).toArray(); // anything other than .toArray returns undefined?
     });
@@ -54,23 +56,15 @@ export class BrowserCache extends Dexie {
 
         // Cache hit
         if (result && result.id) {
-          console.log("cache hit");
           delete result.id;
-          const block = {
-            hash: result.hash,
-            block: result,
-          };
-
-          blocks.push(block);
+          blocks.push(result);
 
           // Not present in the cache, so we need to fetch it
         } else {
-          console.log("cache miss");
           remainingIds.push(blockIds[idx]);
         }
       });
     });
-
     return { remainingIds, blocks };
   }
 
@@ -94,18 +88,13 @@ export class BrowserCache extends Dexie {
 
     await Promise.all(calls).then((results) => {
       results.forEach((result: any, idx: number) => {
+
         result = result[0];
 
         // Cache hit
         if (result && result.id) {
           delete result.id;
-          const tx = {
-            hash: result.hash,
-            bNum: result.bNum,
-            transaction: result,
-          };
-
-          txs.push(tx);
+          txs.push(result);
 
           // Not present in the cache, so we need to fetch it
         } else {
@@ -125,18 +114,14 @@ export class BrowserCache extends Dexie {
    */
   async addTransaction(tx: any, net: string) {
     const cacheName = `${IDB_TX_CACHE}_${net}`;
-    const newTx = Object.assign(tx.transaction, {
-      hash: tx.hash,
-      bNum: tx.blockNum,
-    });
 
     // Check entry doesn't exist
     const txExist = await this.transactions[cacheName].get({
-      hash: newTx.hash,
+      hash: tx.hash,
     });
 
     if (!txExist) {
-      this.transactions[cacheName].add(newTx);
+      this.transactions[cacheName].add(tx);
     }
   }
 
@@ -149,17 +134,19 @@ export class BrowserCache extends Dexie {
   async addBlocks(blocks: any[], net: string) {
     const cacheName = `${IDB_BLOCKS_CACHE}_${net}`;
 
-    for (let i = blocks.length - 1; i > 0; i--) {
+    for (let i = blocks.length - 1; i >= 0; i--) {
       const block = blocks[i];
 
-      const newBlock = Object.assign(block.block, { hash: block.hash });
+      const newBlock = { 
+        hash: block.hash,
+        bNum: block.block.bNum,
+        block: block.block,
+      }
+      
       const blockExist = await this.blocks[cacheName].get({
         hash: newBlock.hash,
         bNum: newBlock.bNum,
       });
-
-      // Alternative to fix dexie warning, only accessing through bNum index 
-      // const blockExist = this.blocks[cacheName].where("bNum").equals(block.block.bNum).toArray();
 
       if (!blockExist) {
         this.blocks[cacheName].add(newBlock);

@@ -98,7 +98,6 @@ export const TxView = () => {
           const drsTxHash = (receipt as { Receipt: OutputValueV2 }).Receipt
             .drs_tx_hash;
 
-          console.log('drsTxHash', drsTxHash);
           return {
             address: output.scriptPubKey,
             receipts: amount,

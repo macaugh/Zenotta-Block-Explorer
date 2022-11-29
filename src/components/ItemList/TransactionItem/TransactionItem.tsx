@@ -59,7 +59,7 @@ export const TransactionItem = (props: TransactionItemProps) => {
             return (<div className={styles.item}>
                 <div className={styles.content}>
                     <div className={styles.itemHeader}>
-                        <span className={styles.txNum}><a href={`/tx/${data.hash}?bnum=${data.blockNum}`}>{formatAddressForDisplay(data.hash, addrSize)}</a></span>
+                        <span className={styles.txNum}><a href={`/tx/${data.hash}?bnum=${data.bNum}`}>{formatAddressForDisplay(data.hash, addrSize)}</a></span>
                         <span className={styles.timestamp}>{'tx time'}</span>
                     </div>
 
