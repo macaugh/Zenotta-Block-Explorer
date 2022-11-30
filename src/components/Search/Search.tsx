@@ -29,24 +29,25 @@ export default function Search(props: NavProps) {
   );
   const [searchValue, setSearchValue] = React.useState<string>("");
   const [searchError, setSearchError] = React.useState<string>("");
+  const [submit, setSubmit] = React.useState<boolean>(false);
   const store = React.useContext(StoreContext);
 
-  const submitSearchValue = async () => {
+  const submitSearchValue = async (value: string) => {
     if (currentSearchOption != "Block Number") {
       const validity = await store.searchHashIsValid(
-        searchValue,
+        value,
         currentSearchOption
       );
       if (validity.isValid) {
         if (currentSearchOption === "Tx Hash")
-          window.location.href = `/tx/${searchValue}`;
+        window.location.href = `/tx/${value}`;
         else if (currentSearchOption === "Block Hash")
-          window.location.href = `/block/${searchValue}`;
+        window.location.href = `/block/${value}`;
       } else {
         setSearchError(validity.error);
       }
     } else {
-      handleBlockNumSearch(searchValue);
+      handleBlockNumSearch(value);
     }
   };
 
@@ -59,11 +60,33 @@ export default function Search(props: NavProps) {
   const handleSearchInput = (value: string) => {
     setSearchError("");
     setSearchValue(value);
+    defineSearchOption(value);
   };
+
+  const defineSearchOption = (input: string) => {
+    switch (input.charAt(0)) {
+      case "b":
+        setCurrentSearchOption("Block Hash");
+        break;
+      case "g":
+        setCurrentSearchOption("Tx Hash");
+        break;
+      case "0":
+        if (input.match(/^0\d{5}$/)) {
+          setCurrentSearchOption("Tx Hash");
+        } else {
+          setCurrentSearchOption("Block Hash");
+        }
+        break;
+      default:
+        setCurrentSearchOption("Block Number");
+        break;
+    }
+  }
+
 
   const handleBlockNumSearch = async (blockNum: string) => {
     const validity = await store.blockNumIsValid(parseInt(blockNum));
-
     if (validity.isValid) {
       store.fetchBlockHashByNum(parseInt(searchValue)).then((hash: string) => {
         if (hash) {
@@ -74,6 +97,24 @@ export default function Search(props: NavProps) {
       setSearchError(validity.error);
     }
   };
+
+  React.useEffect(() => { // Add event listener for enter key
+    var searchInput = document.getElementById("searchInput") as HTMLInputElement;
+    if (searchInput) {
+      searchInput.addEventListener("keydown", function (e) {
+        if (e.code === "Enter") {  //checks whether the pressed key is "Enter"
+          setSubmit(true);
+        }
+      });
+    }
+  }, []);
+
+  React.useEffect(() => { // Sync states with submit 
+    if (submit) {
+      submitSearchValue(searchValue);
+      setSubmit(false);
+    }
+  }, [submit]);
 
   return useObserver(() => (
     <>
@@ -89,9 +130,8 @@ export default function Search(props: NavProps) {
       )}
 
       <div
-        className={`${styles.searchContainer} ${
-          props.nav ? styles.navSearchContainer : ""
-        }`}
+        className={`${styles.searchContainer} ${props.nav ? styles.navSearchContainer : ""
+          }`}
       >
         <InputGroup className={`${styles.inputGroup}`}>
           <DropdownButton
@@ -112,14 +152,16 @@ export default function Search(props: NavProps) {
             })}
           </DropdownButton>
           <Form.Control
+            id="searchInput"
             aria-label="Search"
+            value={searchValue}
             onChange={(e: any) => handleSearchInput(e.target.value)}
-            onSubmit={() => submitSearchValue()}
+            onSubmit={() => setSubmit(true)}
           />
           <Button
             style={{ background: "#4cc9f0", border: 0 }}
             variant="outline-secondary"
-            onClick={() => submitSearchValue()}
+            onClick={() => setSubmit(true)}
             title="Search"
           >
             <img className={styles.searchIcon} src={SearchIcon} alt="search" />
