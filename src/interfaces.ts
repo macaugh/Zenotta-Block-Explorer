@@ -171,7 +171,7 @@ export interface ReceiptInfo {
 }
 
 export interface TransactionTableData {
-  blockNum: number;
+  bNum: number;
   hash: string;
   transaction: Transaction;
 }

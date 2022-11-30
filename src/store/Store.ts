@@ -1,8 +1,10 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
-import { HOST_PROTOCOL, HOST_NAME } from "../constants";
+// import { HOST_PROTOCOL, HOST_NAME, HOST_PORT } from "../constants_local";
+import { HOST_PROTOCOL, HOST_NAME, HOST_PORT, IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
 import { NETWORKS } from "networks";
+import { BrowserCache } from "./BrowserCache";
 import {
   Block,
   BlockDataV0_1,
@@ -18,8 +20,18 @@ import {
 const FILENAME = "Txs";
 
 class Store {
+  private browserCache: BrowserCache;
+
   constructor() {
     makeAutoObservable(this);
+
+    let networks = [];
+    for (let network of NETWORKS) {
+      networks.push(`${IDB_BLOCKS_CACHE}_${network.sIp}`);
+      networks.push(`${IDB_TX_CACHE}_${network.sIp}`);
+    }
+
+    this.browserCache = new BrowserCache(networks);
   }
 
   @observable latestBlock: Block | null = null;
@@ -28,7 +40,6 @@ class Store {
   @observable txsTableData: TransactionTableData[] = [];
 
   @observable nbTxs: number = 0;
-  @observable blockchainItemCache: any = {};
   @observable network: Network =
     NETWORKS.filter((e) => e.name == localStorage.getItem("NETWORK"))[0] ||
     NETWORKS[0];
@@ -46,10 +57,6 @@ class Store {
     this.blocksTableData = tableData;
   }
 
-  @action setBcItemCache(key: string, value: any) {
-    this.blockchainItemCache[key] = value;
-  }
-
   @action setNbTxs(nbTxs: number) {
     this.nbTxs = nbTxs;
   }
@@ -64,51 +71,113 @@ class Store {
   @action
   async fetchLatestBlock() {
     await axios
-      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/latestBlock`, { network: this.network })
+      .post(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/api/latestBlock`, {
+        network: this.network,
+      })
       .then(async (response) => {
         this.setLatestBlock(this.formatBlock(response.data.content));
       });
   }
 
   @action async fetchBlockchainItem(
-    hash: string
+    hash: string,
+    skipCache: boolean = false
   ): Promise<Block | Transaction | null> {
+    const isTx = hash.charAt(0) == "g" || hash.length == 6; // A bit ugly, but this supports genesis txs, the only hashes that are 6 char long
     let bItemData = null;
-    if (Object.keys(this.blockchainItemCache).indexOf(hash) == -1) {
+    let mustFetch = false;
+
+    if (!skipCache) {
+      // It's a transaction
+      if (isTx) {
+        const { remainingHashes: _rH, txs } = await this.browserCache.getTransactions(
+          [hash],
+          this.network.sIp
+        );
+        if (txs.length) {
+          bItemData = txs[0].transaction;
+        } else {
+          mustFetch = true;
+        }
+      }
+      // It's a block
+      else {
+        const { remainingIds: _rB, blocks } = await this.browserCache.getBlocks(
+          [hash],
+          this.network.sIp
+        );
+        if (blocks.length) {
+          bItemData = blocks[0].block;
+        } else {
+          mustFetch = true;
+        }
+      }
+    } else {
+      mustFetch = true;
+    }
+
+    // We need to fetch it
+    if (mustFetch) {
       bItemData = await axios
-        .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockchainItem`, {
+        .post(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/api/blockchainItem`, {
           hash,
           network: this.network,
         })
         .then((res) => {
-          return res.data;
+          if (res.data.hasOwnProperty("Block")) console.log('block response: ', res.data);
+          return res.data.hasOwnProperty("Block") ? res.data.Block : res.data.Transaction;
         });
-      this.setBcItemCache(hash, bItemData);
-    } else {
-      bItemData = this.blockchainItemCache[hash];
+
+      let formattedData = isTx ? this.formatTxs(bItemData) as Transaction : this.formatBlock(bItemData) as Block;
+
+      // We should store newly fetched data in cache, but when fetching transactions through 'blockchainItem' endpoint, we do not get the block number therefore it is not possible to store it in cache at this point
+      // let newTx = {
+      //   hash: hash,
+      //   bNum: ?,
+      //   transaction: formattedData,
+      // }
+      // this.browserCache.addTransaction(newTx, this.network.sIp);
+
+      // if (!isTx) {
+      //   let newBlock = {
+      //     hash: hash,
+      //     block: formattedData,
+      //   }
+      //   this.browserCache.addBlocks([newBlock], this.network.sIp);
+      // }
+
+      return formattedData;
     }
 
-    let itemType = Object.getOwnPropertyNames(bItemData)[0];
-    if (itemType === "Block") {
-      return this.formatBlock(bItemData.Block) as Block;
-    } else if (itemType === "Transaction") {
-      return this.formatTxs(bItemData.Transaction) as Transaction;
-    }
-    return null;
+    // Data is already formatted when coming from cache
+    return bItemData;
   }
 
   @action
-  async fetchBlockRange(startBlock: number, endBlock: number) {
+  async fetchBlockRange(startBlock: number, endBlock: number): Promise<BlockTableData[]> {
     const nums = [...Array(endBlock - startBlock + 1).keys()].map(
       (x) => x + startBlock
     ); // Generate number array from range
-    let data = await axios
-      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
-        nums,
-        network: this.network,
-      })
-      .then((res) => res.data);
-    return this.formatBlockSet(data);
+
+    const { remainingIds, blocks } = await this.browserCache.getBlocks(
+      nums,
+      this.network.sIp
+    );
+    let retData = blocks.length ? blocks : [];
+
+    if (remainingIds.length) {
+      let data = await axios
+        .post(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/api/blockRange`, {
+          nums: remainingIds,
+          network: this.network,
+        })
+        .then((res) => {
+          return res.data});
+      retData.push(...this.formatBlockSet(data)); // Format data
+      this.browserCache.addBlocks(retData, this.network.sIp); // Add to cache
+    }
+
+    return retData;
   }
 
   @action
@@ -124,18 +193,31 @@ class Store {
 
   @action
   async fetchBlockHashByNum(num: number) {
-    let data = await axios
-      .post(`${HOST_PROTOCOL}://${HOST_NAME}/api/blockRange`, {
-        nums: [num],
-        network: this.network,
-      })
-      .then((res) => res.data)
-      .catch((error) => {
-        console.error(
-          `Fetch of block by number failed with status code ${error.status}`
-        );
-        console.error(error.data);
-      });
+    let data: any = [];
+    const { remainingIds: _, blocks } = await this.browserCache.getBlocks(
+      [num],
+      this.network.sIp
+    );
+
+    if (!blocks.length) {
+      data = await axios
+        .post(`${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/api/blockRange`, {
+          nums: [num],
+          network: this.network,
+        })
+        .then((res) => res.data)
+        .catch((error) => {
+          console.error(
+            `Fetch of block by number failed with status code ${error.status}`
+          );
+          console.error(error.data);
+        });
+
+      this.browserCache.addBlocks(this.formatBlockSet(data), this.network.sIp);
+    } else {
+      // Weird format requirement
+      data = [[blocks[0].hash], blocks[0].block.bNum];
+    }
 
     if (data.length) {
       return data[0][0];
@@ -208,36 +290,43 @@ class Store {
     const start = pageNumber * maxTxsPerPage;
     const end = maxTxsPerPage;
     const txsObj = await this.fetchTxsIdRange(start, end);
+
     if (txsObj) {
       let result = await this.fetchTxsContents(txsObj);
       this.setTxsTableData(result);
     }
   }
 
-  /** Extracts transactions ids from static files generated from express server (runs audit on every new block and stores transactions in json file)
-   * Will be updated to a more efficient method in the future (Database on server)
+  /**
+   * Extracts transactions ids from static files generated from express server (runs audit on every new block and stores transactions in json file)
+   *
+   * TODO: Update to be more efficient in the DB on server side (switch to Postgres?)
+   *
+   * @param {number} startTxs - Start index of txs to fetch
+   * @param {number} endTxs - End index of txs to fetch
    */
   @action
   async fetchTxsIdRange(
     startTxs: number,
     endTxs: number
-  ): Promise<{ blockNum: number; tx: string } | null> {
+  ): Promise<{ bNum: number; tx: string } | null> {
     let txsIdRange = await axios
-      .get(`${HOST_PROTOCOL}://${HOST_NAME}/${this.network.name.split(' ')[0].toLowerCase() + FILENAME}.json`)
+      .get(
+        `${HOST_PROTOCOL}://${HOST_NAME}:${HOST_PORT}/${this.network.name.split(" ")[0].toLowerCase() + FILENAME
+        }.json`
+      )
       .then((response) => {
         const isJson =
           response.headers["content-type"] &&
-          response.headers["content-type"].search("application/json") != -1
-            ? true
-            : false;
+          response.headers["content-type"].search("application/json") != -1;
 
         let data = isJson ? JSON.parse(JSON.stringify(response.data)) : null;
 
         // Format transaction data. This is a bit hacky, but it works for now. Should change base structure of stored transactions.
         const txIds = data.transactions
-          .map(({ blockNum, txs }: any) => {
+          .map(({ bNum, txs }: any) => {
             const formatted = txs.map((tx: any) => {
-              return { blockNum, tx };
+              return { bNum, tx };
             });
             return [...formatted];
           })
@@ -256,17 +345,34 @@ class Store {
   }
 
   @action async fetchTxsContents(txsObj: any) {
-    const result = await Promise.all(
-      txsObj.map(async (txObj: any) => {
-        const txData = await this.fetchBlockchainItem(txObj.tx);
-        return {
-          hash: txObj.tx,
-          transaction: txData,
-          blockNum: txObj.blockNum,
-        };
-      })
+    const hashes = txsObj.map((tx: any) => tx.tx);
+
+    // Check cache
+    let { remainingHashes, txs } = await this.browserCache.getTransactions(
+      hashes,
+      this.network.sIp
     );
-    return result;
+
+    let calls = await remainingHashes.map(async (hash: string) =>
+      this.fetchBlockchainItem(hash, true)
+    );
+
+    await Promise.all(calls).then((txRes) => {
+      txRes.forEach((tx, i) => {
+        let newTx = {
+          hash: remainingHashes[i], // hash and bNum are not returned by fetchBlockchainItem
+          // Improve the efficiency below, filter every item is expensive
+          bNum: txsObj
+            .filter((e: any) => e.tx == remainingHashes[i])
+            .map((e: any) => e.bNum)[0],
+          transaction: tx,
+        };
+        txs.push(newTx);
+        // Add to cache
+        this.browserCache.addTransaction(newTx, this.network.sIp);
+      });
+    });
+    return txs;
   }
 
   /** FORMAT */
@@ -284,8 +390,9 @@ class Store {
     return blockSet;
   }
 
-  /** Format block data to Block object
-   *  Handles up to block version 2
+  /**
+   * Format block data to Block object
+   * Handles up to block version 2
    */
   formatBlock(content: BlockDataV0_1 | BlockDataV2): Block {
     // Check for block type
@@ -339,16 +446,16 @@ class Store {
     }
   }
 
-  formatTxs(data: TransactionData): Transaction {
-    let txData = {
+  formatTxs(data: any): Transaction {
+    return {
       druidInfo: data.druid_info,
       inputs: data.inputs.map((input: InputData) => {
         return {
           previousOut: input.previous_out
             ? {
-                num: input.previous_out.n,
-                tHash: input.previous_out.t_hash,
-              }
+              num: input.previous_out.n,
+              tHash: input.previous_out.t_hash,
+            }
             : null,
           scriptSig: input.script_signature,
         };
@@ -364,7 +471,6 @@ class Store {
       }),
       version: data.version,
     };
-    return txData;
   }
 
   /** GET */

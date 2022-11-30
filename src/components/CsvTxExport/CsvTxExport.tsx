@@ -2,7 +2,6 @@ import * as React from 'react';
 import { useObserver } from 'mobx-react';
 import { Button } from 'chi-ui';
 import { StoreContext } from '../../index';
-import { blockRangeToCsv, downloadFile } from '../../formatCsv';
 import styles from './CsvBlockExport.scss';
 
 const DEFAULT_WARNING = 'Please enter range of transactions to export';

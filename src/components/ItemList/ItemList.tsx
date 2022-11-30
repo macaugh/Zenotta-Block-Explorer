@@ -6,7 +6,6 @@ import styles from './ItemList.scss';
 import { BlockItem } from './BlockItem/BlockItem';
 import { TransactionItem } from './TransactionItem/TransactionItem';
 import { Loading } from 'chi-ui';
-import { toJS } from 'mobx';
 
 export enum DataType {
     Block,
