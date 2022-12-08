@@ -9,11 +9,7 @@ import { NETWORKS } from "networks";
 import { StoreContext } from '../../index';
 
 const handleScreenWidth = () => {
-  if (window.innerWidth >= 992) {
-    return false;
-  } else {
-    return true;
-  }
+  return window.innerWidth < 992;
 };
 
 export const Nav = () => {
