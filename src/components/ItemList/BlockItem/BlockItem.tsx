@@ -4,7 +4,6 @@ import { useObserver } from 'mobx-react';
 import styles from './BlockItem.scss';
 import { StoreContext } from '../../..';
 import { formatAddressForDisplay } from 'formatData';
-import { toJS } from 'mobx';
 import { Block, Transaction } from 'interfaces';
 
 interface BlockItemProps {
@@ -63,13 +62,13 @@ export const BlockItem = (props: BlockItemProps) => {
         <div className={styles.item} key={data.hash}>
             <div className={styles.content}>
                 <div className={styles.itemHeader}>
-                    <span className={styles.blockNum}><a href={`/block/${data.hash}`}>{data.block.bNum}</a></span>
+                    <span className={styles.blockNum}><a href={`${store.network.name}/block/${data.hash}`}>{data.block.bNum}</a></span>
                     <span className={styles.timestamp}>{'block time'}</span>
                 </div>
 
                 <div className={`${styles.hashs} ${visibleBadge ? styles.biggerHashes : ''}`}>
                     <div className={styles.left}>
-                        <span className={styles.hash}><a href={`/tx/${data.block.miningTxHashNonces.hash}`}>{formatAddressForDisplay(data.block.miningTxHashNonces.hash, hashSize)}</a></span>
+                        <span className={styles.hash}><a href={`${store.network.name}/tx/${data.block.miningTxHashNonces.hash}`}>{formatAddressForDisplay(data.block.miningTxHashNonces.hash, hashSize)}</a></span>
                         <span className={styles.hash}><a href={`/${data.block.transactions.length ? data.block.transactions[0] : '#'}`}>{data.block.transactions.length}{' Tx'}</a></span>
                     </div>
                 </div>

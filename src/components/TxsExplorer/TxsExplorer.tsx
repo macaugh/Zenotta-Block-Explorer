@@ -6,7 +6,7 @@ import { Pagination, Table } from 'chi-ui';
 import styles from './TxsExplorer.scss';
 import { CsvBtn } from '../CsvBtn/CsvBtn';
 import { formatAmount } from '../../formatData';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { Dropdown } from 'react-bootstrap';
 import { Loading } from 'chi-ui';
 import { Output } from 'interfaces';
@@ -17,7 +17,7 @@ function useQuery() {
 }
 
 export const TxsExplorer = () => {
-
+    const { network } = useParams<any>();
     const store = React.useContext(StoreContext);
 
     const query = useQuery();
@@ -52,7 +52,7 @@ export const TxsExplorer = () => {
 
                 let row = [
                     { value: (totalTxs - i) - ((currentPage - 1) * maxTxsPerPage), isNumeric: true },
-                    { value: <a href={`/tx/${txTableData.hash}`}>{txTableData.hash}</a>, isNumeric: false },
+                    { value: <a href={`${store.network.name}/tx/${txTableData.hash}`}>{txTableData.hash}</a>, isNumeric: false },
                     { value: getTxType(txTableData.transaction.outputs), isNumeric: false },
                     // { value: <a style={{ cursor: "pointer" }} href={`/block/${await getBlockHashFromNum(txTableData.bNum)}`}>{txTableData.bNum}</a>, isNumeric: false },
                     { value: txTableData.transaction.inputs.length, isNumeric: true },
@@ -111,7 +111,7 @@ export const TxsExplorer = () => {
 
     const onPageChange = (currentPage: number) => {
         if (totalTxs > 0) {
-            window.history.pushState('data', '', '/txs?page=' + currentPage);
+            window.history.pushState('data', '', `${network}/txs?page=` + currentPage);
             setBody([]);
             store.fetchTxsTableData(currentPage, maxTxsPerPage).then(() => {       
                 setCurrentPage(currentPage); // Triggers useEffect hook
@@ -129,6 +129,7 @@ export const TxsExplorer = () => {
 
     // On component mount, initial data fetch
     useEffect(() => {
+        store.setNetwork(network);
         store.fetchTxsTableData(currentPage, maxTxsPerPage).then(() => {
             setTotalTxs(store.nbTxs); //Triggers useEffect hook
         });

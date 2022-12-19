@@ -22,7 +22,7 @@ import {
 } from "interfaces";
 
 export const TxView = () => {
-  let { hash } = useParams<any>();
+  let { hash, network } = useParams<any>();
   const store = React.useContext(StoreContext);
   const [localData, setLocalData] = React.useState<TransactionInfo | null>(
     null
@@ -144,7 +144,7 @@ export const TxView = () => {
         // Add clickable link if displayed as a block transaction
         return {
           heading: key,
-          value: <a href={`/tx/${value}`}>{value}</a>,
+          value: <a href={`${store.network.name}/tx/${value}`}>{value}</a>,
         };
       } else {
         return {
@@ -212,6 +212,8 @@ export const TxView = () => {
   // };
 
   React.useEffect(() => {
+    store.setNetwork(network);
+    
     if (!localData) {
       store
         .fetchBlockchainItem(hash)

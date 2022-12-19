@@ -1,5 +1,4 @@
 import Dexie from "dexie";
-import { Transaction, BlockTableData, Block } from "../interfaces";
 import { IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
 
 export class BrowserCache extends Dexie {
@@ -88,7 +87,6 @@ export class BrowserCache extends Dexie {
 
     await Promise.all(calls).then((results) => {
       results.forEach((result: any, idx: number) => {
-
         result = result[0];
 
         // Cache hit
@@ -137,16 +135,18 @@ export class BrowserCache extends Dexie {
     for (let i = blocks.length - 1; i >= 0; i--) {
       const block = blocks[i];
 
-      const newBlock = { 
+      const newBlock = {
         hash: block.hash,
         bNum: block.block.bNum,
         block: block.block,
-      }
-      
+      };
+
       const blockExist = await this.blocks[cacheName].get({
         hash: newBlock.hash,
         bNum: newBlock.bNum,
       });
+
+      console.log('blockExist', blockExist);
 
       if (!blockExist) {
         this.blocks[cacheName].add(newBlock);
