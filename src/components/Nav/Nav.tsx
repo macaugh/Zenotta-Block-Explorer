@@ -74,9 +74,14 @@ export const Nav = () => {
     localStorage.setItem('NETWORK', networkObj.displayName);
     store.setNetwork(network);
 
-    if (location.pathname === "/") {
-      window.location.reload();
-    }
+    window.location.href = '/';
+
+
+    // console.log(location.pathname.length)
+    // if (location.pathname === "/") {
+      
+    //   window.location.reload();
+    // }
   }
 
   const generateNetworkSelectDropdown = () => {

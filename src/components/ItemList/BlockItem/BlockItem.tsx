@@ -68,7 +68,7 @@ export const BlockItem = (props: BlockItemProps) => {
 
                 <div className={`${styles.hashs} ${visibleBadge ? styles.biggerHashes : ''}`}>
                     <div className={styles.left}>
-                        <span className={styles.hash}><a href={`/tx/${data.block.miningTxHashNonces.hash}`}>{formatAddressForDisplay(data.block.miningTxHashNonces.hash, hashSize)}</a></span>
+                        <span className={styles.hash}><a href={`${store.network.name}/tx/${data.block.miningTxHashNonces.hash}`}>{formatAddressForDisplay(data.block.miningTxHashNonces.hash, hashSize)}</a></span>
                         <span className={styles.hash}><a href={`/${data.block.transactions.length ? data.block.transactions[0] : '#'}`}>{data.block.transactions.length}{' Tx'}</a></span>
                     </div>
                 </div>
