@@ -1,6 +1,7 @@
 import * as React from 'react';
 import styles from './TxInfo.scss';
 import arrowIcon from '../../static/img/left-arrow.svg';
+import { StoreContext } from '../../index';
 
 export interface TransactionInfoProps {
   hash: string;
@@ -17,6 +18,8 @@ interface TxOutPuts {
 }
 
 export const TxInfo = (props: TransactionInfoProps) => {
+  const store = React.useContext(StoreContext);
+
   return (
     <div className={styles.container}>
       <div className={styles.left}>
@@ -27,7 +30,7 @@ export const TxInfo = (props: TransactionInfoProps) => {
               {props.txView &&
                 <p>{props.hash}</p>
               }{!props.txView &&
-                <p><a href={`/tx/${props.hash}`}>{props.hash}</a></p>
+                <p><a href={`${store.network.name}/tx/${props.hash}`}>{props.hash}</a></p>
               }
             </div>
           </li>
@@ -50,7 +53,7 @@ export const TxInfo = (props: TransactionInfoProps) => {
                   {props.txInHashes.map((h: string) => {
                     return (
                       <li key={h}>
-                        <a href={`/tx/${h}`}>{h}</a>
+                        <a href={`${store.network.name}/tx/${h}`}>{h}</a>
                       </li>
                     );
                   })}

@@ -144,7 +144,7 @@ export const TxView = () => {
         // Add clickable link if displayed as a block transaction
         return {
           heading: key,
-          value: <a href={`/tx/${value}`}>{value}</a>,
+          value: <a href={`${store.network.name}/tx/${value}`}>{value}</a>,
         };
       } else {
         return {
