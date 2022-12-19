@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useObserver } from 'mobx-react';
 import { StoreContext } from '../../index';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 import { Pagination, Table } from 'chi-ui';
 import { Dropdown } from 'react-bootstrap';
@@ -17,6 +17,7 @@ function useQuery() {
 }
 
 export const BlockExplorer = () => {
+    const { network } = useParams<any>();
     const query = useQuery();
     const page = query.get('page');
 
@@ -44,7 +45,7 @@ export const BlockExplorer = () => {
 
             let row = [
                 { value: obj.block.bNum, isNumeric: true },
-                { value: <a href={`/block/${obj.hash}`}>{obj.hash}</a>, isNumeric: false },
+                { value: <a href={`${store.network.name}/block/${obj.hash}`}>{obj.hash}</a>, isNumeric: false },
                 { value: prevHash, isNumeric: false },
                 { value: merkleRoot, isNumeric: false },
                 { value: obj.block.transactions.length, isNumeric: true },
@@ -58,7 +59,7 @@ export const BlockExplorer = () => {
 
     const onPageChange = (currentPage: number) => {
         if (totalBlocks > 0) {
-            window.history.pushState('data', '', '/blocks?page=' + currentPage);
+            window.history.pushState('data', '', `${network}/blocks?page=` + currentPage);
             store.setBlockTableData([]);
             store.fetchLatestBlock().then(() => {
                 store.fetchBlocksTableData(currentPage, maxBlocksPerPage);
@@ -69,6 +70,7 @@ export const BlockExplorer = () => {
 
     const reloadTable = (maxBlocksPerPage: number) => {
         setLoading(true);
+        store.setNetwork(network);
         store.fetchLatestBlock().then(() => {
             store.fetchBlocksTableData(1, maxBlocksPerPage);
             store.latestBlock ? setTotalBlocks(store.latestBlock.bNum) : setTotalBlocks(0);
@@ -97,6 +99,7 @@ export const BlockExplorer = () => {
     }
 
     useEffect(() => {
+        store.setNetwork(network);
         store.fetchLatestBlock().then(() => {
             store.fetchBlocksTableData(1, maxBlocksPerPage);
             store.latestBlock ? setTotalBlocks(store.latestBlock.bNum) : setTotalBlocks(0)

@@ -26,7 +26,7 @@ interface miningTxInfo {
 }
 
 export const BlockView = () => {
-    let { hash } = useParams<any>();
+    let { hash, network } = useParams<any>();
     const store = React.useContext(StoreContext);
     const [transactions, setTransactions] = React.useState<TransactionInfoProps[] | null>(null);
     const [miningTx, setMiningTx] = React.useState<miningTxInfo | null>(null);
@@ -210,6 +210,8 @@ export const BlockView = () => {
     }
 
     React.useEffect(() => {
+        store.setNetwork(network);
+
         if (!localData) {
             store.fetchBlockchainItem(hash).then((fetchedData) => {
                 setLocalData(formatIncomingData(fetchedData ? fetchedData as Block : null));
@@ -218,6 +220,7 @@ export const BlockView = () => {
     }, [transactions]);
 
     React.useEffect(() => {
+        store.setNetwork(network);
         store.fetchLatestBlock();
     }, []);
 

@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { Button } from 'chi-ui';
+import { Button, Loading } from 'chi-ui';
 import { useObserver } from 'mobx-react';
 import styles from './ItemList.scss';
 import { BlockItem } from './BlockItem/BlockItem';
 import { TransactionItem } from './TransactionItem/TransactionItem';
-import { Loading } from 'chi-ui';
+import { StoreContext } from "../../index";
 
 export enum DataType {
     Block,
@@ -20,6 +20,7 @@ interface ItemListProps {
 }
 
 export const ItemList = (props: ItemListProps) => {
+    const store = React.useContext(StoreContext);
     const [loadTimeout, setLoadtimeout] = useState(false);
 
     useEffect(() => {
@@ -67,7 +68,7 @@ export const ItemList = (props: ItemListProps) => {
 
             </div>
             <div className={styles.footer}>
-                <Button onClick={() => { window.location.href = props.dataType == DataType.Block ? '/blocks' : '/txs' }} className={styles.allBtn}>{'View all '}{props.dataType == DataType.Block ? 'Blocks' : 'Transactions'}</Button>
+                <Button onClick={() => { window.location.href = props.dataType == DataType.Block ? `/${store.network.name}/blocks` : `/${store.network.name}/txs` }} className={styles.allBtn}>{'View all '}{props.dataType == DataType.Block ? 'Blocks' : 'Transactions'}</Button>
                 <span></span>
             </div>
         </div>

@@ -6,6 +6,7 @@ export enum ItemType {
 
 export interface Network {
   name: string;
+  displayName: string;
   chainId: number;
   sIp: string;
   sPort: number;

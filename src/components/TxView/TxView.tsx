@@ -22,7 +22,7 @@ import {
 } from "interfaces";
 
 export const TxView = () => {
-  let { hash } = useParams<any>();
+  let { hash, network } = useParams<any>();
   const store = React.useContext(StoreContext);
   const [localData, setLocalData] = React.useState<TransactionInfo | null>(
     null
@@ -212,6 +212,8 @@ export const TxView = () => {
   // };
 
   React.useEffect(() => {
+    store.setNetwork(network);
+    
     if (!localData) {
       store
         .fetchBlockchainItem(hash)

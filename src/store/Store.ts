@@ -1,9 +1,9 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
-//import { HOST_PROTOCOL, HOST_NAME, HOST_PORT } from "../constants_local";
-//import { IDB_BLOCKS_CACHE, IDB_TX_CACHE } from "../constants";
-import { HOST_PROTOCOL, HOST_NAME, HOST_PORT, IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
+import { HOST_PROTOCOL, HOST_NAME } from "../constants_local";
+import { IDB_BLOCKS_CACHE, IDB_TX_CACHE } from "../constants";
+//import { HOST_PROTOCOL, HOST_NAME, IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
 import { NETWORKS } from "networks";
 import { BrowserCache } from "./BrowserCache";
 import {
@@ -35,14 +35,13 @@ class Store {
   }
 
   @observable latestBlock: Block | null = null;
-
   @observable blocksTableData: BlockTableData[] = [];
   @observable txsTableData: TransactionTableData[] = [];
-
   @observable nbTxs: number = 0;
   @observable network: Network =
-    NETWORKS.filter((e) => e.name == localStorage.getItem("NETWORK"))[0] ||
-    NETWORKS[0];
+  NETWORKS.filter((e) => e.displayName == localStorage.getItem("NETWORK"))[0] ||
+  NETWORKS[0];
+  @observable networkDisplay: string = this.network.displayName;
 
   /** SET */
   @action setTxsTableData(tableData: any[]) {
@@ -62,7 +61,10 @@ class Store {
   }
 
   @action setNetwork(network: string) {
-    this.network = NETWORKS.filter((e) => e.name === network)[0];
+    this.network = NETWORKS.filter((e) => e.name === network)[0] || NETWORKS[0];
+    this.networkDisplay = this.network.displayName;
+
+    localStorage.setItem("NETWORK", this.networkDisplay);
   }
 
   /** BLOCK */
