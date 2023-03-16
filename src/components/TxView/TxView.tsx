@@ -8,6 +8,7 @@ import { TxInfo } from "../TxInfo/TxInfo";
 import { downloadFile, formatCsvTxs, itemToCsv } from "../../formatCsv";
 import { formatNumber } from "../../formatData";
 import { Card } from "components/Card/Card";
+import { Pill } from "components/Pill/Pill";
 import {
   Block,
   Input,
@@ -46,6 +47,8 @@ export const TxView = () => {
     let combo = [];
     for (let entry of stack) {
       let key: any = Object.keys(entry)[0];
+
+      console.log("entry", (entry as any)[key]);
       let val = (entry as any)[key];
 
       combo.push(val instanceof Array ? toHexString(val) : val);
@@ -64,6 +67,18 @@ export const TxView = () => {
         scriptSig: formatScript(input.scriptSig.stack),
       };
     });
+  };
+
+  const formatMetadata = (metadata: any) => {
+    if (metadata) {
+      try {
+        return JSON.parse(metadata);
+      } catch {
+        return "N/A";
+      }
+    }
+
+    return "N/A";
   };
 
   const formatTransactionOutputs = (
@@ -90,6 +105,7 @@ export const TxView = () => {
             receipts: receipts,
             lockTime: output.locktime,
             genesisTransactionHash: "N/A",
+            metadata: "N/A",
           } as ReceiptInfo;
         }
 
@@ -97,12 +113,16 @@ export const TxView = () => {
           const amount = (receipt as { Receipt: OutputValueV2 }).Receipt.amount;
           const drsTxHash = (receipt as { Receipt: OutputValueV2 }).Receipt
             .drs_tx_hash;
+          const metadata = formatMetadata(
+            (receipt as { Receipt: OutputValueV2 }).Receipt.metadata
+          );
 
           return {
             address: output.scriptPubKey,
             receipts: amount,
             lockTime: output.locktime,
             genesisTransactionHash: drsTxHash || "N/A",
+            metadata,
           } as ReceiptInfo;
         }
 
@@ -111,6 +131,7 @@ export const TxView = () => {
           receipts: 0,
           lockTime: output.locktime,
           genesisTransactionHash: "N/A",
+          metadata: "N/A",
         };
       }
     }) as TokenInfo[] | ReceiptInfo[];
@@ -138,19 +159,60 @@ export const TxView = () => {
     if (!localData) {
       return null;
     }
+
     return Object.keys(localData).map((key) => {
       const value = localData[key];
-      if (key === "previousOutHash" && value != "N/A") {
-        // Add clickable link if displayed as a block transaction
-        return {
-          heading: key,
-          value: <a href={`${store.network.name}/tx/${value}`}>{value}</a>,
-        };
-      } else {
-        return {
-          heading: key,
-          value: value,
-        };
+
+      switch (key) {
+        case "scriptSig":
+          let script = value.split("\n");
+          return {
+            heading: key,
+            value: (
+              <>
+                {Object.keys(script).map((k) => {
+                  return (
+                    <div style={{ display: 'inline-block', marginBottom: "10px" }}>
+                      <Pill>{script[k]}</Pill>
+                    </div>
+                  );
+                })}
+              </>
+            ),
+          };
+
+        case "metadata":
+          if (value != "N/A") {
+            return {
+              heading: key,
+              value: (
+                <>
+                  {Object.keys(value).map((k) => {
+                    return (
+                      <div style={{ marginBottom: "10px" }}>
+                        <Pill>{k}</Pill>
+                        <div style={{ display: "inline" }}>{value[k]}</div>
+                      </div>
+                    );
+                  })}
+                </>
+              ),
+            };
+          }
+
+        case "previousOutHash":
+          if (value != "N/A") {
+            return {
+              heading: key,
+              value: <a href={`${store.network.name}/tx/${value}`}>{value}</a>,
+            };
+          }
+
+        default:
+          return {
+            heading: key,
+            value: value,
+          };
       }
     });
   };
@@ -213,7 +275,7 @@ export const TxView = () => {
 
   React.useEffect(() => {
     store.setNetwork(network);
-    
+
     if (!localData) {
       store
         .fetchBlockchainItem(hash)
@@ -231,9 +293,12 @@ export const TxView = () => {
     if (localData && window.location.hash) {
       let elmnt = document.getElementById(window.location.hash.substring(1));
       if (elmnt) {
-        elmnt.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+        elmnt.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "start",
+        });
         // (elmnt.parentNode as HTMLElement).scrollTop = elmnt.offsetTop - 30;
-
       }
     }
   }, [localData]);

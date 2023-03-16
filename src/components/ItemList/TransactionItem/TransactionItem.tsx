@@ -70,7 +70,7 @@ export const TransactionItem = (props: TransactionItemProps) => {
                             {data.transaction.inputs.length === 1 && data.transaction.inputs[0].previousOut != null ? <span className={styles.hash}>{'From '}<a>{formatAddressForDisplay(data.transaction.inputs[0].previousOut.tHash, hashSize)}</a></span> : ''}
                             {data.transaction.inputs.length > 1 ? <span className={styles.hash}><a href={`${store.network.name}/tx/${data.hash}#inputs`}>{'Inputs ('}{data.transaction.inputs.length}{')'}</a></span> : ''}
                             {data.transaction.outputs.length === 1 ? <span className={styles.hash}>{'To '}<a>{formatAddressForDisplay(data.transaction.outputs[0].scriptPubKey, hashSize)}</a></span> : ''}
-                            {data.transaction.outputs.length > 1 ? <span className={styles.hash}><a href={`${store.network.name}/tx/${data.hash}#outputs`}>{'Ouputs ('}{data.transaction.outputs.length}{')'}</a></span> : ''}
+                            {data.transaction.outputs.length > 1 ? <span className={styles.hash}><a href={`${store.network.name}/tx/${data.hash}#outputs`}>{'Outputs ('}{data.transaction.outputs.length}{')'}</a></span> : ''}
                         </div>
                     </div>
                     {visibleBadge &&

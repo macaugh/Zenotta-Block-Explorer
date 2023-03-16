@@ -147,18 +147,6 @@ app.get('*', function (_, res) {
     res.sendFile('public/index.html', { root: path.join(__dirname, '/') });
 });
 
-if (env == 'development') {
-    app.listen(port, () => {
-        console.log(`Server listening on port ${port}`);
-    });
-} else if (env == 'production') {
-    const httpsOptions = {
-        ca: fs.readFileSync("public/chain.pem", 'utf8'),
-        key: fs.readFileSync("public/privkey.pem", 'utf8'),
-        cert: fs.readFileSync("public/cert.pem", 'utf8')
-    };
-
-    https.createServer(httpsOptions, app).listen(port, () => {
-        console.log(`Server listening on port ${port}`);
-    });
-}
+app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+});
