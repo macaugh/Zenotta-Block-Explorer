@@ -7,7 +7,8 @@ interface CardRow {
 }
 
 interface RowTableProps {
-    rows: CardRow[] | null
+    rows: CardRow[] | null,
+    className?: string
 }
 
 export const Card = (props: RowTableProps) => {
@@ -30,7 +31,7 @@ export const Card = (props: RowTableProps) => {
     }
 
     return (
-        <table className={styles.container}>
+        <table className={`${styles.container} ${props.className}`}>
             <tbody>
                 {props.rows && props.rows.length > 0 && props.rows.map((row: CardRow, i: number) => {
                     return (

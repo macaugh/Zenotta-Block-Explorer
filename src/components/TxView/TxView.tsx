@@ -20,7 +20,9 @@ import {
   Transaction,
   TransactionInfo,
   OutputValueV2,
+  instanceOfReceiptInfo,
 } from "interfaces";
+import { NFTCard } from "components/NFTCard/NFTCard";
 
 export const TxView = () => {
   let { hash, network } = useParams<any>();
@@ -172,7 +174,9 @@ export const TxView = () => {
               <>
                 {Object.keys(script).map((k) => {
                   return (
-                    <div style={{ display: 'inline-block', marginBottom: "10px" }}>
+                    <div
+                      style={{ display: "inline-block", marginBottom: "10px" }}
+                    >
                       <Pill>{script[k]}</Pill>
                     </div>
                   );
@@ -331,11 +335,14 @@ export const TxView = () => {
             {localData &&
               (localData.outputs as any).map(
                 (output: TokenInfo | ReceiptInfo, i: number) => {
-                  return (
-                    <div className={styles.infoContainer} key={i}>
-                      <Card rows={formatDataForTable(output)} />
+                  const isERC721 = instanceOfReceiptInfo(output) && output.metadata["contract"] && output.metadata["contract"] == "ERC-721";
+
+                  return <div style={{display: 'flex'}}>
+                    {instanceOfReceiptInfo(output) && output.metadata["contract"] && output.metadata["contract"] == "ERC-721" && <NFTCard {...output.metadata} />}
+                    <div className={`${styles.infoContainer} ${isERC721 ? styles.nftContainer : ''}`} key={i}>
+                      <Card className={styles.removeMargin} rows={formatDataForTable(output)} />
                     </div>
-                  );
+                  </div>
                 }
               )}
           </>

@@ -181,6 +181,10 @@ export interface TransactionTableData {
   transaction: Transaction;
 }
 
+export function instanceOfReceiptInfo(object: any): object is ReceiptInfo {
+  return "metadata" in object;
+}
+
 export interface BlockTableData {
   block: Block;
   hash: string;
