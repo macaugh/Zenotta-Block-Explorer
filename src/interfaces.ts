@@ -1,3 +1,5 @@
+import { ReactElement } from "react";
+
 /** Global */
 export enum ItemType {
   Block,
@@ -129,6 +131,7 @@ export interface Output {
 export interface OutputValueV2 {
   amount: number;
   drs_tx_hash: string | null;
+  metadata: string | null;
 }
 
 /** UI Interfaces */
@@ -169,12 +172,17 @@ export interface ReceiptInfo {
   receipts: number;
   lockTime: number;
   genesisTransactionHash: string;
+  metadata: any;
 }
 
 export interface TransactionTableData {
   bNum: number;
   hash: string;
   transaction: Transaction;
+}
+
+export function instanceOfReceiptInfo(object: any): object is ReceiptInfo {
+  return "metadata" in object;
 }
 
 export interface BlockTableData {
