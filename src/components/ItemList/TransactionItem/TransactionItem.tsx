@@ -20,7 +20,7 @@ export const TransactionItem = (props: TransactionItemProps) => {
             return 'Receipt'
 
         else if (Object.getOwnPropertyNames(data.transaction.outputs[0].value)[0] == 'Token')
-            return <>{formatAmount(data.transaction)} <span className={styles.tokenName}>{' Zn'}</span></>
+            return <>{formatAmount(data.transaction, false)} <span className={styles.tokenName}>{' Zn'}</span></>
     }
 
     useEffect(() => {// Set initial

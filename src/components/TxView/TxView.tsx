@@ -23,6 +23,9 @@ import {
 
 export const TxView = () => {
   let { hash } = useParams<any>();
+  const queryParams = new URLSearchParams(window.location.search)
+  const bNum = queryParams.get("bnum")
+
   const store = React.useContext(StoreContext);
   const [localData, setLocalData] = React.useState<TransactionInfo | null>(
     null
@@ -177,6 +180,7 @@ export const TxView = () => {
     let seenIns: string[] = [];
     return {
       hash: hashes[index],
+      bNum: bNum,
       totalTokens: formatNumber(
         tx.outputs.reduce(
           (acc: number, o: Output) =>

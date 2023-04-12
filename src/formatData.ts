@@ -41,14 +41,17 @@ export const formatAddressForDisplay = (address: string, nbChar: number) => {
   }
 };
 
-export const formatAmount = (tx: Transaction) => {
+export const formatAmount = (tx: Transaction, aggregated: boolean) => {
   let result = 0;
   if (tx.outputs.length > 1) {
     if (tx.outputs[0].value.hasOwnProperty("Token")) {
-      result = tx.outputs.reduce(
-        (acc: number, o: any) => acc + o.value.Token,
-        0
-      );
+      if (!aggregated)
+        result = (tx.outputs[0].value as { Token: number }).Token;
+      else
+        result = tx.outputs.reduce(
+          (acc: number, o: any) => acc + o.value.Token,
+          0
+        );
     }
   } else if (tx.outputs.length != 0) {
     if (tx.outputs[0].value.hasOwnProperty("Token")) {
@@ -68,13 +71,13 @@ const getUnicornSplit = (rawUnicornArray: any[]): string[] => {
 };
 
 const getUnicornSeed = (rawUnicornArray: any[]) => {
-    const unicornSplit = getUnicornSplit(rawUnicornArray);
-    return unicornSplit[0];
+  const unicornSplit = getUnicornSplit(rawUnicornArray);
+  return unicornSplit[0];
 };
 
 const getUnicornWitness = (rawUnicornArray: any[]) => {
-    const unicornSplit = getUnicornSplit(rawUnicornArray);
-    return unicornSplit[1];
+  const unicornSplit = getUnicornSplit(rawUnicornArray);
+  return unicornSplit[1];
 };
 
 const binToString = (array: any[]) => {

@@ -33,7 +33,7 @@ export const TxsExplorer = () => {
         { value: "Tx Nb", isNumeric: true },
         { value: "Tx Hash", isNumeric: false },
         { value: "Tx Type", isNumeric: false },
-        // { value: "Block", isNumeric: true },
+        { value: "Block Number", isNumeric: true },
         { value: "Inputs", isNumeric: true },
         { value: "Outputs", isNumeric: true },
         { value: "Aggregated Amount", isNumeric: true },
@@ -47,14 +47,13 @@ export const TxsExplorer = () => {
             const txTableData = data[i];
 
             if (txTableData) {
-
-                let amount = formatAmount(txTableData.transaction);
+                let amount = formatAmount(txTableData.transaction, true);
 
                 let row = [
                     { value: (totalTxs - i) - ((currentPage - 1) * maxTxsPerPage), isNumeric: true },
-                    { value: <a href={`/tx/${txTableData.hash}`}>{txTableData.hash}</a>, isNumeric: false },
+                    { value: <a href={`/tx/${txTableData.hash}?bnum=${txTableData.bNum}`}>{txTableData.hash}</a>, isNumeric: false },
                     { value: getTxType(txTableData.transaction.outputs), isNumeric: false },
-                    // { value: <a style={{ cursor: "pointer" }} href={`/block/${await getBlockHashFromNum(txTableData.bNum)}`}>{txTableData.bNum}</a>, isNumeric: false },
+                    { value: <a style={{ cursor: "pointer" }} href={`/block/${await getBlockHashFromNum(txTableData.bNum)}`}>{txTableData.bNum}</a>, isNumeric: false },
                     { value: txTableData.transaction.inputs.length, isNumeric: true },
                     { value: txTableData.transaction.outputs.length, isNumeric: true },
                     { value: parseInt(amount) != 0 ? amount + ' ZENO' : 'N/A', isNumeric: false },

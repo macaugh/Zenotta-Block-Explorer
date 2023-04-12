@@ -1,9 +1,12 @@
 import * as React from 'react';
 import styles from './TxInfo.scss';
 import arrowIcon from '../../static/img/left-arrow.svg';
+import { StoreContext } from '../../index';
+
 
 export interface TransactionInfoProps {
   hash: string;
+  bNum?: number;
   txInHashes: string[];
   totalTokens: number;
   outputs: TxOutPuts[];
@@ -16,7 +19,38 @@ interface TxOutPuts {
   tokens: number;
 }
 
+
+
+
 export const TxInfo = (props: TransactionInfoProps) => {
+
+  const [blockUrl, setBlockUrl] = React.useState<string>('');
+
+  const store = React.useContext(StoreContext);
+
+  const getBlockHashFromNum = async (blockNum: string) => {
+    const validity = await store.blockNumIsValid(parseInt(blockNum));
+    if (validity.isValid) {
+      return store.fetchBlockHashByNum(parseInt(blockNum)).then((hash: string) => {
+        if (hash) {
+          return hash;
+        }
+      });
+    } else {
+      console.log(validity.error);
+    }
+  }
+
+  React.useEffect(() => {
+    if (props.bNum) {
+      getBlockHashFromNum(props.bNum.toString()).then((hash: any) => {
+        if (hash) {
+          setBlockUrl(`/block/${hash}`);
+        }
+      });
+    }
+  }, []);
+
   return (
     <div className={styles.container}>
       <div className={styles.left}>
@@ -31,6 +65,15 @@ export const TxInfo = (props: TransactionInfoProps) => {
               }
             </div>
           </li>
+          {props.bNum && (
+            <li>
+              <div className={styles.row}>
+                <p>Block Number</p>
+                <p><a style={{ cursor: "pointer" }} href={blockUrl}>{props.bNum}</a></p>
+                {/* <p>{props.bNum}</p> */}
+              </div>
+            </li>
+          )}
           {props.totalTokens && (
             <li>
               <div className={styles.row}>

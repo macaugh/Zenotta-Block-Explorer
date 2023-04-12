@@ -1,8 +1,9 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
-// import { HOST_PROTOCOL, HOST_NAME, HOST_PORT } from "../constants_local";
-import { HOST_PROTOCOL, HOST_NAME, HOST_PORT, IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
+import { HOST_PROTOCOL, HOST_NAME, HOST_PORT } from "../constants_local";
+import { IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
+// import { HOST_PROTOCOL, HOST_NAME, HOST_PORT, IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
 import { NETWORKS } from "networks";
 import { BrowserCache } from "./BrowserCache";
 import {
@@ -345,7 +346,7 @@ class Store {
   }
 
   @action async fetchTxsContents(txsObj: any) {
-    const hashes = txsObj.map((tx: any) => tx.tx);
+    const hashes = txsObj.map((txs: any) => txs.tx);
 
     // Check cache
     let { remainingHashes, txs } = await this.browserCache.getTransactions(

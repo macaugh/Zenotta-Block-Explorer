@@ -44,7 +44,7 @@
 
         .hashs {
             // border: dotted lightslategrey 1px;
-            width: 50%;
+            width: 80%;
             height: 100%;
             margin-right: 2px;
 
@@ -54,12 +54,13 @@
             justify-content: center;
 
             .left {
+                width: 100%;
                 display: flex;
                 flex-direction: column;
-                justify-content: flex-start;
+                justify-content: center;
 
                 .hash {
-                    text-align: left;
+                    text-align: center;
                     font-size: small;
                     font-weight: 200;
                 }
@@ -77,11 +78,10 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
-
                 min-width: 25px;
                 padding: 5px;
                 width: auto;
-                height: 10px;
+                height: 15px;
                 border: solid lightgray .5px;
                 border-radius: 5px;
                 margin-right: 10px;
