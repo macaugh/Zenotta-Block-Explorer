@@ -40,9 +40,9 @@ export default function Search(props: NavProps) {
       );
       if (validity.isValid) {
         if (currentSearchOption === "Tx Hash")
-        window.location.href = `/tx/${value}`;
+        window.location.href = `${store.network.name}/tx/${value}`;
         else if (currentSearchOption === "Block Hash")
-        window.location.href = `/block/${value}`;
+        window.location.href = `${store.network.name}/block/${value}`;
       } else {
         setSearchError(validity.error);
       }
@@ -90,7 +90,7 @@ export default function Search(props: NavProps) {
     if (validity.isValid) {
       store.fetchBlockHashByNum(parseInt(searchValue)).then((hash: string) => {
         if (hash) {
-          window.location.href = `/block/${hash}`;
+          window.location.href = `${store.network.name}/block/${hash}`;
         }
       });
     } else {

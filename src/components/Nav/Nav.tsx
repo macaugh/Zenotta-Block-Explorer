@@ -9,11 +9,7 @@ import { NETWORKS } from "networks";
 import { StoreContext } from '../../index';
 
 const handleScreenWidth = () => {
-  if (window.innerWidth >= 992) {
-    return false;
-  } else {
-    return true;
-  }
+  return window.innerWidth < 992;
 };
 
 export const Nav = () => {
@@ -21,7 +17,7 @@ export const Nav = () => {
   let location = useLocation();
   let [currentNetwork, setCurrentNetwork] = React.useState(
     localStorage.getItem('NETWORK') ||  
-    NETWORKS[0].name
+    NETWORKS[0].displayName
   );
 
   let [searchEnabled] = React.useState(
@@ -49,7 +45,7 @@ export const Nav = () => {
           <BTNav.Link
             key={route.path}
             as={NavLink}
-            to={route.path}
+            to={formatPath(route.path)}
             eventKey={route.name}
             exact
           >
@@ -63,14 +59,29 @@ export const Nav = () => {
     return result;
   };
 
+  const formatPath = (path: string) => {
+    const startIdx = path.indexOf(':network');
+    if (startIdx == -1) return path;
+
+    const endIdx = startIdx + ':network'.length;
+    return path.slice(0, startIdx) + store.network.name + path.slice(endIdx);
+  }
+
   const handleNetworkSelect = (network: string) => {
-    setCurrentNetwork(network);
-    localStorage.setItem('NETWORK', network);
+    const networkObj = NETWORKS.filter(e => e.name === network)[0] || NETWORKS[0];
+    
+    setCurrentNetwork(networkObj.displayName);
+    localStorage.setItem('NETWORK', networkObj.displayName);
     store.setNetwork(network);
 
-    if (location.pathname === "/") {
-      window.location.reload();
-    }
+    window.location.href = '/';
+
+
+    // console.log(location.pathname.length)
+    // if (location.pathname === "/") {
+      
+    //   window.location.reload();
+    // }
   }
 
   const generateNetworkSelectDropdown = () => {
@@ -82,7 +93,7 @@ export const Nav = () => {
               if (network.name !== currentNetwork) {
                 return (
                   <NavDropdown.Item key={network.name} onClick={() => handleNetworkSelect(network.name)}>
-                    {network.name}
+                    {network.displayName}
                   </NavDropdown.Item>
                 );
               }

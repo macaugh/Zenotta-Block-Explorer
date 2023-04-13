@@ -26,7 +26,7 @@ interface miningTxInfo {
 }
 
 export const BlockView = () => {
-    let { hash } = useParams<any>();
+    let { hash, network } = useParams<any>();
     const store = React.useContext(StoreContext);
     const [transactions, setTransactions] = React.useState<TransactionInfoProps[] | null>(null);
     const [miningTx, setMiningTx] = React.useState<miningTxInfo | null>(null);
@@ -130,7 +130,7 @@ export const BlockView = () => {
             if (key === 'previousHash') {
                 return {
                     heading: key,
-                    value: value != 'N/A' ? <a href={`/block/${value}`}>{value}</a> : value,
+                    value: value != 'N/A' ? <a href={`${store.network.name}/block/${value}`}>{value}</a> : value,
                 };
             } else {
                 return {
@@ -158,7 +158,7 @@ export const BlockView = () => {
             return null;
         }
         return [
-            { heading: 'Coinbase Hash', value: <a href={'/tx/' + coinbaseHash.toString()}>{coinbaseHash.toString()}</a> },
+            { heading: 'Coinbase Hash', value: <a href={`${store.network.name}/tx/` + coinbaseHash.toString()}>{coinbaseHash.toString()}</a> },
             { heading: 'Token Reward', value: miningTx.tokensDivided.toString() },
             { heading: 'Fractionated Token Reward', value: miningTx.tokens.toString() },
             { heading: 'Version', value: miningTx.version.toString() },
@@ -204,12 +204,14 @@ export const BlockView = () => {
     const renderNavArrows = (blockNum: number) => {
         return (
             <div className={styles.navBtnGroup}>
-                {<Button onClick={async () => { window.location.href = `/block/${await getBlockHashFromNum((blockNum - 1).toString())}` }} className={`${blockNum > 0 ? '' : styles.disNav} ${styles.navBtn} ${styles.leftBtn}`} type="submit">{'<'}</Button>}{' '}
-                {<Button onClick={async () => { window.location.href = `/block/${await getBlockHashFromNum((blockNum + 1).toString())}` }} className={`${store.latestBlock && blockNum < store.latestBlock.bNum ? '' : styles.disNav} ${styles.navBtn}`} type="submit">{'>'}</Button>}
+                {<Button onClick={async () => { window.location.href = `${store.network.name}/block/${await getBlockHashFromNum((blockNum - 1).toString())}` }} className={`${blockNum > 0 ? '' : styles.disNav} ${styles.navBtn} ${styles.leftBtn}`} type="submit">{'<'}</Button>}{' '}
+                {<Button onClick={async () => { window.location.href = `${store.network.name}/block/${await getBlockHashFromNum((blockNum + 1).toString())}` }} className={`${store.latestBlock && blockNum < store.latestBlock.bNum ? '' : styles.disNav} ${styles.navBtn}`} type="submit">{'>'}</Button>}
             </div>)
     }
 
     React.useEffect(() => {
+        store.setNetwork(network);
+
         if (!localData) {
             store.fetchBlockchainItem(hash).then((fetchedData) => {
                 setLocalData(formatIncomingData(fetchedData ? fetchedData as Block : null));
@@ -218,6 +220,7 @@ export const BlockView = () => {
     }, [transactions]);
 
     React.useEffect(() => {
+        store.setNetwork(network);
         store.fetchLatestBlock();
     }, []);
 

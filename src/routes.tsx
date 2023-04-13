@@ -22,23 +22,23 @@ export interface MainRoutes {
 export const routes: MainRoutes[] = [
   { path: '/', name: 'Home', Component: Overview },
   {
-    path: '/blocks',
+    path: '/:network/blocks',
     name: 'Blocks',
     Component: BlockExplorer
   },
   {
-    path: '/txs',
+    path: '/:network/txs',
     name: 'Transactions',
     Component: TxsExplorer,
   },
   {
-    path: '/block/:hash',
+    path: '/:network/block/:hash',
     name: 'Block view',
     Component: BlockView,
     hidden: true
   },
   {
-    path: '/tx/:hash',
+    path: '/:network/tx/:hash',
     name: 'Tx view',
     Component: TxView,
     hidden: true

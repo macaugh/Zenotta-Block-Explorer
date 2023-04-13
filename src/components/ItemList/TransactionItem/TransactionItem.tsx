@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useObserver } from 'mobx-react';
 import styles from './TransactionItem.scss';
+import { StoreContext } from '../../..';
 import { formatAddressForDisplay, formatAmount } from '../../../formatData';
 import { TransactionTableData } from 'interfaces';
 import { BiReceipt } from 'react-icons/bi';
@@ -11,6 +12,7 @@ interface TransactionItemProps {
 }
 
 export const TransactionItem = (props: TransactionItemProps) => {
+    const store = React.useContext(StoreContext);
     const [data] = useState<TransactionTableData>(props.data);
     const [hashSize, setHashSize] = useState<number>(24);
     const [addrSize, setAddrSize] = useState<number>(10);
@@ -60,16 +62,16 @@ export const TransactionItem = (props: TransactionItemProps) => {
             return (<div className={styles.item}>
                 <div className={styles.content}>
                     <div className={styles.itemHeader}>
-                        <span className={styles.txNum}><a href={`/tx/${data.hash}?bnum=${data.bNum}`}>{formatAddressForDisplay(data.hash, addrSize)}</a></span>
+                        <span className={styles.txNum}><a href={`${store.network.name}/tx/${data.hash}?bnum=${data.bNum}`}>{formatAddressForDisplay(data.hash, addrSize)}</a></span>
                         <span className={styles.timestamp}>{'tx time'}</span>
                     </div>
 
                     <div className={`${styles.hashs} ${visibleBadge ? styles.biggerHashes : ''}`}>
                         <div className={styles.left}>
                             {data.transaction.inputs.length === 1 && data.transaction.inputs[0].previousOut != null ? <span className={styles.hash}>{'From '}<a>{formatAddressForDisplay(data.transaction.inputs[0].previousOut.tHash, hashSize)}</a></span> : ''}
-                            {data.transaction.inputs.length > 1 ? <span className={styles.hash}><a href={`/tx/${data.hash}#inputs`}>{'Inputs ('}{data.transaction.inputs.length}{')'}</a></span> : ''}
+                            {data.transaction.inputs.length > 1 ? <span className={styles.hash}><a href={`${store.network.name}/tx/${data.hash}#inputs`}>{'Inputs ('}{data.transaction.inputs.length}{')'}</a></span> : ''}
                             {data.transaction.outputs.length === 1 ? <span className={styles.hash}>{'To '}<a>{formatAddressForDisplay(data.transaction.outputs[0].scriptPubKey, hashSize)}</a></span> : ''}
-                            {data.transaction.outputs.length > 1 ? <span className={styles.hash}><a href={`/tx/${data.hash}#outputs`}>{'Ouputs ('}{data.transaction.outputs.length}{')'}</a></span> : ''}
+                            {data.transaction.outputs.length > 1 ? <span className={styles.hash}><a href={`${store.network.name}/tx/${data.hash}#outputs`}>{'Outputs ('}{data.transaction.outputs.length}{')'}</a></span> : ''}
                         </div>
                     </div>
                     {visibleBadge &&

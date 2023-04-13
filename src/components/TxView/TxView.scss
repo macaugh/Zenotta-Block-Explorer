@@ -1,76 +1,80 @@
 @import 'styles/global.scss';
 
 .container {
+  width: 100%;
+  margin: 30px auto 0;
+  padding-bottom: 20px;
+
+  h2 {
+    margin-bottom: 20px;
+  }
+
+  h2 span {
+    text-transform: none;
+  }
+
+  // .heading {
+  //   margin-bottom: 0px;
+  // }
+
+  .infoContainer {
+    box-shadow: $box-shadow;
+    border-radius: 4px;
     width: 100%;
-    margin: 30px auto 0;
-    padding-bottom: 20px;
+    margin-bottom: 20px;
 
-    h2 {
-      margin-bottom: 20px;
+    &.nftContainer {
+      width: calc(100% - 18rem);
     }
-  
-    h2 span {
-      text-transform: none;
-    }
+  }
 
-    // .heading {
-    //   margin-bottom: 0px;
-    // }
+  .blockNum {
+    font-size: medium;
+    font-style: italic;
+    font-weight: 200;
+    color: rgb(115, 115, 115);
+  }
 
-    .infoContainer {
-      box-shadow: $box-shadow;
-      border-radius: 4px;
-      margin-bottom: 50px;
-    }
-  
-    .blockNum {
-      font-size: medium;
-      font-style: italic;
-      font-weight: 200;
-      color: rgb(115, 115, 115);
-    }
-  
-    .dlContainer {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-end;
-  
-      .dlBtn {
-        width: auto;
-        display: inline-block;
-        margin: 0;
-        font-size: 12px;
-        color: #999;
+  .dlContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+
+    .dlBtn {
+      width: auto;
+      display: inline-block;
+      margin: 0;
+      font-size: 12px;
+      color: #999;
+      transition: 0.5s;
+      padding: 5px;
+
+      &:hover {
+        cursor: pointer;
+        box-shadow: 0px 0px 5px #999;
+        border-radius: 3px;
         transition: 0.5s;
-        padding: 5px;
-  
-        &:hover {
-          cursor: pointer;
-          box-shadow: 0px 0px 5px #999;
-          border-radius: 3px;
+        font-size: 13px;
+      }
+
+      &:hover .dlicon {
+        transform: scale(1.2);
+        transition: 0.5s;
+      }
+
+      &:active {
+        background-color: lightgray;
+      }
+
+      .csvExport {
+        color: #00a8ff;
+
+        .dlicon {
+          width: 12px;
+          padding-left: 8px;
+          padding-right: 8px;
           transition: 0.5s;
-          font-size: 13px;
-        }
-  
-        &:hover .dlicon {
-          transform: scale(1.2);
-          transition: 0.5s;
-        }
-  
-        &:active {
-          background-color: lightgray;
-        }
-  
-        .csvExport {
-          color: #00a8ff;
-  
-          .dlicon {
-            width: 12px;
-            padding-left: 8px;
-            padding-right: 8px;
-            transition: 0.5s;
-          }
         }
       }
     }
@@ -116,4 +120,8 @@
       padding: 5px;
     }
   }
-  
+
+  .removeMargin {
+    margin-bottom: 0;
+  }
+}

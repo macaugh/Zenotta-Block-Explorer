@@ -33,3 +33,62 @@ $nav-height: 20px;
         overflow: hidden;
     }
 }
+
+:global .card {
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+    position: relative;
+
+    a {
+        position: absolute;
+        width: 85%;
+        display: block;
+        left: 0;
+        right: 0;
+        margin: 0 auto;    
+        bottom: 20px;
+    }
+}
+
+:global .card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+:global .card-img-top {
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+}
+
+:global .card-body {
+    height: 150px;
+}
+
+:global .card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+:global .card-text {
+    color: #666;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+:global .btn-primary {
+    background-color: $support;
+    border: none;
+    outline: none;
+    border-radius: 10px;
+    padding: 0.5rem 1.5rem;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+:global .btn-primary:hover {
+    background-color: lighten($support, 10%);
+}

@@ -45,6 +45,8 @@ app.post('/api/latestBlock', (req, res) => {
     const network = req.body.network;
     const storagePath = `${fullConfig.PROTOCOL}://${network.sIp}:${network.sPort}/latest_block`;
 
+    console.log('Fetching latest block from: ', storagePath);
+
     calls.fetchLatestBlock(storagePath).then(lb => {
         try {
             throttler.callFunction(extractTxs, lb.content.block.header.b_num, network, fullConfig).then(res => console.log(res)).catch(err => console.log(err));
@@ -146,18 +148,6 @@ app.get('*', function (_, res) {
     res.sendFile('public/index.html', { root: path.join(__dirname, '/') });
 });
 
-if (env == 'development') {
-    app.listen(port, () => {
-        console.log(`Server listening on port ${port}`);
-    });
-} else if (env == 'production') {
-    const httpsOptions = {
-        ca: fs.readFileSync("public/chain.pem", 'utf8'),
-        key: fs.readFileSync("public/privkey.pem", 'utf8'),
-        cert: fs.readFileSync("public/cert.pem", 'utf8')
-    };
-
-    https.createServer(httpsOptions, app).listen(port, () => {
-        console.log(`Server listening on port ${port}`);
-    });
-}
+app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+});
