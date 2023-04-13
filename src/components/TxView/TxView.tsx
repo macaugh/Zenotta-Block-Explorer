@@ -322,10 +322,9 @@ export const TxView = () => {
   return useObserver(() => (
     <div className={styles.container}>
       <h2 className={styles.heading}>{"Transaction"}</h2>
-      {/* <CsvBtn action={() => downloadTx()} /> */}
       <div className={styles.txContainer}>
         {mainTxData !== null && mainTxData !== undefined && (
-          <TxInfo {...mainTxData} txView={true} />
+          <TxInfo {...mainTxData} txView={true} network={network} />
         )}
 
         {localData && localData.inputs && localData.inputs.length > 0 && (

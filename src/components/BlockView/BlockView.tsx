@@ -93,6 +93,7 @@ export const BlockView = () => {
                     tokens: (o.value as { Token: number }).Token,
                 };
             }),
+            network: network,
         };
     };
 

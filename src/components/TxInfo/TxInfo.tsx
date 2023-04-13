@@ -12,6 +12,7 @@ export interface TransactionInfoProps {
   totalTokens: number;
   outputs: TxOutPuts[];
   txView?: boolean; // Removes link reference when on TxView
+  network: string;
 }
 
 interface TxOutPuts {
@@ -53,7 +54,7 @@ export const TxInfo = (props: TransactionInfoProps) => {
     if (props.bNum) {
       getBlockHashFromNum(props.bNum.toString()).then((hash: any) => {
         if (hash) {
-          setBlockUrl(`/block/${hash}`);
+          setBlockUrl(`${props.network}/block/${hash}`);
         }
       });
     }
