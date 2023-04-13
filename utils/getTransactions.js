@@ -15,6 +15,7 @@ async function extractLatestTxs(latestBlockNum, network, config) {
     return await new Promise(async (resolve, reject) => {
         console.log('\nCheck for latest txs...');
         const filePrefix = network.name.split(' ')[0].toLowerCase();
+
         let err = null;
         let jsonFile = await fetchJsonFile(filePrefix + FILENAME).then((res) => { return res ? res : null }).catch((err) => { console.log('ERR', err); return null });
 
@@ -74,15 +75,22 @@ async function fetchBlockRange(startBlock, endBlock, network, config) {
 }
 
 async function fetchJsonFile(filename) {
-    let jsonData = fs.readFileSync(`public/${filename}.json`, "utf8");
-    if (jsonData)
-        return JSON.parse(jsonData);
-    return null;
+    let jsonData = fs.readFileSync(`public/${filename}.json`, "utf8",
+        function (err, data) {
+            if (err) {
+                console.log('read file error', err);
+                return null
+            } else {
+                return data
+            }
+        });
+
+    return JSON.parse(jsonData);
 }
 
 async function writeToJsonFile(filename, data) {
     fs.writeFile(`public/${filename}.json`, JSON.stringify(data), "utf8", (err) => {
-        if (err) console.log('error', err);
+        if (err) console.log('write file error', err);
     });
 }
 

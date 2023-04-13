@@ -347,7 +347,7 @@ class Store {
   }
 
   @action async fetchTxsContents(txsObj: any) {
-    const hashes = txsObj.map((tx: any) => tx.tx);
+    const hashes = txsObj.map((txs: any) => txs.tx);
 
     // Check cache
     let { remainingHashes, txs } = await this.browserCache.getTransactions(

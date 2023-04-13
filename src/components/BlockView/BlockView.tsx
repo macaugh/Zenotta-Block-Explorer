@@ -13,7 +13,7 @@ import { itemToCsv, downloadFile } from '../../formatCsv';
 import { Card } from 'components/Card/Card';
 import { Block, BlockInfo, Input, Output, Transaction } from 'interfaces';
 
-enum txBtn {
+enum ViewBtnTxt {
     show = "Show transactions",
     hide = "Hide transactions"
 }
@@ -33,7 +33,7 @@ export const BlockView = () => {
     const [localData, setLocalData] = React.useState<BlockInfo | null>(null);
     const [coinbaseHash, setCoinbaseHash] = React.useState<string>('');
     const [showTransactions, setShowTransactions] = React.useState<boolean>(true);
-    const [txBtnText, setTxButtonText] = React.useState<string>(txBtn.hide);
+    const [txBtnText, setTxButtonText] = React.useState<string>(ViewBtnTxt.hide);
 
     /**
      * Fetch coinbase transaction from miningTx hash
@@ -93,6 +93,7 @@ export const BlockView = () => {
                     tokens: (o.value as { Token: number }).Token,
                 };
             }),
+            network: network,
         };
     };
 
@@ -114,10 +115,10 @@ export const BlockView = () => {
     const handleShowTxButton = () => {
         if (showTransactions) {
             setShowTransactions(false);
-            setTxButtonText(txBtn.show);
+            setTxButtonText(ViewBtnTxt.show);
         } else {
             setShowTransactions(true);
-            setTxButtonText(txBtn.hide);
+            setTxButtonText(ViewBtnTxt.hide);
         }
     }
 
@@ -236,7 +237,7 @@ export const BlockView = () => {
 
                 {/* <CsvBtn action={() => downloadBlock()} /> */}
 
-                {<Card rows={formatDataForTable(localData)} />}
+                <Card rows={formatDataForTable(localData)} />
 
                 {transactions && transactions.length > 0 &&
                     <div className={styles.transactionContainer}>

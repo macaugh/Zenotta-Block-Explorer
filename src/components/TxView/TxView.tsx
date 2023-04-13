@@ -5,9 +5,10 @@ import { StoreContext } from "../../index";
 
 import styles from "./TxView.scss";
 import { TxInfo } from "../TxInfo/TxInfo";
-import { downloadFile, formatCsvTxs, itemToCsv } from "../../formatCsv";
+// import { downloadFile, formatCsvTxs, itemToCsv } from "../../formatCsv";
 import { formatNumber } from "../../formatData";
 import { Card } from "components/Card/Card";
+import { Button } from 'chi-ui';
 import { Pill } from "components/Pill/Pill";
 import {
   Block,
@@ -24,13 +25,30 @@ import {
 } from "interfaces";
 import { NFTCard } from "components/NFTCard/NFTCard";
 
+export enum InputBtnTxt {
+  show = "Show inputs",
+  hide = "Hide inputs"
+}
+
+export const INPUT_LIMIT = 5;
+
 export const TxView = () => {
   let { hash, network } = useParams<any>();
+  const queryParams = new URLSearchParams(window.location.search)
+  const bNum = queryParams.get("bnum")
   const store = React.useContext(StoreContext);
-  const [localData, setLocalData] = React.useState<TransactionInfo | null>(
-    null
-  );
+  const [localData, setLocalData] = React.useState<TransactionInfo | null>(null);
   const [mainTxData, setMainTxData] = React.useState<any>(null);
+  const [txBtnText, setTxButtonText] = React.useState<string>(InputBtnTxt.hide);
+
+
+  const handleShowTxButton = () => {
+    if (txBtnText === InputBtnTxt.show) {
+      setTxButtonText(InputBtnTxt.hide);
+    } else {
+      setTxButtonText(InputBtnTxt.show);
+    }
+  }
 
   const checkSeenTxIns = (t: Input, seenIns: string[]) => {
     if (t.previousOut && t.previousOut.tHash) {
@@ -243,6 +261,7 @@ export const TxView = () => {
     let seenIns: string[] = [];
     return {
       hash: hashes[index],
+      bNum: bNum,
       totalTokens: formatNumber(
         tx.outputs.reduce(
           (acc: number, o: Output) =>
@@ -269,14 +288,6 @@ export const TxView = () => {
     }).join("");
   };
 
-  // const downloadTx = async () => {
-  //     if (localData) {
-  //         const { txs, headers } = formatCsvTxs([localData]);
-  //         const csv = itemToCsv(txs[0]);
-  //         downloadFile(`tx-${hash}`, csv);
-  //     }
-  // };
-
   React.useEffect(() => {
     store.setNetwork(network);
 
@@ -294,15 +305,16 @@ export const TxView = () => {
   }, []);
 
   React.useEffect(() => {
-    if (localData && window.location.hash) {
-      let elmnt = document.getElementById(window.location.hash.substring(1));
-      if (elmnt) {
-        elmnt.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "start",
-        });
-        // (elmnt.parentNode as HTMLElement).scrollTop = elmnt.offsetTop - 30;
+    if (localData) {
+      if (localData.inputs.length > INPUT_LIMIT) {
+        setTxButtonText(InputBtnTxt.show);
+      }
+
+      if (window.location.hash) {
+        let elmnt = document.getElementById(window.location.hash.substring(1));
+        if (elmnt) {
+          elmnt.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+        }
       }
     }
   }, [localData]);
@@ -310,28 +322,33 @@ export const TxView = () => {
   return useObserver(() => (
     <div className={styles.container}>
       <h2 className={styles.heading}>{"Transaction"}</h2>
-      {/* <CsvBtn action={() => downloadTx()} /> */}
       <div className={styles.txContainer}>
         {mainTxData !== null && mainTxData !== undefined && (
-          <TxInfo {...mainTxData} txView={true} />
+          <TxInfo {...mainTxData} txView={true} network={network} />
         )}
 
         {localData && localData.inputs && localData.inputs.length > 0 && (
           <>
-            <h2 id="inputs">Inputs</h2>
-            {localData.inputs.map((input: InputInfo, i: number) => {
+            <div className={styles.txHeading}>
+              <h2 id="inputs" className={styles.txTitle}>{'Inputs'}{localData.inputs.length > INPUT_LIMIT && <span className={styles.badge}>{localData.inputs.length}</span>}</h2>
+              {localData.inputs.length > INPUT_LIMIT && <Button onClick={() => handleShowTxButton()} className={styles.txBtn}>{txBtnText}</Button>}
+            </div>
+            {txBtnText === InputBtnTxt.hide && localData.inputs.map((input: InputInfo, i: number) => {
               return (
                 <div className={styles.infoContainer} key={i}>
                   <Card rows={formatDataForTable(input)} />
                 </div>
               );
-            })}
+            })}{
+              txBtnText === InputBtnTxt.show && 
+              <span className={styles.hidden}>Inputs are hidden</span>
+            }
           </>
         )}
 
         {localData && localData.outputs && localData.outputs.length > 0 && (
           <>
-            <h2 id="outputs">Outputs</h2>
+            <h2 style={{marginTop: '15px'}} id="outputs">Outputs</h2>
             {localData &&
               (localData.outputs as any).map(
                 (output: TokenInfo | ReceiptInfo, i: number) => {

@@ -2,13 +2,17 @@ import * as React from 'react';
 import styles from './TxInfo.scss';
 import arrowIcon from '../../static/img/left-arrow.svg';
 import { StoreContext } from '../../index';
+import { InputBtnTxt, INPUT_LIMIT } from '../TxView/TxView';
+
 
 export interface TransactionInfoProps {
   hash: string;
+  bNum?: number;
   txInHashes: string[];
   totalTokens: number;
   outputs: TxOutPuts[];
   txView?: boolean; // Removes link reference when on TxView
+  network: string;
 }
 
 interface TxOutPuts {
@@ -18,7 +22,47 @@ interface TxOutPuts {
 }
 
 export const TxInfo = (props: TransactionInfoProps) => {
+
+  const [blockUrl, setBlockUrl] = React.useState<string>('');
+  const [txBtnText, setTxButtonText] = React.useState<string>(InputBtnTxt.hide);
+
+
   const store = React.useContext(StoreContext);
+
+  const handleShowTxButton = () => {
+    if (txBtnText === InputBtnTxt.show) {
+      setTxButtonText(InputBtnTxt.hide);
+    } else {
+      setTxButtonText(InputBtnTxt.show);
+    }
+  }
+
+  const getBlockHashFromNum = async (blockNum: string) => {
+    const validity = await store.blockNumIsValid(parseInt(blockNum));
+    if (validity.isValid) {
+      return store.fetchBlockHashByNum(parseInt(blockNum)).then((hash: string) => {
+        if (hash) {
+          return hash;
+        }
+      });
+    } else {
+      console.log(validity.error);
+    }
+  }
+
+  React.useEffect(() => {
+    if (props.bNum) {
+      getBlockHashFromNum(props.bNum.toString()).then((hash: any) => {
+        if (hash) {
+          setBlockUrl(`${props.network}/block/${hash}`);
+        }
+      });
+    }
+
+    if (props.txInHashes.length > INPUT_LIMIT) {
+      setTxButtonText(InputBtnTxt.show);
+    }
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -34,6 +78,14 @@ export const TxInfo = (props: TransactionInfoProps) => {
               }
             </div>
           </li>
+          {props.bNum && (
+            <li>
+              <div className={styles.row}>
+                <p>Block Number</p>
+                <p><a style={{ cursor: "pointer" }} href={blockUrl}>{props.bNum}</a></p>
+              </div>
+            </li>
+          )}
           {props.totalTokens && (
             <li>
               <div className={styles.row}>
@@ -46,9 +98,11 @@ export const TxInfo = (props: TransactionInfoProps) => {
           )}
           <li>
             <div className={styles.row}>
-              <p>Input Transaction(s)</p>
-
-              {props.txInHashes && props.txInHashes.length > 0 && (
+              <div className={styles.headerLine}>
+                <p>Input Transaction(s) {props.txInHashes.length > INPUT_LIMIT && `- ${props.txInHashes.length}`}</p>
+                {props.txInHashes.length > INPUT_LIMIT && <span className={styles.hideBtn} onClick={handleShowTxButton}>{txBtnText}</span>}
+              </div>
+              {txBtnText === InputBtnTxt.hide && props.txInHashes && props.txInHashes.length > 0 && (
                 <ul className={styles.ins}>
                   {props.txInHashes.map((h: string) => {
                     return (
@@ -59,6 +113,9 @@ export const TxInfo = (props: TransactionInfoProps) => {
                   })}
                 </ul>
               )}
+              {txBtnText === InputBtnTxt.show && 
+                <span className={styles.hidden}>Inputs are hidden</span>
+              }
 
               {!props.txInHashes || (props.txInHashes.length === 0 && <p>N/A</p>)}
             </div>

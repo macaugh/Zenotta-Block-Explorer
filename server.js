@@ -51,6 +51,7 @@ app.post('/api/latestBlock', (req, res) => {
         try {
             throttler.callFunction(extractTxs, lb.content.block.header.b_num, network, fullConfig).then(res => console.log(res)).catch(err => console.log(err));
             latestBlock = lb.content.block.header.b_num;
+            console.log('Latest block: ', latestBlock);
         } catch (error) {
             console.log('Failed to retrieve latest block: ', error);
         }

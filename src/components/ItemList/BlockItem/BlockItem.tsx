@@ -7,16 +7,16 @@ import { formatAddressForDisplay } from 'formatData';
 import { Block, Transaction } from 'interfaces';
 
 interface BlockItemProps {
-    data: {hash: string, block: Block}
+    data: { hash: string, block: Block }
 }
 
 export const BlockItem = (props: BlockItemProps) => {
     const store = React.useContext(StoreContext);
 
-    const [data] = useState<{hash: string, block: Block}>(props.data);
+    const [data] = useState<{ hash: string, block: Block }>(props.data);
 
     const [reward, setReward] = useState<string>('');
-    const [hashSize, setHashSize] = useState<number>(24);
+    const [hashSize, setHashSize] = useState<number>(32);
     const [visibleBadge, setVisibleBadge] = useState<boolean>(false);
 
     const fetchReward = async (coinbaseHash: string) => {
@@ -31,12 +31,12 @@ export const BlockItem = (props: BlockItemProps) => {
     }
 
     useEffect(() => {
-        fetchReward(data.block.miningTxHashNonces.hash)
+        // fetchReward(data.block.miningTxHashNonces.hash)
         if (window.innerWidth >= 510) {
-            setHashSize(24);
+            setHashSize(32);
             setVisibleBadge(true);
         } else {
-            setHashSize(14);
+            setHashSize(20);
             setVisibleBadge(false);
         }
     }, []);
@@ -69,16 +69,13 @@ export const BlockItem = (props: BlockItemProps) => {
                 <div className={`${styles.hashs} ${visibleBadge ? styles.biggerHashes : ''}`}>
                     <div className={styles.left}>
                         <span className={styles.hash}><a href={`${store.network.name}/tx/${data.block.miningTxHashNonces.hash}`}>{formatAddressForDisplay(data.block.miningTxHashNonces.hash, hashSize)}</a></span>
-                        <span className={styles.hash}><a href={`/${data.block.transactions.length ? data.block.transactions[0] : '#'}`}>{data.block.transactions.length}{' Tx'}</a></span>
                     </div>
                 </div>
-                {visibleBadge &&
                 <div className={styles.rewardContainer}>
                     <div className={styles.rewardBadge}>
-                        {reward}<span className={styles.tokenName}>{' Zn'}</span>
+                        <a className={styles.txLink} href={`/${data.block.transactions.length ? data.block.transactions[0] : '#'}`}>{data.block.transactions.length}{' Tx'}</a>
                     </div>
                 </div>
-                }
             </div>
             <hr className={styles.separator} />
         </div>
