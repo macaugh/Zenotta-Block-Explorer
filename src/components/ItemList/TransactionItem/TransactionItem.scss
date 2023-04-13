@@ -77,23 +77,33 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
-
-                padding: 5px;
+                padding: 12px 6px 12px 6px;
                 width: auto;
                 height: 10px;
-                border: solid lightgray .5px;
                 border-radius: 5px;
                 margin-right: 10px;
-                // background-color: green;
                 color: darkgray;
                 background-color: rgb(240, 240, 240);
 
                 font-size: x-small;
+                font-weight: bold;
 
 
                 .tokenName {
                     margin-left: 5px;
                 }
+            }
+
+            .receipt {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 35px;
+                height: 35px;
+                border-radius: 5px;
+                margin-right: 10px;
+                color: darkgray;
+                background-color: rgb(240, 240, 240);
             }
         }
 

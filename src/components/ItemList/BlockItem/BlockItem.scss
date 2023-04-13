@@ -64,6 +64,11 @@
                     font-size: small;
                     font-weight: 200;
                 }
+
+                .text {
+                    color: darkgray;
+                    font-size: x-small;
+                }
             }
         }
 
@@ -79,7 +84,7 @@
                 justify-content: center;
                 align-items: center;
                 min-width: 25px;
-                padding: 5px;
+                padding: 12px 6px 12px 6px;
                 width: auto;
                 height: 15px;
                 border: solid lightgray .5px;
@@ -94,6 +99,12 @@
 
                 .tokenName {
                     margin-left: 5px;
+                }
+
+                .txLink {
+                    // text-decoration: none;
+                    color: darkgray;
+                    font-weight: bold;
                 }
             }
         }

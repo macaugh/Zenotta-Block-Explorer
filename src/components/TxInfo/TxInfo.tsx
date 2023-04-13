@@ -19,9 +19,6 @@ interface TxOutPuts {
   tokens: number;
 }
 
-
-
-
 export const TxInfo = (props: TransactionInfoProps) => {
 
   const [blockUrl, setBlockUrl] = React.useState<string>('');

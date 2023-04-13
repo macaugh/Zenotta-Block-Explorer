@@ -4,6 +4,7 @@ import { useObserver } from 'mobx-react';
 import styles from './TransactionItem.scss';
 import { formatAddressForDisplay, formatAmount } from '../../../formatData';
 import { TransactionTableData } from 'interfaces';
+import { BiReceipt } from 'react-icons/bi';
 
 interface TransactionItemProps {
     data: TransactionTableData
@@ -17,10 +18,10 @@ export const TransactionItem = (props: TransactionItemProps) => {
 
     const generateBadgeContent = () => {
         if (Object.getOwnPropertyNames(data.transaction.outputs[0].value)[0] == 'Receipt')
-            return 'Receipt'
+            return <div className={styles.receipt}><BiReceipt /></div>
 
         else if (Object.getOwnPropertyNames(data.transaction.outputs[0].value)[0] == 'Token')
-            return <>{formatAmount(data.transaction, false)} <span className={styles.tokenName}>{' Zn'}</span></>
+            return <div className={styles.rewardBadge}>{formatAmount(data.transaction, false)} <span className={styles.tokenName}>{' Zn'}</span></div>
     }
 
     useEffect(() => {// Set initial
@@ -73,9 +74,9 @@ export const TransactionItem = (props: TransactionItemProps) => {
                     </div>
                     {visibleBadge &&
                         <div className={styles.rewardContainer}>
-                            <div className={styles.rewardBadge}>
+                            
                                 {generateBadgeContent()}
-                            </div>
+                            
                         </div>
                     }
                 </div>

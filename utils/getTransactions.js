@@ -20,8 +20,9 @@ async function extractLatestTxs(latestBlockNum, network, config) {
         let jsonFile = await fetchJsonFile(filePrefix + FILENAME).then((res) => { return res ? res : null }).catch((err) => { console.log('ERR', err); return null });
 
         if (jsonFile) {
-            if (latestBlockNum && jsonFile.latestCheckedBlockNum < latestBlockNum) {
-                let i = jsonFile.latestCheckedBlockNum;
+            console.log(latestBlockNum && jsonFile.latestCheckedbNum < latestBlockNum, `${latestBlockNum} && ${jsonFile.latestCheckedbNum} < ${latestBlockNum}`)
+            if (latestBlockNum && jsonFile.latestCheckedbNum < latestBlockNum) {
+                let i = jsonFile.latestCheckedbNum;
                 let nbTxs = 0;
                 while (i < latestBlockNum) {
                     const endBlock = i + BATCH_SIZE <= latestBlockNum ? i + BATCH_SIZE : latestBlockNum;
@@ -38,7 +39,7 @@ async function extractLatestTxs(latestBlockNum, network, config) {
                                 nbTxs += d[1].block.transactions.length;
                             }
                         }
-                        jsonFile.latestCheckedBlockNum = endBlock; // Update latest checked block number
+                        jsonFile.latestCheckedbNum = endBlock; // Update latest checked block number
                         i += BATCH_SIZE + 1; // Increment i by batch size
                         writeToJsonFile(filePrefix + FILENAME, jsonFile);
                     } else {
@@ -47,9 +48,9 @@ async function extractLatestTxs(latestBlockNum, network, config) {
                     }
                 }
                 writeToJsonFile(filePrefix + FILENAME, jsonFile).then(() => {
-                    let msg = `No new tx(s) found \nFinished at block ${jsonFile.latestCheckedBlockNum}`;
+                    let msg = `No new tx(s) found \nFinished at block ${jsonFile.latestCheckedbNum}`;
                     if (nbTxs > 0)
-                        msg = `Extracted total of ${nbTxs} tx(s) \nFinished at block ${jsonFile.latestCheckedBlockNum}`;
+                        msg = `Extracted total of ${nbTxs} tx(s) \nFinished at block ${jsonFile.latestCheckedbNum}`;
                     resolve(`\n${msg}`);
                 });
             } else {
