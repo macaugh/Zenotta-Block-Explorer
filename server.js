@@ -46,7 +46,6 @@ app.post('/api/latestBlock', (req, res) => {
     const storagePath = `${fullConfig.PROTOCOL}://${network.sIp}:${network.sPort}/latest_block`;
 
     calls.fetchLatestBlock(storagePath).then(lb => {
-        console.log('lb: ',lb.content.block.header.b_num)
         try {
             throttler.callFunction(extractTxs, lb.content.block.header.b_num, network, fullConfig).then(res => console.log(res)).catch(err => console.log(err));
             latestBlock = lb.content.block.header.b_num;

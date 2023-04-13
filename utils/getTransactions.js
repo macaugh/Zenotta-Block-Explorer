@@ -20,9 +20,8 @@ async function extractLatestTxs(latestBlockNum, network, config) {
         let jsonFile = await fetchJsonFile(filePrefix + FILENAME).then((res) => { return res ? res : null }).catch((err) => { console.log('ERR', err); return null });
 
         if (jsonFile) {
-            console.log(latestBlockNum && jsonFile.latestCheckedbNum < latestBlockNum, `${latestBlockNum} && ${jsonFile.latestCheckedbNum} < ${latestBlockNum}`)
-            if (latestBlockNum && jsonFile.latestCheckedbNum < latestBlockNum) {
-                let i = jsonFile.latestCheckedbNum;
+            if (latestBlockNum && jsonFile.latestCheckedBlockNum < latestBlockNum) {
+                let i = jsonFile.latestCheckedBlockNum;
                 let nbTxs = 0;
                 while (i < latestBlockNum) {
                     const endBlock = i + BATCH_SIZE <= latestBlockNum ? i + BATCH_SIZE : latestBlockNum;
@@ -35,11 +34,11 @@ async function extractLatestTxs(latestBlockNum, network, config) {
                         for (const d of blockRange) {
                             if (d[1].block.transactions.length > 0) {
                                 console.log(`${d[1].block.transactions.length} tx(s) in block ${d[1].block.header.b_num}`);
-                                jsonFile.transactions.push({ bNum: d[1].block.header.b_num, txs: d[1].block.transactions })
+                                jsonFile.transactions.push({ blockNum: d[1].block.header.b_num, txs: d[1].block.transactions })
                                 nbTxs += d[1].block.transactions.length;
                             }
                         }
-                        jsonFile.latestCheckedbNum = endBlock; // Update latest checked block number
+                        jsonFile.latestCheckedBlockNum = endBlock; // Update latest checked block number
                         i += BATCH_SIZE + 1; // Increment i by batch size
                         writeToJsonFile(filePrefix + FILENAME, jsonFile);
                     } else {
@@ -48,9 +47,9 @@ async function extractLatestTxs(latestBlockNum, network, config) {
                     }
                 }
                 writeToJsonFile(filePrefix + FILENAME, jsonFile).then(() => {
-                    let msg = `No new tx(s) found \nFinished at block ${jsonFile.latestCheckedbNum}`;
+                    let msg = `No new tx(s) found \nFinished at block ${jsonFile.latestCheckedBlockNum}`;
                     if (nbTxs > 0)
-                        msg = `Extracted total of ${nbTxs} tx(s) \nFinished at block ${jsonFile.latestCheckedbNum}`;
+                        msg = `Extracted total of ${nbTxs} tx(s) \nFinished at block ${jsonFile.latestCheckedBlockNum}`;
                     resolve(`\n${msg}`);
                 });
             } else {

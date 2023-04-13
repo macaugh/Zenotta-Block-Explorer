@@ -94,10 +94,36 @@
     }
 }
 
-// .addr {
-//     white-space: nowrap;
-//     // width: 100px;
-//     overflow: hidden;
-//     text-overflow: ellipsis;
-//     border: 1px solid #000000;
-// }
+.hideBtn {
+    cursor: pointer;
+    color: #1890ff;
+    font-size: small;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.headerLine {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h2 {
+        margin: 0;
+    }
+}
+
+.hidden {
+    margin: 0 auto;
+    font-weight: 200;
+    color: #999;
+    font-style: italic;
+    border: solid white 1px;
+    box-shadow: 0px -1px 5px #cecece;
+    background-color: white;
+    border-radius: 3px;
+    width: auto;
+    padding: 5px;
+  }
