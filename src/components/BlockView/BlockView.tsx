@@ -126,6 +126,9 @@ export const BlockView = () => {
         if (!localData) {
             return null;
         }
+
+        localData.timestamp = `${new Date(store.calculateBlockTime(localData.bNum) * 1000)} - ${store.calculateBlockTime(localData.bNum)}`;
+
         return Object.keys(localData).map((key) => {
             const value = (localData as any)[key];
             if (key === 'previousHash') {
@@ -165,19 +168,6 @@ export const BlockView = () => {
             { heading: 'Version', value: miningTx.version.toString() },
             { heading: 'Script Public Key', value: miningTx.scriptPublicKey },
         ];
-    };
-
-    const downloadTxs = async () => {
-        // if (transactions && transactions.length > 0) {
-        //     const { txs, headers } = formatCsvTxs(transactions as any[]);
-        //     if (txs.length > 1) {
-        //         const csv = txsToCsv(txs, headers)
-        //         downloadFile(`txs-${txs[0].hash}-${txs[txs.length - 1].hash}`, csv);
-        //     } else if (txs.length == 1) {
-        //         const csv = itemToCsv(txs[0]);
-        //         downloadFile(`tx-${txs[0].hash}`, csv);
-        //     }
-        // }
     };
 
     const downloadCbTx = async () => {
@@ -248,7 +238,7 @@ export const BlockView = () => {
 
                         {showTransactions && (
                             <>
-                                <CsvBtn action={() => downloadTxs()} />
+                                {/* <CsvBtn action={() => downloadTxs()} /> */}
                                 <div className={styles.transactionContainer}>
                                     {transactions.map((t: TransactionInfoProps, i: number) => {
                                         return (

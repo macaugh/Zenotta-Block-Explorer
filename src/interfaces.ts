@@ -137,7 +137,8 @@ export interface OutputValueV2 {
 /** UI Interfaces */
 export interface BlockInfo {
   hash: string;
-  bNum: number;
+  bNum: number;  
+  timestamp?: string;
   merkleRootHash: string;
   previousHash: string;
   version: number;

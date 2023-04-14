@@ -4,6 +4,7 @@ import { Network } from "interfaces";
 import { HOST_PROTOCOL, HOST_NAME } from "../constants_local";
 import { IDB_BLOCKS_CACHE, IDB_TX_CACHE } from "../constants";
 // import { HOST_PROTOCOL, HOST_NAME, IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
+import { BLOCK_TIME_REFERENCE, BLOCK_TIME } from "../constants";
 import { NETWORKS } from "networks";
 import { BrowserCache } from "./BrowserCache";
 import {
@@ -39,8 +40,8 @@ class Store {
   @observable txsTableData: TransactionTableData[] = [];
   @observable nbTxs: number = 0;
   @observable network: Network =
-  NETWORKS.filter((e) => e.displayName == localStorage.getItem("NETWORK"))[0] ||
-  NETWORKS[0];
+    NETWORKS.filter((e) => e.displayName == localStorage.getItem("NETWORK"))[0] ||
+    NETWORKS[0];
   @observable networkDisplay: string = this.network.displayName;
 
   /** SET */
@@ -174,7 +175,8 @@ class Store {
           network: this.network,
         })
         .then((res) => {
-          return res.data});
+          return res.data
+        });
       retData.push(...this.formatBlockSet(data)); // Format data
       this.browserCache.addBlocks(retData, this.network.sIp); // Add to cache
     }
@@ -324,7 +326,6 @@ class Store {
 
         let data = isJson ? JSON.parse(JSON.stringify(response.data)) : null;
 
-        console.log("data", data)
         // Format transaction data. This is a bit hacky, but it works for now. Should change base structure of stored transactions.
         const txIds = data.transactions
           .map(({ blockNum, txs }: any) => {
@@ -334,8 +335,6 @@ class Store {
             return [...formatted];
           })
           .flat();
-
-          console.log("txIds", txIds)
 
         if (txIds.length > 0) {
           this.setNbTxs(txIds.length);
@@ -362,8 +361,6 @@ class Store {
       this.fetchBlockchainItem(hash, true)
     );
 
-    console.log(txs)
-
     await Promise.all(calls).then((txRes) => {
       txRes.forEach((tx, i) => {
         let newTx = {
@@ -378,8 +375,20 @@ class Store {
         this.browserCache.addTransaction(newTx, this.network.sIp);
       });
     });
-    console.log(txs)
     return txs;
+  }
+
+  @action calculateBlockTime(bNum: number) {
+    const reference = BLOCK_TIME_REFERENCE;
+    let timestamp = 0;
+
+    if (bNum < reference.bNum) {
+      timestamp = 0;
+    } else if (bNum >= reference.bNum) {
+      timestamp = ((bNum - reference.bNum) * BLOCK_TIME) + reference.timestamp;
+    }
+
+    return timestamp;
   }
 
   /** FORMAT */
