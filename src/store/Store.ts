@@ -1,9 +1,9 @@
 import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
-// import { HOST_PROTOCOL, HOST_NAME } from "../constants_local";
-// import { IDB_BLOCKS_CACHE, IDB_TX_CACHE } from "../constants";
-import { HOST_PROTOCOL, HOST_NAME, IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
+import { HOST_PROTOCOL, HOST_NAME } from "../constants_local";
+import { IDB_BLOCKS_CACHE, IDB_TX_CACHE } from "../constants";
+// import { HOST_PROTOCOL, HOST_NAME, IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
 import { NETWORKS } from "networks";
 import { BrowserCache } from "./BrowserCache";
 import {
@@ -324,15 +324,18 @@ class Store {
 
         let data = isJson ? JSON.parse(JSON.stringify(response.data)) : null;
 
+        console.log("data", data)
         // Format transaction data. This is a bit hacky, but it works for now. Should change base structure of stored transactions.
         const txIds = data.transactions
-          .map(({ bNum, txs }: any) => {
+          .map(({ blockNum, txs }: any) => {
             const formatted = txs.map((tx: any) => {
-              return { bNum, tx };
+              return { blockNum, tx };
             });
             return [...formatted];
           })
           .flat();
+
+          console.log("txIds", txIds)
 
         if (txIds.length > 0) {
           this.setNbTxs(txIds.length);
@@ -359,6 +362,8 @@ class Store {
       this.fetchBlockchainItem(hash, true)
     );
 
+    console.log(txs)
+
     await Promise.all(calls).then((txRes) => {
       txRes.forEach((tx, i) => {
         let newTx = {
@@ -366,14 +371,14 @@ class Store {
           // Improve the efficiency below, filter every item is expensive
           bNum: txsObj
             .filter((e: any) => e.tx == remainingHashes[i])
-            .map((e: any) => e.bNum)[0],
+            .map((e: any) => e.blockNum)[0],
           transaction: tx,
         };
-        txs.push(newTx);
         // Add to cache
         this.browserCache.addTransaction(newTx, this.network.sIp);
       });
     });
+    console.log(txs)
     return txs;
   }
 

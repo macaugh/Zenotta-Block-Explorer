@@ -146,8 +146,6 @@ export class BrowserCache extends Dexie {
         bNum: newBlock.bNum,
       });
 
-      console.log('blockExist', blockExist);
-
       if (!blockExist) {
         this.blocks[cacheName].add(newBlock);
       }
