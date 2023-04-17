@@ -67,10 +67,7 @@ export const TxView = () => {
     let combo = [];
     for (let entry of stack) {
       let key: any = Object.keys(entry)[0];
-
-      console.log("entry", (entry as any)[key]);
       let val = (entry as any)[key];
-
       combo.push(val instanceof Array ? toHexString(val) : val);
     }
     return combo.join("\n");

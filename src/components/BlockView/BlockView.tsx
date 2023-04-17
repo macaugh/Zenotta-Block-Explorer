@@ -9,9 +9,11 @@ import { CsvBtn } from '../CsvBtn/CsvBtn';
 
 import styles from './BlockView.scss';
 import { Button } from 'chi-ui';
+import { GoIssueOpened } from 'react-icons/go';
 import { itemToCsv, downloadFile } from '../../formatCsv';
 import { Card } from 'components/Card/Card';
 import { Block, BlockInfo, Input, Output, Transaction } from 'interfaces';
+import { LOKI_BLOCK_TIME_REFERENCE, ODIN_BLOCK_TIME_REFERENCE } from '../../constants';
 
 enum ViewBtnTxt {
     show = "Show transactions",
@@ -34,6 +36,9 @@ export const BlockView = () => {
     const [coinbaseHash, setCoinbaseHash] = React.useState<string>('');
     const [showTransactions, setShowTransactions] = React.useState<boolean>(true);
     const [txBtnText, setTxButtonText] = React.useState<string>(ViewBtnTxt.hide);
+
+    const ref_block = network === 'loki' ? LOKI_BLOCK_TIME_REFERENCE : ODIN_BLOCK_TIME_REFERENCE;
+
 
     /**
      * Fetch coinbase transaction from miningTx hash
@@ -127,7 +132,7 @@ export const BlockView = () => {
             return null;
         }
 
-        localData.timestamp = `${new Date(store.calculateBlockTime(localData.bNum) * 1000)} - ${store.calculateBlockTime(localData.bNum)}`;
+        localData.timestamp = `${new Date(store.calculateBlockTime(localData.bNum) * 1000)} ${localData.bNum < ref_block.bNum ? '[Approximate]' : ''}`;
 
         return Object.keys(localData).map((key) => {
             const value = (localData as any)[key];

@@ -5,6 +5,7 @@ import styles from './BlockItem.scss';
 import { StoreContext } from '../../..';
 import { formatAddressForDisplay } from 'formatData';
 import { Block, Transaction } from 'interfaces';
+import { getEllapsedTime } from 'utils/getEllapsedTime';
 
 interface BlockItemProps {
     data: { hash: string, block: Block }
@@ -31,28 +32,7 @@ export const BlockItem = (props: BlockItemProps) => {
         }
     }
 
-    const getEllapsedTime = (timestamp: number) => {
-        let now = new Date();
-        let blocktime = new Date(timestamp * 1000);
-        // let difference = now.getTime() - blocktime.getTime();
-        let ellapsedSeconds = Math.abs(now.getTime() - blocktime.getTime())/1000;
-        let ellapsedMinutes = ellapsedSeconds/60;
-        let ellapsedHours = ellapsedMinutes/60;
-
-        if (ellapsedSeconds < 60) {
-            setBlockTime(`${ellapsedSeconds} seconds ago`);
-        } else if (ellapsedMinutes < 60) {
-            setBlockTime(`${ellapsedMinutes} minutes ago`);
-        } else if (ellapsedHours < 24) {
-            let minutes = Math.floor((ellapsedHours - Math.floor(ellapsedHours)) * 60);
-            setBlockTime(`${Math.floor(ellapsedHours)}h${minutes < 10 ? '0'+minutes: minutes}m ago`);
-        } else if (ellapsedHours >= 24) {
-            setBlockTime(blocktime.toLocaleString());
-        }
-    }
-
     useEffect(() => {
-        // fetchReward(data.block.miningTxHashNonces.hash)
         if (window.innerWidth >= 510) {
             setHashSize(32);
             setVisibleBadge(true);
@@ -60,11 +40,7 @@ export const BlockItem = (props: BlockItemProps) => {
             setHashSize(20);
             setVisibleBadge(false);
         }
-
-        getEllapsedTime(store.calculateBlockTime(data.block.bNum))
-
-        // setBlockTime(new Date(store.calculateBlockTime(data.block.bNum) * 1000).toLocaleString());
-
+        setBlockTime(getEllapsedTime(store.calculateBlockTime(data.block.bNum)))
     }, []);
 
     useEffect(() => {

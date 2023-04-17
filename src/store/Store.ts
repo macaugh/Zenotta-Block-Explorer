@@ -2,9 +2,9 @@ import axios from "axios";
 import { action, makeAutoObservable, observable } from "mobx";
 import { Network } from "interfaces";
 import { HOST_PROTOCOL, HOST_NAME } from "../constants_local";
-import { IDB_BLOCKS_CACHE, IDB_TX_CACHE } from "../constants";
+import { BLOCK_TIME_PRE_REF, IDB_BLOCKS_CACHE, IDB_TX_CACHE } from "../constants";
 // import { HOST_PROTOCOL, HOST_NAME, IDB_TX_CACHE, IDB_BLOCKS_CACHE } from "../constants";
-import { BLOCK_TIME_REFERENCE, BLOCK_TIME } from "../constants";
+import { LOKI_BLOCK_TIME_REFERENCE, ODIN_BLOCK_TIME_REFERENCE, BLOCK_TIME } from "../constants";
 import { NETWORKS } from "networks";
 import { BrowserCache } from "./BrowserCache";
 import {
@@ -379,11 +379,12 @@ class Store {
   }
 
   @action calculateBlockTime(bNum: number) {
-    const reference = BLOCK_TIME_REFERENCE;
+    const reference = this.network.name == 'loki' ? LOKI_BLOCK_TIME_REFERENCE : ODIN_BLOCK_TIME_REFERENCE;
     let timestamp = 0;
 
     if (bNum < reference.bNum) {
-      timestamp = 0;
+      // Approximate block time (before reference block)
+      timestamp = reference.timestamp - ((reference.bNum - bNum) * BLOCK_TIME_PRE_REF) ;
     } else if (bNum >= reference.bNum) {
       timestamp = ((bNum - reference.bNum) * BLOCK_TIME) + reference.timestamp;
     }
