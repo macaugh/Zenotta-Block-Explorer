@@ -18,4 +18,4 @@ export const LOKI_BLOCK_TIME_REFERENCE = {bNum: 1550361, timestamp: 1681294860};
 export const ODIN_BLOCK_TIME_REFERENCE = {bNum: 904587, timestamp: 1681294920}; // ODIN 904587 at 10:11 
 
 export const BLOCK_TIME = 120;
-export const BLOCK_TIME_PRE_REF= 60;
+export const BLOCK_TIME_PRE_REF= 106.66666666666667;

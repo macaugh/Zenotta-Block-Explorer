@@ -3,7 +3,7 @@ import styles from './TxInfo.scss';
 import arrowIcon from '../../static/img/left-arrow.svg';
 import { StoreContext } from '../../index';
 import { InputBtnTxt, INPUT_LIMIT } from '../TxView/TxView';
-// import { getEllapsedTime } from 'utils/getEllapsedTime';
+import { Pill } from "components/Pill/Pill";
 import { LOKI_BLOCK_TIME_REFERENCE, ODIN_BLOCK_TIME_REFERENCE} from '../../constants';
 
 
@@ -93,7 +93,7 @@ export const TxInfo = (props: TransactionInfoProps) => {
               <li>
                 <div className={styles.row}>
                   <p>Timestamp</p>
-                  <p>{`${new Date(store.calculateBlockTime(props.bNum) * 1000)}`} {props.bNum < ref_block.bNum ? '[Approximate]' : ''}</p>
+                  <p>{`${new Date(store.calculateBlockTime(props.bNum) * 1000)}`} {props.bNum < ref_block.bNum ? <Pill variant>approximation</Pill> : ''}</p>
                 </div>
               </li>
             </>

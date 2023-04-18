@@ -132,7 +132,7 @@ export const BlockView = () => {
             return null;
         }
 
-        localData.timestamp = `${new Date(store.calculateBlockTime(localData.bNum) * 1000)} ${localData.bNum < ref_block.bNum ? '[Approximate]' : ''}`;
+        localData.timestamp = `${new Date(store.calculateBlockTime(localData.bNum) * 1000)}`;
 
         return Object.keys(localData).map((key) => {
             const value = (localData as any)[key];
