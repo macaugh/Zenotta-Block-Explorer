@@ -40,7 +40,7 @@ export const Card = (props: RowTableProps) => {
                         <tr key={i}>
                             <td>{format(row.heading)}</td>
                             <td>
-                                {row.heading === 'timestamp' ? <>{row.value} <Pill variant>Aproximation</Pill></> : row.value}
+                                {row.heading === 'timestamp' ? <>{row.value} <Pill variant>approximation</Pill></> : row.value}
                             </td>
                         </tr>
                     );
