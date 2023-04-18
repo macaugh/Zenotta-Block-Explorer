@@ -3,6 +3,8 @@ import styles from './TxInfo.scss';
 import arrowIcon from '../../static/img/left-arrow.svg';
 import { StoreContext } from '../../index';
 import { InputBtnTxt, INPUT_LIMIT } from '../TxView/TxView';
+import { Pill } from "components/Pill/Pill";
+import { LOKI_BLOCK_TIME_REFERENCE, ODIN_BLOCK_TIME_REFERENCE} from '../../constants';
 
 
 export interface TransactionInfoProps {
@@ -25,6 +27,8 @@ export const TxInfo = (props: TransactionInfoProps) => {
 
   const [blockUrl, setBlockUrl] = React.useState<string>('');
   const [txBtnText, setTxButtonText] = React.useState<string>(InputBtnTxt.hide);
+
+  const ref_block = props.network === 'loki' ? LOKI_BLOCK_TIME_REFERENCE : ODIN_BLOCK_TIME_REFERENCE;
 
 
   const store = React.useContext(StoreContext);
@@ -78,13 +82,21 @@ export const TxInfo = (props: TransactionInfoProps) => {
               }
             </div>
           </li>
-          {props.bNum && (
-            <li>
-              <div className={styles.row}>
-                <p>Block Number</p>
-                <p><a style={{ cursor: "pointer" }} href={blockUrl}>{props.bNum}</a></p>
-              </div>
-            </li>
+          {props.bNum && props.bNum >= 0 && (
+            <>
+              <li>
+                <div className={styles.row}>
+                  <p>Block Number</p>
+                  <p><a style={{ cursor: "pointer" }} href={blockUrl}>{props.bNum}</a></p>
+                </div>
+              </li>
+              <li>
+                <div className={styles.row}>
+                  <p>Timestamp</p>
+                  <p>{`${new Date(store.calculateBlockTime(props.bNum) * 1000)}`} {props.bNum < ref_block.bNum ? <Pill variant>approximation</Pill> : ''}</p>
+                </div>
+              </li>
+            </>
           )}
           {props.totalTokens && (
             <li>
@@ -113,7 +125,7 @@ export const TxInfo = (props: TransactionInfoProps) => {
                   })}
                 </ul>
               )}
-              {txBtnText === InputBtnTxt.show && 
+              {txBtnText === InputBtnTxt.show &&
                 <span className={styles.hidden}>Inputs are hidden</span>
               }
 

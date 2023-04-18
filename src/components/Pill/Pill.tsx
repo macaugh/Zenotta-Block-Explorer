@@ -4,7 +4,7 @@ import styles from './Pill.scss';
 
 export const Pill = (props: any) => {
     return useObserver(() => (
-        <div className={styles.container}>
+        <div className={props.variant ? styles.variant : styles.container}>
             {props.children}
         </div>
     ));

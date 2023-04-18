@@ -1,5 +1,6 @@
 import * as React from 'react';
 import styles from './Card.scss';
+import { Pill } from 'components/Pill/Pill';
 
 interface CardRow {
     heading: string,
@@ -30,6 +31,7 @@ export const Card = (props: RowTableProps) => {
         return val;
     }
 
+    console.log(props.rows)
     return (
         <table className={`${styles.container} ${props.className}`}>
             <tbody>
@@ -38,7 +40,7 @@ export const Card = (props: RowTableProps) => {
                         <tr key={i}>
                             <td>{format(row.heading)}</td>
                             <td>
-                                {row.value}
+                                {row.heading === 'timestamp' ? <>{row.value} <Pill variant>Aproximation</Pill></> : row.value}
                             </td>
                         </tr>
                     );

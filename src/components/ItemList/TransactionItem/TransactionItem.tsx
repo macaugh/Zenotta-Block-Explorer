@@ -5,6 +5,7 @@ import styles from './TransactionItem.scss';
 import { StoreContext } from '../../..';
 import { formatAddressForDisplay, formatAmount } from '../../../formatData';
 import { TransactionTableData } from 'interfaces';
+import { getEllapsedTime } from 'utils/getEllapsedTime';
 import { BiReceipt } from 'react-icons/bi';
 
 interface TransactionItemProps {
@@ -17,6 +18,8 @@ export const TransactionItem = (props: TransactionItemProps) => {
     const [hashSize, setHashSize] = useState<number>(24);
     const [addrSize, setAddrSize] = useState<number>(10);
     const [visibleBadge, setVisibleBadge] = useState<boolean>(false);
+    const [txTime, setTxTime] = useState<string>('');
+
 
     const generateBadgeContent = () => {
         if (Object.getOwnPropertyNames(data.transaction.outputs[0].value)[0] == 'Receipt')
@@ -36,6 +39,7 @@ export const TransactionItem = (props: TransactionItemProps) => {
             setAddrSize(5);
             setVisibleBadge(false);
         }
+        setTxTime(getEllapsedTime(store.calculateBlockTime(data.bNum)))
     }), [];
 
     useEffect(() => {
@@ -63,7 +67,7 @@ export const TransactionItem = (props: TransactionItemProps) => {
                 <div className={styles.content}>
                     <div className={styles.itemHeader}>
                         <span className={styles.txNum}><a href={`${store.network.name}/tx/${data.hash}?bnum=${data.bNum}`}>{formatAddressForDisplay(data.hash, addrSize)}</a></span>
-                        <span className={styles.timestamp}>{'tx time'}</span>
+                        <span className={styles.timestamp}>{txTime}</span>
                     </div>
 
                     <div className={`${styles.hashs} ${visibleBadge ? styles.biggerHashes : ''}`}>

@@ -5,6 +5,7 @@ import styles from './BlockItem.scss';
 import { StoreContext } from '../../..';
 import { formatAddressForDisplay } from 'formatData';
 import { Block, Transaction } from 'interfaces';
+import { getEllapsedTime } from 'utils/getEllapsedTime';
 
 interface BlockItemProps {
     data: { hash: string, block: Block }
@@ -18,6 +19,7 @@ export const BlockItem = (props: BlockItemProps) => {
     const [reward, setReward] = useState<string>('');
     const [hashSize, setHashSize] = useState<number>(32);
     const [visibleBadge, setVisibleBadge] = useState<boolean>(false);
+    const [blockTime, setBlockTime] = useState<string>('');
 
     const fetchReward = async (coinbaseHash: string) => {
         if (coinbaseHash) {
@@ -31,7 +33,6 @@ export const BlockItem = (props: BlockItemProps) => {
     }
 
     useEffect(() => {
-        // fetchReward(data.block.miningTxHashNonces.hash)
         if (window.innerWidth >= 510) {
             setHashSize(32);
             setVisibleBadge(true);
@@ -39,6 +40,7 @@ export const BlockItem = (props: BlockItemProps) => {
             setHashSize(20);
             setVisibleBadge(false);
         }
+        setBlockTime(getEllapsedTime(store.calculateBlockTime(data.block.bNum)))
     }, []);
 
     useEffect(() => {
@@ -63,7 +65,7 @@ export const BlockItem = (props: BlockItemProps) => {
             <div className={styles.content}>
                 <div className={styles.itemHeader}>
                     <span className={styles.blockNum}><a href={`${store.network.name}/block/${data.hash}`}>{data.block.bNum}</a></span>
-                    <span className={styles.timestamp}>{'block time'}</span>
+                    <span className={styles.timestamp}>{blockTime}</span>
                 </div>
 
                 <div className={`${styles.hashs} ${visibleBadge ? styles.biggerHashes : ''}`}>

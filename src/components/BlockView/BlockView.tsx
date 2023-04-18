@@ -9,9 +9,11 @@ import { CsvBtn } from '../CsvBtn/CsvBtn';
 
 import styles from './BlockView.scss';
 import { Button } from 'chi-ui';
+import { GoIssueOpened } from 'react-icons/go';
 import { itemToCsv, downloadFile } from '../../formatCsv';
 import { Card } from 'components/Card/Card';
 import { Block, BlockInfo, Input, Output, Transaction } from 'interfaces';
+import { LOKI_BLOCK_TIME_REFERENCE, ODIN_BLOCK_TIME_REFERENCE } from '../../constants';
 
 enum ViewBtnTxt {
     show = "Show transactions",
@@ -34,6 +36,9 @@ export const BlockView = () => {
     const [coinbaseHash, setCoinbaseHash] = React.useState<string>('');
     const [showTransactions, setShowTransactions] = React.useState<boolean>(true);
     const [txBtnText, setTxButtonText] = React.useState<string>(ViewBtnTxt.hide);
+
+    const ref_block = network === 'loki' ? LOKI_BLOCK_TIME_REFERENCE : ODIN_BLOCK_TIME_REFERENCE;
+
 
     /**
      * Fetch coinbase transaction from miningTx hash
@@ -126,6 +131,9 @@ export const BlockView = () => {
         if (!localData) {
             return null;
         }
+
+        localData.timestamp = `${new Date(store.calculateBlockTime(localData.bNum) * 1000)}`;
+
         return Object.keys(localData).map((key) => {
             const value = (localData as any)[key];
             if (key === 'previousHash') {
@@ -165,19 +173,6 @@ export const BlockView = () => {
             { heading: 'Version', value: miningTx.version.toString() },
             { heading: 'Script Public Key', value: miningTx.scriptPublicKey },
         ];
-    };
-
-    const downloadTxs = async () => {
-        // if (transactions && transactions.length > 0) {
-        //     const { txs, headers } = formatCsvTxs(transactions as any[]);
-        //     if (txs.length > 1) {
-        //         const csv = txsToCsv(txs, headers)
-        //         downloadFile(`txs-${txs[0].hash}-${txs[txs.length - 1].hash}`, csv);
-        //     } else if (txs.length == 1) {
-        //         const csv = itemToCsv(txs[0]);
-        //         downloadFile(`tx-${txs[0].hash}`, csv);
-        //     }
-        // }
     };
 
     const downloadCbTx = async () => {
@@ -248,7 +243,7 @@ export const BlockView = () => {
 
                         {showTransactions && (
                             <>
-                                <CsvBtn action={() => downloadTxs()} />
+                                {/* <CsvBtn action={() => downloadTxs()} /> */}
                                 <div className={styles.transactionContainer}>
                                     {transactions.map((t: TransactionInfoProps, i: number) => {
                                         return (
