@@ -38,9 +38,6 @@ export const formatCsvTxs = (txs: any[]) => {
     // let highestOut = null;
     // for (let index in txs) {
     //     let tx = txs[index];
-
-    //     console.log('before',txs[index])
-
     //     tx = flattenTxOutputs(tx);
     //     tx = flattenTxInputs(tx);
 
@@ -61,9 +58,6 @@ export const formatCsvTxs = (txs: any[]) => {
     //             highestOutCount = tx.outputs.length;
     //         }
     //     }
-
-    //     console.log('TX', tx);
-
     //     if (tx.txInHashes.length > 0)
     //         delete tx.txInHashes;
     //     else 

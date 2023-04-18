@@ -31,16 +31,24 @@ export const Card = (props: RowTableProps) => {
         return val;
     }
 
-    console.log(props.rows)
     return (
         <table className={`${styles.container} ${props.className}`}>
             <tbody>
                 {props.rows && props.rows.length > 0 && props.rows.map((row: CardRow, i: number) => {
+                    let isApproximation = false;
+                    if (row.heading === 'timestamp') {
+                        let approximation = row.value.split(' ');
+                        if (approximation[approximation.length -1] == 'approximation') {
+                            isApproximation = true;
+                        }
+                        approximation.pop();
+                        row.value = approximation.join(' ');
+                    }
                     return (
                         <tr key={i}>
                             <td>{format(row.heading)}</td>
                             <td>
-                                {row.heading === 'timestamp' ? <>{row.value} <Pill variant>approximation</Pill></> : row.value}
+                                {row.heading === 'timestamp' && isApproximation ? <>{row.value} <Pill variant>approximation</Pill></> : row.value}
                             </td>
                         </tr>
                     );
