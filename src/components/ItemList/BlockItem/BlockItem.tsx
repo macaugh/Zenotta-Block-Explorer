@@ -75,7 +75,7 @@ export const BlockItem = (props: BlockItemProps) => {
                 </div>
                 <div className={styles.rewardContainer}>
                     <div className={styles.rewardBadge}>
-                        <a className={styles.txLink} href={`/${data.block.transactions.length ? data.block.transactions[0] : '#'}`}>{data.block.transactions.length}{' Tx'}</a>
+                        <a className={styles.txLink} href={`${data.block.transactions.length ? `${store.network.name}/tx/${data.block.transactions[0]}` : '#'}`}>{data.block.transactions.length}{' Tx'}</a>
                     </div>
                 </div>
             </div>
